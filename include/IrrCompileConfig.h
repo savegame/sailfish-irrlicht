@@ -123,6 +123,15 @@
 #define NO_IRR_COMPILE_WITH_OPENGL_
 #endif
 
+#if defined(SAILFISH)
+#define NO_IRR_COMPILE_WITH_OPENGL_
+#define NO_IRR_COMPILE_WITH_OGLES1_
+#define _IRR_COMPILE_WITH_OGLES2_
+#define _IRR_COMPILE_WITH_EGL_MANAGER_
+#define NO_IRR_COMPILE_WITH_BURNINGSVIDEO_
+#define _IRR_LINUX_PLATFORM_
+#endif
+
 #if defined(__SVR4) && defined(__sun)
 #define _IRR_SOLARIS_PLATFORM_
 #if defined(__sparc)

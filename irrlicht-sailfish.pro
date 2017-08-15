@@ -1,9 +1,14 @@
 TEMPLATE = lib
 
-CONFIG += link_pkgconfig
+CONFIG += link_pkgconfig warn_off sailfishapp
 
 TARGET = irrlicht
 DESTDIR = lib
+
+DEFINES += SAILFISH
+
+INCLUDEPATH += include
+INCLUDEPATH += source/Irrlicht
 
 HEADERS += \
     include/aabbox3d.h \
@@ -706,3 +711,6 @@ SOURCES += \
     source/Irrlicht/os.cpp \
     source/Irrlicht/utf8.cpp \
     source/Irrlicht/lzma/LzmaDec.c
+
+DISTFILES += \
+    rpm/irrlicht-sailfish.yaml
