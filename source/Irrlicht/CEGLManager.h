@@ -11,6 +11,12 @@
 
 #if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_) || defined(_IRR_COMPILE_WITH_FB_DEVICE_) || defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) || defined(__EMSCRIPTEN__)
 #include <EGL/egl.h>
+#elif defined(SAILFISH)
+#include <wayland-client.h>
+#include <wayland-server.h>
+#include <wayland-egl.h>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
 #else
 #include <GLES/egl.h>
 #endif
