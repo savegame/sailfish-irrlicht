@@ -23,8 +23,11 @@
 #include "SIrrCreationParameters.h"
 #include "SExposedVideoData.h"
 #include "IGUISpriteBank.h"
+
+#ifndef SAILFISH
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
+#endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
 #include "CEGLManager.h"
@@ -80,6 +83,7 @@ namespace irr
 	}
 } // end namespace irr
 
+#ifndef SAILFISH
 namespace
 {
 	Atom X_ATOM_CLIPBOARD;
@@ -90,6 +94,7 @@ namespace
 	Atom X_ATOM_NETWM_MAXIMIZE_HORZ;
 	Atom X_ATOM_NETWM_STATE;
 };
+#endif
 
 namespace irr
 {

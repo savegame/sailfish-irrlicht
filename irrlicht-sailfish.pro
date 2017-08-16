@@ -5,6 +5,9 @@ CONFIG += link_pkgconfig warn_off sailfishapp
 TARGET = irrlicht
 DESTDIR = lib
 
+LIBS += -lwayland-egl
+PKGCONFIG += wayland-client
+
 DEFINES += SAILFISH
 
 INCLUDEPATH += include

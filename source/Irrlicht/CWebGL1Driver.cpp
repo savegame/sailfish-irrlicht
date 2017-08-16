@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "CWebGL1Driver.h"
+#include "IFileSystem.h"
 
 #ifdef _IRR_COMPILE_WITH_WEBGL1_
 
