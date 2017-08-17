@@ -59,6 +59,7 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
 		EglWindow = (EGLNativeWindowType)Data.OGLESWayland.Window;
 		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
+		nativeDisplay = (NativeDisplayType)Data.OGLESWayland.nativeDisplay;
 	}
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
@@ -361,6 +362,9 @@ bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 //		os::Printer::log("Could not make the current window current !\n");
 //		return false;
 //	}
+#ifdef SAILFISH
+	wl_display_dispatch_pending((wl_display*)nativeDisplay);
+#endif
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
 
 	if (testEGLError())
@@ -368,6 +372,7 @@ bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 		os::Printer::log("Could not make EGL context current.");
 		return false;
 	}
+
 	return true;
 }
 

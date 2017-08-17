@@ -53,6 +53,8 @@ namespace irr
 			PrivateData(0),
 #if defined(_IRR_COMPILE_WITH_IOS_DEVICE_) || defined(_IRR_ANDROID_PLATFORM_) || defined(_IRR_EMSCRIPTEN_PLATFORM_)
 			OGLES2ShaderPath("media/Shaders/")
+#elif SAILFISH
+		    OGLES2ShaderPath("/opt/sdk/irrlicht-sailfish/usr/share/media/Shaders/")
 #else
 			OGLES2ShaderPath("../../media/Shaders/")
 #endif

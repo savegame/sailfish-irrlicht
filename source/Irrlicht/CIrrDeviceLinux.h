@@ -412,12 +412,18 @@ namespace irr
 #elif defined(SAILFISH)
 	public:
 		const struct wl_registry_listener listener;
-		static struct wl_compositor *compositor;
-		static struct wl_shell *shell;
+		static struct wl_compositor *wlCompositor;
+		static struct wl_shell *wlShell;
 	private:
+		struct wl_surface *wlSurface;
+		struct wl_egl_window *wlEGLWindow;
+		struct wl_region *wlRegion;
+		struct wl_shell_surface *wlShellSurface;
+		struct wl_display * wlDisplay;
+		struct wl_registry *wlRegistry;
 		/// Native System informations
-		EGLNativeDisplayType nativeDisplay;
-		EGLNativeWindowType nativeWindow;
+		NativeDisplayType nativeDisplay;
+		NativeWindowType nativeWindow;
 		//        uint16_t window_width, window_height;
 		/// EGL display
 		EGLDisplay  Display;

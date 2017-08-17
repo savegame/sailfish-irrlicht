@@ -106,6 +106,7 @@ struct SExposedVideoData
         void* Window;
         void* Display;
 		void* Context;
+		void* nativeDisplay;
     };
 #endif
 

@@ -83,6 +83,9 @@ namespace video
 	private:
 		bool testEGLError();
 
+#ifdef SAILFISH
+		NativeDisplayType nativeDisplay;
+#endif
 		NativeWindowType EglWindow;
 		EGLDisplay EglDisplay;
 		EGLSurface EglSurface;

@@ -96,21 +96,24 @@ namespace
 };
 #else
 
-struct wl_compositor *irr::CIrrDeviceLinux::compositor= NULL;
-struct wl_shell *irr::CIrrDeviceLinux::shell = NULL;
+struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor= NULL;
+struct wl_shell *irr::CIrrDeviceLinux::wlShell = NULL;
 
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
            const char *interface, uint32_t version)
 {
 	if (strcmp(interface, "wl_compositor") == 0) {
-		irr::CIrrDeviceLinux::compositor = (struct wl_compositor*)wl_registry_bind(registry,
+		irr::CIrrDeviceLinux::wlCompositor = (struct wl_compositor*)wl_registry_bind(registry,
 		              id,
 		              &wl_compositor_interface,
 		              1);
-	} else if (strcmp(interface, "wl_shell") == 0) {
-		irr::CIrrDeviceLinux::shell = (struct wl_shell*)wl_registry_bind(registry, id,
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_compositor_interface\" done");
+	}
+	else if (strcmp(interface, "wl_shell") == 0) {
+		irr::CIrrDeviceLinux::wlShell = (struct wl_shell*)wl_registry_bind(registry, id,
 		                         &wl_shell_interface, 1);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_shell_interface\" done");
 	}
 }
 
@@ -608,11 +611,6 @@ bool CIrrDeviceLinux::createWindow()
 	int width = 720,
 	    height = 1280;
 
-	struct wl_surface *surface;
-	struct wl_egl_window *egl_window;
-	struct wl_region *region;
-	struct wl_shell_surface *shell_surface;
-	struct wl_display * display = wl_display_connect(NULL);
 
 	EGLint numConfigs;
 	EGLint majorVersion;
@@ -629,62 +627,101 @@ bool CIrrDeviceLinux::createWindow()
 	};
 	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
 
-	if (display == NULL) {
-		os::Printer::log("Can't connect to wayland display");
+	// first
+	wlDisplay = wl_display_connect(NULL);
+
+	if (wlDisplay == NULL) {
+		os::Printer::log("Can't connect to wayland display", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
+	else
+		os::Printer::log("[Good] wl_display_connect() done");
 
-	struct wl_registry *wl_registry =
-	        wl_display_get_registry(display);
-	wl_registry_add_listener(wl_registry, &listener, NULL);
+	wlRegistry = wl_display_get_registry(wlDisplay);
+	wl_registry_add_listener(wlRegistry, &listener, NULL);
 
 	// This call the attached listener global_registry_handler
-	wl_display_dispatch(display);
-	wl_display_roundtrip(display);
+	wl_display_dispatch(wlDisplay);
+	wl_display_roundtrip(wlDisplay);
 
 	// If at this point, global_registry_handler didn't set the
 	// compositor, nor the shell, bailout !
-	if (compositor == NULL || shell == NULL) {
-		os::Printer::log("No compositor !? No Shell !! There's NOTHING in here !");
+	if (CIrrDeviceLinux::wlCompositor == NULL || CIrrDeviceLinux::wlShell == NULL) {
+		os::Printer::log("No wlCompositor and wlShell", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 	else {
 		os::Printer::log("Okay, we got a compositor and a shell... That's something !");
-		nativeDisplay = display;
+	}
+	nativeDisplay = wlDisplay;
+
+	// second
+	wlSurface = wl_compositor_create_surface(CIrrDeviceLinux::wlCompositor);
+	if (wlSurface == NULL) {
+		os::Printer::log("Can't create compositor surface on Wayland", ELOG_LEVEL::ELL_ERROR);
+		return false;
+	} else {
+		os::Printer::log("Created compositor surface on Wayland");
 	}
 
-	region = wl_compositor_create_region(compositor);
+	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceLinux::wlShell, wlSurface);
+	if (wlShellSurface == NULL) {
+		os::Printer::log("Can't create shell surface", ELOG_LEVEL::ELL_ERROR);
+		return false;
+	} else {
+		os::Printer::log("[Good] Created shell surface");
+	}
+	wl_shell_surface_set_toplevel(wlShellSurface);
 
-	wl_region_add(region, 0, 0, width, height);
-	wl_surface_set_opaque_region(surface, region);
+	// creating window
+	wlRegion = wl_compositor_create_region(CIrrDeviceLinux::wlCompositor);
+	wl_region_add(wlRegion, 0, 0, width, height);
+	wl_surface_set_opaque_region(wlSurface, wlRegion);
 
-	egl_window = wl_egl_window_create(surface, width, height);
+	wlEGLWindow = wl_egl_window_create(wlSurface, width, height);
 
-	if (egl_window == EGL_NO_SURFACE) {
+	if (wlEGLWindow == EGL_NO_SURFACE) {
 		os::Printer::log("No window !?\n");
 		return false;
 	}
-	else os::Printer::log("Wayland Window created !\n");
+	else
+		os::Printer::log("[Good] Wayland Window created !\n");
+
+	Width = width;
+	Height = height;
+	CreationParams.WindowSize.Width = width;
+	CreationParams.WindowSize.Height = height;
 //	window_width = width;
 //	window_height = height;
-	nativeWindow = (EGLNativeWindowType)egl_window;
+	nativeWindow = (NativeWindowType)wlEGLWindow;
+	// create EGL Context
 	Display = eglGetDisplay( nativeDisplay );
 	if ( Display == EGL_NO_DISPLAY )
 	{
-		os::Printer::log("No EGL Display...\n");
+		os::Printer::log("No EGL Display...", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
+	else
+		os::Printer::log("[Good] Got EGLDisplay form nativeDisplay",ELOG_LEVEL::ELL_INFORMATION);
 
 	if ( !eglInitialize(Display, &majorVersion, &minorVersion) )
 	{
-		os::Printer::log("No Initialisation...\n");
+		os::Printer::log("No Initialisation...", ELOG_LEVEL::ELL_ERROR);
 		return false;
+	}
+	else
+	{
+		core::stringc message = "[Good] eglInitialize Version: ";
+		message += majorVersion;
+		message += ".";
+		message += minorVersion;
+		os::Printer::log(message.c_str());
 	}
 
 	// Get configs
 	if ( (eglGetConfigs(Display, NULL, 0, &numConfigs) != EGL_TRUE) || (numConfigs == 0))
 	{
-		os::Printer::log("No configuration...\n");
+		os::Printer::log("No configuration...", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 
@@ -707,13 +744,32 @@ bool CIrrDeviceLinux::createWindow()
 	Context = eglCreateContext(Display, config, EGL_NO_CONTEXT, contextAttribs );
 	if ( Context == EGL_NO_CONTEXT )
 	{
-		os::Printer::log("No context...\n");
+		os::Printer::log("No context...", ELOG_LEVEL::ELL_ERROR);
+		return false;
+	}
+
+	// Make the context current
+	if ( !eglMakeCurrent(Display, Surface, Surface, Context) )
+	{
+		os::Printer::log("Could not make the current window current !", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 
 
+	GLint val = 0;
+	core::stringc str;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&val);
 
-
+	str = "GL_MAX_TEXTURE_SIZE:";
+	str += val;
+	os::Printer::log(str.c_str());
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&val);
+	str = "GL_MAX_TEXTURE_IMAGE_UNITS:";
+	str += val;
+	os::Printer::log(str.c_str());
+	str = "GL_VERSION:";
+	str += (char*)glGetString(GL_VERSION);
+	os::Printer::log(str.c_str());
 #endif // #ifdef SAILFISH
 	return true;
 }
@@ -818,6 +874,7 @@ void CIrrDeviceLinux::createDriver()
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 	    {
 		    video::SExposedVideoData data;
+			data.OGLESWayland.nativeDisplay = nativeDisplay;
 			data.OGLESWayland.Window = nativeWindow;
 			data.OGLESWayland.Display = Display;
 			data.OGLESWayland.Surface = Surface;

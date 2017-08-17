@@ -1,9 +1,9 @@
-TEMPLATE = lib
+TEMPLATE = app #lib
 
 CONFIG += link_pkgconfig warn_off sailfishapp
 
 TARGET = irrlicht
-DESTDIR = lib
+#DESTDIR = bin
 
 PKGCONFIG += wayland-client wayland-egl zlib libpng egl
 LIBS += -ljpeg -lbz2
@@ -15,6 +15,13 @@ INCLUDEPATH += source/Irrlicht
 removespec.target = rpm/irrlicht.spec
 removespec.command = rm -f rpm/irrlicht.spec
 QMAKE_EXTRA_TARGETS += removespec
+
+SOURCES += main.cpp
+
+media.files = media
+media.path = /usr/share/
+
+INSTALLS += media
 
 HEADERS += \
     include/aabbox3d.h \
@@ -719,4 +726,6 @@ SOURCES += \
     source/Irrlicht/lzma/LzmaDec.c
 
 DISTFILES += \
-    rpm/irrlicht-sailfish.yaml
+    rpm/irrlicht-sailfish.yaml \
+    irrlicht.png \
+    irrlicht.desktop
