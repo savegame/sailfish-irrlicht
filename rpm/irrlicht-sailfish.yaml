@@ -27,6 +27,7 @@ PkgConfigBR:
   - Qt5Quick
   - wayland-client
   - wayland-egl
+  - egl
   - zlib
   - libpng
 #  - bzip2
