@@ -39,7 +39,7 @@ enum
 int main()
 {
 	// ask user for driver
-	video::E_DRIVER_TYPE driverType=driverChoiceConsole();
+	video::E_DRIVER_TYPE driverType=video::EDT_OGLES2;//driverChoiceConsole();
 	if (driverType==video::EDT_COUNT)
 		return 1;
 
@@ -274,7 +274,7 @@ int main()
 	material.Wireframe=true;
 
 	while(device->run())
-	if (device->isWindowActive())
+//	if (device->isWindowActive())
 	{
 		driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(0));
 		smgr->drawAll();

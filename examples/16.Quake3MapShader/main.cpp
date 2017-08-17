@@ -118,14 +118,14 @@ int IRRCALLCONV main(int argc, char* argv[])
 	*/
 
 	// ask user for driver
-	video::E_DRIVER_TYPE driverType=driverChoiceConsole();
-	if (driverType==video::EDT_COUNT)
-		return 1;
+//	video::E_DRIVER_TYPE driverType=driverChoiceConsole();
+//	if (driverType==video::EDT_COUNT)
+//		return 1;
 
 	// create device and exit if creation failed
 	const core::dimension2du videoDim(800,600);
 
-	IrrlichtDevice *device = createDevice(driverType, videoDim, 32, false );
+	IrrlichtDevice *device = createDevice(irr::video::EDT_OGLES2, videoDim, 32, false );
 
 	if (device == 0)
 		return 1; // could not create selected driver.
@@ -324,18 +324,18 @@ int IRRCALLCONV main(int argc, char* argv[])
 	// show the driver logo
 	const core::position2di pos(videoDim.Width - 128, videoDim.Height - 64);
 
-	switch ( driverType )
-	{
-		case video::EDT_BURNINGSVIDEO:
-			gui->addImage(driver->getTexture("burninglogo.png"), pos);
-			break;
-		case video::EDT_OPENGL:
+//	switch ( driverType )
+//	{
+//		case video::EDT_BURNINGSVIDEO:
+//			gui->addImage(driver->getTexture("burninglogo.png"), pos);
+//			break;
+//		case video::EDT_OPENGL:
 			gui->addImage(driver->getTexture("opengllogo.png"), pos);
-			break;
-		case video::EDT_DIRECT3D9:
-			gui->addImage(driver->getTexture("directxlogo.png"), pos);
-			break;
-	}
+//			break;
+//		case video::EDT_DIRECT3D9:
+//			gui->addImage(driver->getTexture("directxlogo.png"), pos);
+//			break;
+//	}
 
 	/*
 	We have done everything, so lets draw it. We also write the current
@@ -347,36 +347,36 @@ int IRRCALLCONV main(int argc, char* argv[])
 	int lastFPS = -1;
 
 	while(device->run())
-	if (device->isWindowActive())
+//	if (device->isWindowActive())
 	{
 		driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,20,20,40));
 		smgr->drawAll();
 		gui->drawAll();
 		driver->endScene();
 
-		int fps = driver->getFPS();
-		//if (lastFPS != fps)
-		{
-			io::IAttributes * const attr = smgr->getParameters();
-			core::stringw str = L"Q3 [";
-			str += driver->getName();
-			str += "] FPS:";
-			str += fps;
-#ifdef _IRR_SCENEMANAGER_DEBUG			
-			str += " Cull:";
-			str += attr->getAttributeAsInt("calls");
-			str += "/";
-			str += attr->getAttributeAsInt("culled");
-			str += " Draw: ";
-			str += attr->getAttributeAsInt("drawn_solid");
-			str += "/";
-			str += attr->getAttributeAsInt("drawn_transparent");
-			str += "/";
-			str += attr->getAttributeAsInt("drawn_transparent_effect");
-#endif
-			device->setWindowCaption(str.c_str());
-			lastFPS = fps;
-		}
+//		int fps = driver->getFPS();
+//		//if (lastFPS != fps)
+//		{
+//			io::IAttributes * const attr = smgr->getParameters();
+//			core::stringw str = L"Q3 [";
+//			str += driver->getName();
+//			str += "] FPS:";
+//			str += fps;
+//#ifdef _IRR_SCENEMANAGER_DEBUG
+//			str += " Cull:";
+//			str += attr->getAttributeAsInt("calls");
+//			str += "/";
+//			str += attr->getAttributeAsInt("culled");
+//			str += " Draw: ";
+//			str += attr->getAttributeAsInt("drawn_solid");
+//			str += "/";
+//			str += attr->getAttributeAsInt("drawn_transparent");
+//			str += "/";
+//			str += attr->getAttributeAsInt("drawn_transparent_effect");
+//#endif
+//			device->setWindowCaption(str.c_str());
+//			lastFPS = fps;
+//		}
 	}
 
 	/*

@@ -24,8 +24,10 @@ INSTALLS += media
 
 debug: DEFINES += _DEBUG
 
-SOURCES += main.cpp
-#SOURCES +=  examples/02.Quake3Map/main.cpp
+#SOURCES += main.cpp
+#SOURCES +=  examples/02.Quake3Map/main.cpp \
+#SOURCES +=  examples/16.Quake3MapShader/main.cpp \
+SOURCES +=      examples/07.Collision/main.cpp
 SOURCES +=  source/Irrlicht/jpeglib/ansi2knr.c \
     source/Irrlicht/jpeglib/jaricom.c \
     source/Irrlicht/jpeglib/jcapimin.c \
