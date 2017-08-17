@@ -13,6 +13,10 @@
 #include <android/native_activity.h>
 #endif
 
+#ifdef SAILFISH
+
+#endif
+
 namespace irr
 {
 namespace video
@@ -50,6 +54,12 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 #elif defined(_IRR_EMSCRIPTEN_PLATFORM_)
 	EglWindow = 0;
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#elif defined(SAILFISH)
+	{
+		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
+		EglWindow = (EGLNativeWindowType)Data.OGLESWayland.Window;
+		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
+	}
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
 	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLLinux.X11Display);
@@ -315,9 +325,11 @@ bool CEGLManager::generateContext()
 #endif
 		EGL_NONE, 0
 	};
+#if !defined(SAILFISH)
 
+//#else
 	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
-
+#endif
 	if (testEGLError())
 	{
 		os::Printer::log("Could not create EGL context.", ELL_ERROR);
@@ -343,6 +355,12 @@ void CEGLManager::destroyContext()
 
 bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 {
+//	// Make the context current
+//	if ( !eglMakeCurrent(Display, Surface, Surface, Context) )
+//	{
+//		os::Printer::log("Could not make the current window current !\n");
+//		return false;
+//	}
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
 
 	if (testEGLError())

@@ -26,11 +26,18 @@ PkgConfigBR:
   - Qt5Qml
   - Qt5Quick
   - wayland-client
+  - wayland-egl
+  - zlib
+  - libpng
+#  - bzip2
 
 
 # Build dependencies without a pkgconfig setup can be listed here
-# PkgBR:
-#   - package-needed-to-build
+
+PkgBR:
+  - libjpeg-turbo-devel
+  - bzip2-devel
+#  - package-needed-to-build
 
 # Runtime dependencies which are not automatically detected
 Requires:

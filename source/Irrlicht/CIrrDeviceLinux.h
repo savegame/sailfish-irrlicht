@@ -32,6 +32,13 @@
 #define KeySym s32
 #endif
 
+#ifdef SAILFISH
+#include <wayland-client.h>
+#include <wayland-client-protocol.h>
+#include <wayland-egl.h>
+#include <EGL/egl.h>
+#endif
+
 namespace irr
 {
 
@@ -402,6 +409,22 @@ namespace irr
 		SizeID OldRandrMode;
 		Rotation OldRandrRotation;
 		#endif
+#elif defined(SAILFISH)
+	public:
+		const struct wl_registry_listener listener;
+		static struct wl_compositor *compositor;
+		static struct wl_shell *shell;
+	private:
+		/// Native System informations
+		EGLNativeDisplayType nativeDisplay;
+		EGLNativeWindowType nativeWindow;
+		//        uint16_t window_width, window_height;
+		/// EGL display
+		EGLDisplay  Display;
+//		/// EGL context
+		EGLContext  Context;
+//		/// EGL surface
+		EGLSurface  Surface;
 #endif
 		u32 Width, Height;
 		bool WindowHasFocus;

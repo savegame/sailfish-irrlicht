@@ -94,6 +94,33 @@ namespace
 	Atom X_ATOM_NETWM_MAXIMIZE_HORZ;
 	Atom X_ATOM_NETWM_STATE;
 };
+#else
+
+struct wl_compositor *irr::CIrrDeviceLinux::compositor= NULL;
+struct wl_shell *irr::CIrrDeviceLinux::shell = NULL;
+
+static void
+global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
+           const char *interface, uint32_t version)
+{
+	if (strcmp(interface, "wl_compositor") == 0) {
+		irr::CIrrDeviceLinux::compositor = (struct wl_compositor*)wl_registry_bind(registry,
+		              id,
+		              &wl_compositor_interface,
+		              1);
+	} else if (strcmp(interface, "wl_shell") == 0) {
+		irr::CIrrDeviceLinux::shell = (struct wl_shell*)wl_registry_bind(registry, id,
+		                         &wl_shell_interface, 1);
+	}
+}
+
+static void
+global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
+{
+	irr::core::stringc message = "Got a registry losing event for ";
+	message += id;
+	irr::os::Printer::log(message.c_str());
+}
 #endif
 
 namespace irr
@@ -112,7 +139,11 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	Width(param.WindowSize.Width), Height(param.WindowSize.Height),
 	WindowHasFocus(false), WindowMinimized(false),
 	UseXVidMode(false), UseXRandR(false),
-	ExternalWindow(false), AutorepeatSupport(0)
+    ExternalWindow(false), AutorepeatSupport(0),
+    listener ({
+      global_registry_handler,
+      global_registry_remover
+    })
 {
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceLinux");
@@ -573,8 +604,117 @@ bool CIrrDeviceLinux::createWindow()
 	Atom WMCheck = XInternAtom(XDisplay, "_NET_SUPPORTING_WM_CHECK", true);
 	if (WMCheck != None)
 		HasNetWM = true;
+#elif defined(SAILFISH) // #ifdef _IRR_COMPILE_WITH_X11_
+	int width = 720,
+	    height = 1280;
 
-#endif // #ifdef _IRR_COMPILE_WITH_X11_
+	struct wl_surface *surface;
+	struct wl_egl_window *egl_window;
+	struct wl_region *region;
+	struct wl_shell_surface *shell_surface;
+	struct wl_display * display = wl_display_connect(NULL);
+
+	EGLint numConfigs;
+	EGLint majorVersion;
+	EGLint minorVersion;
+	EGLConfig config;
+	EGLint fbAttribs[] =
+	{
+	    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+	    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+	    EGL_RED_SIZE,        8,
+	    EGL_GREEN_SIZE,      8,
+	    EGL_BLUE_SIZE,       8,
+	    EGL_NONE
+	};
+	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
+
+	if (display == NULL) {
+		os::Printer::log("Can't connect to wayland display");
+		return false;
+	}
+
+	struct wl_registry *wl_registry =
+	        wl_display_get_registry(display);
+	wl_registry_add_listener(wl_registry, &listener, NULL);
+
+	// This call the attached listener global_registry_handler
+	wl_display_dispatch(display);
+	wl_display_roundtrip(display);
+
+	// If at this point, global_registry_handler didn't set the
+	// compositor, nor the shell, bailout !
+	if (compositor == NULL || shell == NULL) {
+		os::Printer::log("No compositor !? No Shell !! There's NOTHING in here !");
+		return false;
+	}
+	else {
+		os::Printer::log("Okay, we got a compositor and a shell... That's something !");
+		nativeDisplay = display;
+	}
+
+	region = wl_compositor_create_region(compositor);
+
+	wl_region_add(region, 0, 0, width, height);
+	wl_surface_set_opaque_region(surface, region);
+
+	egl_window = wl_egl_window_create(surface, width, height);
+
+	if (egl_window == EGL_NO_SURFACE) {
+		os::Printer::log("No window !?\n");
+		return false;
+	}
+	else os::Printer::log("Wayland Window created !\n");
+//	window_width = width;
+//	window_height = height;
+	nativeWindow = (EGLNativeWindowType)egl_window;
+	Display = eglGetDisplay( nativeDisplay );
+	if ( Display == EGL_NO_DISPLAY )
+	{
+		os::Printer::log("No EGL Display...\n");
+		return false;
+	}
+
+	if ( !eglInitialize(Display, &majorVersion, &minorVersion) )
+	{
+		os::Printer::log("No Initialisation...\n");
+		return false;
+	}
+
+	// Get configs
+	if ( (eglGetConfigs(Display, NULL, 0, &numConfigs) != EGL_TRUE) || (numConfigs == 0))
+	{
+		os::Printer::log("No configuration...\n");
+		return false;
+	}
+
+	// Choose config
+	if ( (eglChooseConfig(Display, fbAttribs, &config, 1, &numConfigs) != EGL_TRUE) || (numConfigs != 1))
+	{
+		os::Printer::log("No configuration...\n");
+		return false;
+	}
+
+	// Create a surface
+	Surface = eglCreateWindowSurface(Display, config, nativeWindow, NULL);
+	if ( Surface == EGL_NO_SURFACE )
+	{
+		os::Printer::log("No surface...\n");
+		return false;
+	}
+
+	// Create a GL context
+	Context = eglCreateContext(Display, config, EGL_NO_CONTEXT, contextAttribs );
+	if ( Context == EGL_NO_CONTEXT )
+	{
+		os::Printer::log("No context...\n");
+		return false;
+	}
+
+
+
+
+#endif // #ifdef SAILFISH
 	return true;
 }
 
@@ -672,6 +812,28 @@ void CIrrDeviceLinux::createDriver()
 		break;
 	default:
 		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
+		break;
+#elif SAILFISH
+	case video::EDT_OGLES2:
+#ifdef _IRR_COMPILE_WITH_OGLES2_
+	    {
+		    video::SExposedVideoData data;
+			data.OGLESWayland.Window = nativeWindow;
+			data.OGLESWayland.Display = Display;
+			data.OGLESWayland.Surface = Surface;
+			data.OGLESWayland.Context = Context;
+
+			ContextManager = new video::CEGLManager();
+			ContextManager->initialize(CreationParams, data);
+
+			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
+	    }
+#else
+		os::Printer::log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
+#endif
+		break;
+	default:
+		os::Printer::log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
 		break;
 #else
 	case video::EDT_NULL:

@@ -5,13 +5,16 @@ CONFIG += link_pkgconfig warn_off sailfishapp
 TARGET = irrlicht
 DESTDIR = lib
 
-LIBS += -lwayland-egl
-PKGCONFIG += wayland-client
-
+PKGCONFIG += wayland-client wayland-egl zlib libpng egl
+LIBS += -ljpeg -lbz2
 DEFINES += SAILFISH
 
 INCLUDEPATH += include
 INCLUDEPATH += source/Irrlicht
+
+removespec.target = rpm/irrlicht.spec
+removespec.command = rm -f rpm/irrlicht.spec
+QMAKE_EXTRA_TARGETS += removespec
 
 HEADERS += \
     include/aabbox3d.h \

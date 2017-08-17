@@ -99,6 +99,16 @@ struct SExposedVideoData
 		void* Window;
 	};
 
+#ifdef SAILFISH
+    struct SOGLESWayland
+    {
+		void* Surface;
+        void* Window;
+        void* Display;
+		void* Context;
+    };
+#endif
+
 	union
 	{
 		SD3D9 D3D9;
@@ -108,6 +118,9 @@ struct SExposedVideoData
 		SOpenGLFB OpenGLFB;
 		SOpenGLiOS OpenGLiOS;
 		SOGLESAndroid OGLESAndroid;
+#ifdef SAILFISH
+		SOGLESWayland OGLESWayland;
+#endif
 	};
 };
 
