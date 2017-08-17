@@ -51,14 +51,14 @@ int main()
 	*/
 
 	// ask user for driver
-	video::E_DRIVER_TYPE driverType=driverChoiceConsole(true);
-	if (driverType==video::EDT_COUNT)
-		return 1;
+//	video::E_DRIVER_TYPE driverType=driverChoiceConsole(true);
+//	if (driverType==video::EDT_COUNT)
+//		return 1;
 
 	// create device and exit if creation failed
 
 	IrrlichtDevice *device =
-		createDevice(driverType, core::dimension2d<u32>(640, 480));
+	    createDevice(irr::video::EDT_OGLES2, core::dimension2d<u32>(640, 480));
 
 	if (device == 0)
 		return 1; // could not create selected driver.
@@ -150,7 +150,7 @@ int main()
 
 	while(device->run())
 	{
-		if (device->isWindowActive())
+//		if (device->isWindowActive())
 		{
 			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,200,200,200));
 			smgr->drawAll();
@@ -169,8 +169,8 @@ int main()
 				lastFPS = fps;
 			}
 		}
-		else
-			device->yield();
+//		else
+//			device->yield();
 	}
 
 	/*
