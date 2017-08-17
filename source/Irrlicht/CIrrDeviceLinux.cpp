@@ -608,9 +608,12 @@ bool CIrrDeviceLinux::createWindow()
 	if (WMCheck != None)
 		HasNetWM = true;
 #elif defined(SAILFISH) // #ifdef _IRR_COMPILE_WITH_X11_
-	int width = 540,
-	    height = 960;
-
+/* Jolla 1 */
+//	int width = 960,
+//	    height = 540;
+/* Jolla C */
+	int width = 720,
+	    height = 1280;
 
 	EGLint numConfigs;
 	EGLint majorVersion;
@@ -653,7 +656,7 @@ bool CIrrDeviceLinux::createWindow()
 		return false;
 	}
 	else {
-		os::Printer::log("Okay, we got a compositor and a shell... That's something !");
+		os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 	}
 	nativeDisplay = wlDisplay;
 
@@ -663,7 +666,7 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("Can't create compositor surface on Wayland", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	} else {
-		os::Printer::log("Created compositor surface on Wayland");
+		os::Printer::log("[Good] Created compositor surface on Wayland");
 	}
 
 	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceLinux::wlShell, wlSurface);
@@ -683,11 +686,11 @@ bool CIrrDeviceLinux::createWindow()
 	wlEGLWindow = wl_egl_window_create(wlSurface, width, height);
 
 	if (wlEGLWindow == EGL_NO_SURFACE) {
-		os::Printer::log("No window !?\n");
+		os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 	else
-		os::Printer::log("[Good] Wayland Window created !\n");
+		os::Printer::log("[Good] Wayland Window created !");
 
 	Width = width;
 	Height = height;
@@ -730,7 +733,7 @@ bool CIrrDeviceLinux::createWindow()
 	// Choose config
 	if ( (eglChooseConfig(Display, fbAttribs, &config, 1, &numConfigs) != EGL_TRUE) || (numConfigs != 1))
 	{
-		os::Printer::log("No configuration...\n");
+		os::Printer::log("No configuration with Attributes...", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 

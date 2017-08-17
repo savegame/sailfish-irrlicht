@@ -57,7 +57,7 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 #elif defined(SAILFISH)
 	{
 		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
-		EglWindow = (EGLNativeWindowType)Data.OGLESWayland.Window;
+		EglWindow = (NativeWindowType)Data.OGLESWayland.Window;
 		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
 		nativeDisplay = (NativeDisplayType)Data.OGLESWayland.nativeDisplay;
 	}
