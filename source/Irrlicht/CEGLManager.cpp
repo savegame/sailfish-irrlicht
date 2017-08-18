@@ -59,6 +59,7 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
 		EglWindow = (NativeWindowType)Data.OGLESWayland.Window;
 		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
+		EglContext = (EGLContext)Data.OGLESWayland.Context;
 		nativeDisplay = (NativeDisplayType)Data.OGLESWayland.nativeDisplay;
 	}
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)

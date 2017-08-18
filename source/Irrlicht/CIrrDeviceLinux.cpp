@@ -101,7 +101,8 @@ static struct window {
 //	EGLContext egl_context;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
-//	struct wl_egl_window *egl_window;
+	struct wl_egl_window *egl_window;
+	irr::CIrrDeviceLinux *irrDevice;
 //	EGLSurface egl_surface;
 } wlWindow;
 
@@ -142,7 +143,7 @@ shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t
 static void
 shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height) {
 	struct window *window = (struct window *)data;
-//	wl_egl_window_resize (window->egl_window, width, height, 0, 0);
+	wl_egl_window_resize (window->egl_window, width, height, 0, 0);
 }
 
 static void
@@ -280,6 +281,8 @@ CIrrDeviceLinux::~CIrrDeviceLinux()
 	if (VisualInfo)
 		XFree(VisualInfo);
 
+#elif defined(SAILFISH)
+	wl_display_disconnect((wl_display*)wlDisplay);
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
@@ -709,7 +712,6 @@ bool CIrrDeviceLinux::createWindow()
 	wlWindow.surface = wlSurface;
 //	wlWindow.egl_context =
 
-	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, 0);
 	wl_shell_surface_set_toplevel(wlShellSurface);
 
 	// creating window
@@ -794,7 +796,10 @@ bool CIrrDeviceLinux::createWindow()
 		return false;
 	}
 
-
+	wlWindow.egl_window = wlEGLWindow;
+	wlWindow.irrDevice = this;
+	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
+///////////////////////////////////////////////////////// TEST /////////////////////
 	GLint val = 0;
 	core::stringc str;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&val);
@@ -809,6 +814,7 @@ bool CIrrDeviceLinux::createWindow()
 	str = "GL_VERSION:";
 	str += (char*)glGetString(GL_VERSION);
 	os::Printer::log(str.c_str());
+///////////////////////////////////////////////////////////////////////////////////
 #endif // #ifdef SAILFISH
 	return true;
 }
