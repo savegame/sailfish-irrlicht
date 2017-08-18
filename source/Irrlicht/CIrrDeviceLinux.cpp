@@ -106,9 +106,21 @@ static struct window {
 //	EGLSurface egl_surface;
 } wlWindow;
 
-struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor= NULL;
-struct wl_shell *irr::CIrrDeviceLinux::wlShell = NULL;
+struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor = NULL;
+struct wl_shell      *irr::CIrrDeviceLinux::wlShell      = NULL;
+struct wl_seat       *irr::CIrrDeviceLinux::wlSeat       = NULL;
+struct wl_keyboard   *irr::CIrrDeviceLinux::wlKeyboard   = NULL;
+struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
 
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+                        uint32_t capabilities);
+
+static const struct wl_seat_listener seat_listener = {
+	seat_handle_capabilities,
+};
+
+// https://jan.newmarch.name/Wayland/Input/
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
            const char *interface, uint32_t version)
@@ -125,6 +137,16 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		                         &wl_shell_interface, 1);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_shell_interface\" done");
 	}
+	else if (strcmp(interface, "wl_seat") == 0) {
+		irr::CIrrDeviceLinux::wlSeat = (wl_seat*)wl_registry_bind(registry, id, &wl_seat_interface, 1);
+		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, NULL);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
+	}
+	else if (strcmp(interface, "wl_keyboard") == 0) {
+		irr::CIrrDeviceLinux::wlKeyboard = (wl_keyboard*)wl_registry_bind(registry, id, &wl_keyboard_interface, 1);
+		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, NULL);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_keyboard\" done");
+	}
 }
 
 static void
@@ -136,22 +158,52 @@ global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
 }
 
 static void
-shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial) {
+shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial)
+{
 	wl_shell_surface_pong (shell_surface, serial);
 }
 
 static void
-shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height) {
-	struct window *window = (struct window *)data;
+shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height)
+{
+	struct window *window  = (struct window *)data;
 	wl_egl_window_resize (window->egl_window, width, height, 0, 0);
 }
 
 static void
-shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface) {
-
+shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface)
+{
+	
 }
 
 struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener = {&shell_surface_ping, &shell_surface_configure, &shell_surface_popup_done};
+
+static void
+wl_callback_done(void *data, wl_callback *wl_callback, uint32_t callback_data)
+{
+	int i = 0;
+}
+
+struct wl_callback_listener wlCallbackListener = {
+	wl_callback_done,
+};
+
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+                         uint32_t capabilities)
+{
+	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+		irr::os::Printer::log("Display has a pointer");
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+		irr::os::Printer::log("Display has a keyboard");
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+		irr::os::Printer::log("Display has a touch screen");
+	}
+}
 
 #endif
 
@@ -172,7 +224,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	WindowHasFocus(false), WindowMinimized(false),
 	UseXVidMode(false), UseXRandR(false),
     ExternalWindow(false), AutorepeatSupport(0),
-    listener ({
+    wlListener ({
       global_registry_handler,
       global_registry_remover
     })
@@ -414,14 +466,15 @@ bool CIrrDeviceLinux::switchToFullscreen(bool reset)
 	}
 	else
 	#endif
+    #if defined(_IRR_COMPILE_WITH_X11_)
 	{
 		os::Printer::log("VidMode or RandR extension must be installed to allow Irrlicht "
 		"to switch to fullscreen mode. Running in windowed mode instead.", ELL_WARNING);
 		CreationParams.Fullscreen = false;
 	}
+    #endif
 	return CreationParams.Fullscreen;
 }
-
 
 #if defined(_IRR_COMPILE_WITH_X11_)
 void IrrPrintXGrabError(int grabResult, const c8 * grabCommand )
@@ -674,7 +727,7 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] wl_display_connect() done");
 
 	wlRegistry = wl_display_get_registry(wlDisplay);
-	wl_registry_add_listener(wlRegistry, &listener, NULL);
+	wl_registry_add_listener(wlRegistry, &wlListener, this);
 
 	// This call the attached listener global_registry_handler
 	wl_display_dispatch(wlDisplay);
@@ -799,6 +852,8 @@ bool CIrrDeviceLinux::createWindow()
 	wlWindow.egl_window = wlEGLWindow;
 	wlWindow.irrDevice = this;
 	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
+//	wl_
+//	wl_callback_add_listener( wlCallback, wlCallbackListener, this);
 ///////////////////////////////////////////////////////// TEST /////////////////////
 	GLint val = 0;
 	core::stringc str;
