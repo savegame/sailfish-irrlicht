@@ -144,8 +144,8 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 	}
 	else if (strcmp(interface, "wl_keyboard") == 0) {
 		irr::CIrrDeviceLinux::wlKeyboard = (wl_keyboard*)wl_registry_bind(registry, id, &wl_keyboard_interface, 1);
-		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &keyboard_listener, NULL);
-		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
+		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, NULL);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_keyboard\" done");
 	}
 }
 
