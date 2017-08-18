@@ -419,6 +419,7 @@ namespace irr
 		static struct wl_keyboard *wlKeyboard;
 		static struct wl_touch *wlTouch;
 
+		EKEY_CODE getKeyCode(uint32_t key);
 	private:
 		struct wl_surface *wlSurface;
 		struct wl_egl_window *wlEGLWindow;

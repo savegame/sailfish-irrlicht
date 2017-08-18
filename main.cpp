@@ -325,7 +325,7 @@ int main()
 	device->getCursorControl()->setVisible(false);
 
 	/*
-	Because we want the whole scene to look a little bit scarier, we add
+	Because we want the whole scene to§ look a little bit scarier, we add
 	some fog to it. This is done by a call to IVideoDriver::setFog(). There
 	you can set various fog settings. In this example, we use pixel fog,
 	because it will work well with the materials we'll use in this example.
