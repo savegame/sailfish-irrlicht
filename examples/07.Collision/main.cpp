@@ -15,7 +15,7 @@ following code starts up the engine and loads the level, as per tutorial 2.
 #pragma comment(lib, "Irrlicht.lib")
 #endif
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QTimer>
 #include <QObject>
 
@@ -24,7 +24,7 @@ following code starts up the engine and loads the level, as per tutorial 2.
 int main(int argc, char** argv)
 {
 
-	QGuiApplication app(argc,argv);
+	QApplication app(argc,argv);
 	IrrApp irrApp(&app);
 	return app.exec();
 }

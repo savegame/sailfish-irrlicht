@@ -479,24 +479,24 @@ int main()
 	*/
 
 	// add light 1 (more green)
-	scene::ILightSceneNode* light1 =
-	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
-	    video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 800.0f);
+//	scene::ILightSceneNode* light1 =
+//	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
+//	    video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 800.0f);
 
-	// add fly circle animator to light 1
-	scene::ISceneNodeAnimator* anim =
-	    smgr->createFlyCircleAnimator (core::vector3df(50,300,0),190.0f, -0.003f);
-	light1->addAnimator(anim);
-	anim->drop();
+//	// add fly circle animator to light 1
+//	scene::ISceneNodeAnimator* anim =
+//	    smgr->createFlyCircleAnimator (core::vector3df(50,300,0),190.0f, -0.003f);
+//	light1->addAnimator(anim);
+//	anim->drop();
 
-	// attach billboard to the light
-	scene::IBillboardSceneNode* bill =
-	    smgr->addBillboardSceneNode(light1, core::dimension2d<f32>(60, 60));
+//	// attach billboard to the light
+//	scene::IBillboardSceneNode* bill =
+//	    smgr->addBillboardSceneNode(light1, core::dimension2d<f32>(60, 60));
 
-	bill->setMaterialFlag(video::EMF_LIGHTING, false);
-	bill->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
-	bill->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
-	bill->setMaterialTexture(0, driver->getTexture(mediaPath + "particlegreen.jpg"));
+//	bill->setMaterialFlag(video::EMF_LIGHTING, false);
+//	bill->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
+//	bill->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
+//	bill->setMaterialTexture(0, driver->getTexture(mediaPath + "particlegreen.jpg"));
 
 	/*
 	Now the same again, with the second light. The difference is that we
@@ -516,20 +516,20 @@ int main()
 	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
 	    video::SColorf(1.0f, 0.2f, 0.2f, 0.0f), 800.0f);
 
-	// add fly circle animator to light 2
-	anim = smgr->createFlyCircleAnimator(core::vector3df(0,150,0), 200.0f,
+//	 add fly circle animator to light 2
+	scene::ISceneNodeAnimator* anim = smgr->createFlyCircleAnimator(core::vector3df(0,150,0), 200.0f,
 	        0.001f, core::vector3df(0.2f, 0.9f, 0.f));
 	light2->addAnimator(anim);
 	anim->drop();
 
-	// attach billboard to light
-	bill = smgr->addBillboardSceneNode(light2, core::dimension2d<f32>(120, 120));
+//	 attach billboard to light
+	scene::IBillboardSceneNode* bill = smgr->addBillboardSceneNode(light2, core::dimension2d<f32>(120, 120));
 	bill->setMaterialFlag(video::EMF_LIGHTING, false);
 	bill->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
 	bill->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
 	bill->setMaterialTexture(0, driver->getTexture(mediaPath + "particlered.bmp"));
 
-	// add particle system
+//	 add particle system
 	scene::IParticleSystemSceneNode* ps =
 	    smgr->addParticleSystemSceneNode(false, light2);
 

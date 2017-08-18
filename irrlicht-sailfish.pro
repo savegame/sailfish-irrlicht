@@ -24,11 +24,12 @@ INSTALLS += media
 
 debug: DEFINES += _DEBUG
 
-#SOURCES += main.cpp
+SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
 #SOURCES +=  examples/16.Quake3MapShader/main.cpp \
-SOURCES +=      examples/07.Collision/main.cpp \
-    examples/07.Collision/irrapp.cpp
+#SOURCES +=      examples/07.Collision/main.cpp \
+#    examples/07.Collision/irrapp.cpp
+
 SOURCES +=  source/Irrlicht/jpeglib/ansi2knr.c \
     source/Irrlicht/jpeglib/jaricom.c \
     source/Irrlicht/jpeglib/jcapimin.c \
@@ -546,8 +547,7 @@ HEADERS += \
     source/Irrlicht/jpeglib/jpegint.h \
     source/Irrlicht/jpeglib/jpeglib.h \
     source/Irrlicht/jpeglib/jversion.h \
-    source/Irrlicht/jpeglib/transupp.h \
-    examples/07.Collision/irrapp.h
+    source/Irrlicht/jpeglib/transupp.h
 #    source/Irrlicht/jpeglib/cderror.h \
 #    source/Irrlicht/jpeglib/cdjpeg.h \
 #    source/Irrlicht/jpeglib/jconfig.h \

@@ -96,6 +96,15 @@ namespace
 };
 #else
 
+
+static struct window {
+//	EGLContext egl_context;
+	struct wl_surface *surface;
+	struct wl_shell_surface *shell_surface;
+//	struct wl_egl_window *egl_window;
+//	EGLSurface egl_surface;
+} wlWindow;
+
 struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor= NULL;
 struct wl_shell *irr::CIrrDeviceLinux::wlShell = NULL;
 
@@ -124,6 +133,25 @@ global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
 	message += id;
 	irr::os::Printer::log(message.c_str());
 }
+
+static void
+shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial) {
+	wl_shell_surface_pong (shell_surface, serial);
+}
+
+static void
+shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height) {
+	struct window *window = (struct window *)data;
+//	wl_egl_window_resize (window->egl_window, width, height, 0, 0);
+}
+
+static void
+shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface) {
+
+}
+
+struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener = {&shell_surface_ping, &shell_surface_configure, &shell_surface_popup_done};
+
 #endif
 
 namespace irr
@@ -676,6 +704,12 @@ bool CIrrDeviceLinux::createWindow()
 	} else {
 		os::Printer::log("[Good] Created shell surface");
 	}
+
+	wlWindow.shell_surface = wlShellSurface;
+	wlWindow.surface = wlSurface;
+//	wlWindow.egl_context =
+
+	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, 0);
 	wl_shell_surface_set_toplevel(wlShellSurface);
 
 	// creating window

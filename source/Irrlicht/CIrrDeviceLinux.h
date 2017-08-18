@@ -414,6 +414,7 @@ namespace irr
 		const struct wl_registry_listener listener;
 		static struct wl_compositor *wlCompositor;
 		static struct wl_shell *wlShell;
+		static struct wl_shell_surface_listener shell_surface_listener;
 	private:
 		struct wl_surface *wlSurface;
 		struct wl_egl_window *wlEGLWindow;
