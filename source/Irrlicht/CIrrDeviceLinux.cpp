@@ -27,6 +27,8 @@
 #ifndef SAILFISH
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
+#else
+#include <linux/input.h>
 #endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
@@ -115,9 +117,40 @@ struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
                         uint32_t capabilities);
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                       uint32_t format, int fd, uint32_t size);
+
+static void
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface,
+                      struct wl_array *keys);
+
+static void
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface);
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                    uint32_t serial, uint32_t time, uint32_t key,
+                    uint32_t state);
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                          uint32_t serial, uint32_t mods_depressed,
+                          uint32_t mods_latched, uint32_t mods_locked,
+                          uint32_t group);
 
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
+};
+//static const struct wl_keyboard_listener keyboard_listener;
+static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
+	keyboard_handle_enter,
+	keyboard_handle_leave,
+	keyboard_handle_key,
+	keyboard_handle_modifiers,
 };
 
 // https://jan.newmarch.name/Wayland/Input/
@@ -139,14 +172,17 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 	}
 	else if (strcmp(interface, "wl_seat") == 0) {
 		irr::CIrrDeviceLinux::wlSeat = (wl_seat*)wl_registry_bind(registry, id, &wl_seat_interface, 1);
-		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, NULL);
+//		if( irr::CIrrDeviceLinux *device = dynamic_cast<irr::CIrrDeviceLinux*>(data))
+		    wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, data);
+//		else
+//			wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, NULL);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
 	}
-	else if (strcmp(interface, "wl_keyboard") == 0) {
-		irr::CIrrDeviceLinux::wlKeyboard = (wl_keyboard*)wl_registry_bind(registry, id, &wl_keyboard_interface, 1);
-		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, NULL);
-		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_keyboard\" done");
-	}
+//	else if (strcmp(interface, "wl_keyboard") == 0) {
+//		irr::CIrrDeviceLinux::wlKeyboard = (wl_keyboard*)wl_registry_bind(registry, id, &wl_keyboard_interface, 1);
+//		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, NULL);
+//		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_keyboard\" done");
+//	}
 }
 
 static void
@@ -198,6 +234,14 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
 		irr::os::Printer::log("Display has a keyboard");
+		irr::CIrrDeviceLinux::wlKeyboard = wl_seat_get_keyboard(seat);
+		irr::os::Printer::log("Wayland add keyboard listener");
+		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, data);
+	}
+	else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)) {
+		irr::os::Printer::log("Display has no a keyboard",irr::ELL_WARNING);
+		wl_keyboard_destroy(irr::CIrrDeviceLinux::wlKeyboard);
+		irr::CIrrDeviceLinux::wlKeyboard = NULL;
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
@@ -205,6 +249,86 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
+
+//// Wayland keyboard
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                       uint32_t format, int fd, uint32_t size)
+{
+}
+
+static void
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface,
+                      struct wl_array *keys)
+{
+	irr::os::Printer::log("Keyboard gained focus", irr::ELL_INFORMATION);
+}
+
+static void
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface)
+{
+	irr::os::Printer::log("Keyboard lost focus", irr::ELL_INFORMATION);
+}
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                    uint32_t serial, uint32_t time, uint32_t key,
+                    uint32_t state)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "Key is ";
+		m+= key;
+		m+=" state is ";
+		m+= state;
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	{
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
+		switch(state)
+		{
+		case 1:
+			irrevent.KeyInput.Key = (irr::EKEY_CODE)key;
+			irrevent.KeyInput.SystemKeyCode = key;
+			irrevent.KeyInput.PressedDown = true;
+			break;
+		case 0:
+			irrevent.KeyInput.Key = (irr::EKEY_CODE)key;
+			irrevent.KeyInput.SystemKeyCode = key;
+			irrevent.KeyInput.PressedDown = false;
+			break;
+		}
+
+		device->postEventFromUser(irrevent);
+	}
+#endif
+}
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                          uint32_t serial, uint32_t mods_depressed,
+                          uint32_t mods_latched, uint32_t mods_locked,
+                          uint32_t group)
+{
+
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "Modifiers depressed ";
+		m+= mods_depressed;
+		m+=", latched ";
+		m+= mods_latched;
+		m+=", locked ";
+		m+=mods_locked;
+		m+=", group ";
+		m+=group;
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+}
 #endif
 
 namespace irr
@@ -506,6 +630,181 @@ void IrrPrintXGrabError(int grabResult, const c8 * grabCommand )
 }
 #endif
 
+EKEY_CODE CIrrDeviceLinux::getKeyCode(uint32_t key)
+{
+	switch(key)
+	{
+	case irr::KEY_UNKNOWN          = 0x0,
+	case irr::KEY_LBUTTON          = 0x01,  // Left mouse button
+	case irr::KEY_RBUTTON          = 0x02,  // Right mouse button
+	case irr::KEY_CANCEL           = 0x03,  // Control-break processing
+	case irr::KEY_MBUTTON          = 0x04,  // Middle mouse button (three-button mouse)
+	case irr::KEY_XBUTTON1         = 0x05,  // Windows 2000/XP: X1 mouse button
+	case irr::KEY_XBUTTON2         = 0x06,  // Windows 2000/XP: X2 mouse button
+	case irr::KEY_BACK             = 0x08,  // BACKSPACE key
+	case irr::KEY_TAB              = 0x09,  // TAB key
+	case irr::KEY_CLEAR            = 0x0C,  // CLEAR key
+	case irr::KEY_RETURN           = 0x0D,  // ENTER key
+	case irr::KEY_SHIFT            = 0x10,  // SHIFT key
+	case irr::KEY_CONTROL          = 0x11,  // CTRL key
+	case irr::KEY_MENU             = 0x12,  // ALT key
+	case irr::KEY_PAUSE            = 0x13,  // PAUSE key
+	case irr::KEY_CAPITAL          = 0x14,  // CAPS LOCK key
+	case irr::KEY_KANA             = 0x15,  // IME Kana mode
+	case irr::KEY_HANGUEL          = 0x15,  // IME Hanguel mode (maintained for compatibility use KEY_HANGUL)
+	case irr::KEY_HANGUL           = 0x15,  // IME Hangul mode
+	case irr::KEY_JUNJA            = 0x17,  // IME Junja mode
+	case irr::KEY_FINAL            = 0x18,  // IME final mode
+	case irr::KEY_HANJA            = 0x19,  // IME Hanja mode
+	case irr::KEY_KANJI            = 0x19,  // IME Kanji mode
+	case irr::KEY_ESCAPE           = 0x1B,  // ESC key
+	case irr::KEY_CONVERT          = 0x1C,  // IME convert
+	case irr::KEY_NONCONVERT       = 0x1D,  // IME nonconvert
+	case irr::KEY_ACCEPT           = 0x1E,  // IME accept
+	case irr::KEY_MODECHANGE       = 0x1F,  // IME mode change request
+	case irr::KEY_SPACE            = 0x20,  // SPACEBAR
+	case irr::KEY_PRIOR            = 0x21,  // PAGE UP key
+	case irr::KEY_NEXT             = 0x22,  // PAGE DOWN key
+	case irr::KEY_END              = 0x23,  // END key
+	case irr::KEY_HOME             = 0x24,  // HOME key
+	case irr::KEY_LEFT             = 0x25,  // LEFT ARROW key
+	case irr::KEY_UP               = 0x26,  // UP ARROW key
+	case irr::KEY_RIGHT            = 0x27,  // RIGHT ARROW key
+	case irr::KEY_DOWN             = 0x28,  // DOWN ARROW key
+	case irr::KEY_SELECT           = 0x29,  // SELECT key
+	case irr::KEY_PRINT            = 0x2A,  // PRINT key
+	case irr::KEY_EXECUT           = 0x2B,  // EXECUTE key
+	case irr::KEY_SNAPSHOT         = 0x2C,  // PRINT SCREEN key
+	case irr::KEY_INSERT           = 0x2D,  // INS key
+	case irr::KEY_DELETE           = 0x2E,  // DEL key
+	case irr::KEY_HELP             = 0x2F,  // HELP key
+	case irr::KEY_KEY_0            = 0x30,  // 0 key
+	case irr::KEY_KEY_1            = 0x31,  // 1 key
+	case irr::KEY_KEY_2            = 0x32,  // 2 key
+	case irr::KEY_KEY_3            = 0x33,  // 3 key
+	case irr::KEY_KEY_4            = 0x34,  // 4 key
+	case irr::KEY_KEY_5            = 0x35,  // 5 key
+	case irr::KEY_KEY_6            = 0x36,  // 6 key
+	case irr::KEY_KEY_7            = 0x37,  // 7 key
+	case irr::KEY_KEY_8            = 0x38,  // 8 key
+	case irr::KEY_KEY_9            = 0x39,  // 9 key
+	case irr::KEY_KEY_A            = 0x41,  // A key
+	case irr::KEY_KEY_B            = 0x42,  // B key
+	case irr::KEY_KEY_C            = 0x43,  // C key
+	case irr::KEY_KEY_D            = 0x44,  // D key
+	case irr::KEY_KEY_E            = 0x45,  // E key
+	case irr::KEY_KEY_F            = 0x46,  // F key
+	case irr::KEY_KEY_G            = 0x47,  // G key
+	case irr::KEY_KEY_H            = 0x48,  // H key
+	case irr::KEY_KEY_I            = 0x49,  // I key
+	case irr::KEY_KEY_J            = 0x4A,  // J key
+	case irr::KEY_KEY_K            = 0x4B,  // K key
+	case irr::KEY_KEY_L            = 0x4C,  // L key
+	case irr::KEY_KEY_M            = 0x4D,  // M key
+	case irr::KEY_KEY_N            = 0x4E,  // N key
+	case irr::KEY_KEY_O            = 0x4F,  // O key
+	case irr::KEY_KEY_P            = 0x50,  // P key
+	case irr::KEY_KEY_Q            = 0x51,  // Q key
+	case irr::KEY_KEY_R            = 0x52,  // R key
+	case irr::KEY_KEY_S            = 0x53,  // S key
+	case irr::KEY_KEY_T            = 0x54,  // T key
+	case irr::KEY_KEY_U            = 0x55,  // U key
+	case irr::KEY_KEY_V            = 0x56,  // V key
+	case irr::KEY_KEY_W            = 0x57,  // W key
+	case irr::KEY_KEY_X            = 0x58,  // X key
+	case irr::KEY_KEY_Y            = 0x59,  // Y key
+	case irr::KEY_KEY_Z            = 0x5A,  // Z key
+	case irr::KEY_LWIN             = 0x5B,  // Left Windows key (Microsoft� Natural� keyboard)
+	case irr::KEY_RWIN             = 0x5C,  // Right Windows key (Natural keyboard)
+	case irr::KEY_APPS             = 0x5D,  // Applications key (Natural keyboard)
+	case irr::KEY_SLEEP            = 0x5F,  // Computer Sleep key
+	case irr::KEY_NUMPAD0          = 0x60,  // Numeric keypad 0 key
+	case irr::KEY_NUMPAD1          = 0x61,  // Numeric keypad 1 key
+	case irr::KEY_NUMPAD2          = 0x62,  // Numeric keypad 2 key
+	case irr::KEY_NUMPAD3          = 0x63,  // Numeric keypad 3 key
+	case irr::KEY_NUMPAD4          = 0x64,  // Numeric keypad 4 key
+	case irr::KEY_NUMPAD5          = 0x65,  // Numeric keypad 5 key
+	case irr::KEY_NUMPAD6          = 0x66,  // Numeric keypad 6 key
+	case irr::KEY_NUMPAD7          = 0x67,  // Numeric keypad 7 key
+	case irr::KEY_NUMPAD8          = 0x68,  // Numeric keypad 8 key
+	case irr::KEY_NUMPAD9          = 0x69,  // Numeric keypad 9 key
+	case irr::KEY_MULTIPLY         = 0x6A,  // Multiply key
+	case irr::KEY_ADD              = 0x6B,  // Add key
+	case irr::KEY_SEPARATOR        = 0x6C,  // Separator key
+	case irr::KEY_SUBTRACT         = 0x6D,  // Subtract key
+	case irr::KEY_DECIMAL          = 0x6E,  // Decimal key
+	case irr::KEY_DIVIDE           = 0x6F,  // Divide key
+	case irr::KEY_F1               = 0x70,  // F1 key
+	case irr::KEY_F2               = 0x71,  // F2 key
+	case irr::KEY_F3               = 0x72,  // F3 key
+	case irr::KEY_F4               = 0x73,  // F4 key
+	case irr::KEY_F5               = 0x74,  // F5 key
+	case irr::KEY_F6               = 0x75,  // F6 key
+	case irr::KEY_F7               = 0x76,  // F7 key
+	case irr::KEY_F8               = 0x77,  // F8 key
+	case irr::KEY_F9               = 0x78,  // F9 key
+	case irr::KEY_F10              = 0x79,  // F10 key
+	case irr::KEY_F11              = 0x7A,  // F11 key
+	case irr::KEY_F12              = 0x7B,  // F12 key
+	case irr::KEY_F13              = 0x7C,  // F13 key
+	case irr::KEY_F14              = 0x7D,  // F14 key
+	case irr::KEY_F15              = 0x7E,  // F15 key
+	case irr::KEY_F16              = 0x7F,  // F16 key
+	case irr::KEY_F17              = 0x80,  // F17 key
+	case irr::KEY_F18              = 0x81,  // F18 key
+	case irr::KEY_F19              = 0x82,  // F19 key
+	case irr::KEY_F20              = 0x83,  // F20 key
+	case irr::KEY_F21              = 0x84,  // F21 key
+	case irr::KEY_F22              = 0x85,  // F22 key
+	case irr::KEY_F23              = 0x86,  // F23 key
+	case irr::KEY_F24              = 0x87,  // F24 key
+	case irr::KEY_NUMLOCK          = 0x90,  // NUM LOCK key
+	case irr::KEY_SCROLL           = 0x91,  // SCROLL LOCK key
+	case irr::KEY_LSHIFT           = 0xA0,  // Left SHIFT key
+	case irr::KEY_RSHIFT           = 0xA1,  // Right SHIFT key
+	case irr::KEY_LCONTROL         = 0xA2,  // Left CONTROL key
+	case irr::KEY_RCONTROL         = 0xA3,  // Right CONTROL key
+	case irr::KEY_LMENU            = 0xA4,  // Left MENU key
+	case irr::KEY_RMENU            = 0xA5,  // Right MENU key
+	case irr::KEY_BROWSER_BACK     = 0xA6,  // Browser Back key
+	case irr::KEY_BROWSER_FORWARD  = 0xA7,  // Browser Forward key
+	case irr::KEY_BROWSER_REFRESH  = 0xA8,  // Browser Refresh key
+	case irr::KEY_BROWSER_STOP     = 0xA9,  // Browser Stop key
+	case irr::KEY_BROWSER_SEARCH   = 0xAA,  // Browser Search key
+	case irr::KEY_BROWSER_FAVORITES =0xAB,  // Browser Favorites key
+	case irr::KEY_BROWSER_HOME     = 0xAC,  // Browser Start and Home key
+	case irr::KEY_VOLUME_MUTE      = 0xAD,  // Volume Mute key
+	case irr::KEY_VOLUME_DOWN      = 0xAE,  // Volume Down key
+	case irr::KEY_VOLUME_UP        = 0xAF,  // Volume Up key
+	case irr::KEY_MEDIA_NEXT_TRACK = 0xB0,  // Next Track key
+	case irr::KEY_MEDIA_PREV_TRACK = 0xB1,  // Previous Track key
+	case irr::KEY_MEDIA_STOP       = 0xB2,  // Stop Media key
+	case irr::KEY_MEDIA_PLAY_PAUSE = 0xB3,  // Play/Pause Media key
+	case irr::KEY_OEM_1            = 0xBA,  // for US    ";:"
+	case irr::KEY_PLUS             = 0xBB,  // Plus Key   "+"
+	case irr::KEY_COMMA            = 0xBC,  // Comma Key  ","
+	case irr::KEY_MINUS            = 0xBD,  // Minus Key  "-"
+	case irr::KEY_PERIOD           = 0xBE,  // Period Key "."
+	case irr::KEY_OEM_2            = 0xBF,  // for US    "/?"
+	case irr::KEY_OEM_3            = 0xC0,  // for US    "`~"
+	case irr::KEY_OEM_4            = 0xDB,  // for US    "[{"
+	case irr::KEY_OEM_5            = 0xDC,  // for US    "\|"
+	case irr::KEY_OEM_6            = 0xDD,  // for US    "]}"
+	case irr::KEY_OEM_7            = 0xDE,  // for US    "'""
+	case irr::KEY_OEM_8            = 0xDF,  // None
+	case irr::KEY_OEM_AX           = 0xE1,  // for Japan "AX"
+	case irr::KEY_OEM_102          = 0xE2,  // "<>" or "\|"
+	case irr::KEY_ATTN             = 0xF6,  // Attn key
+	case irr::KEY_CRSEL            = 0xF7,  // CrSel key
+	case irr::KEY_EXSEL            = 0xF8,  // ExSel key
+	case irr::KEY_EREOF            = 0xF9,  // Erase EOF key
+	case irr::KEY_PLAY             = 0xFA,  // Play key
+	case irr::KEY_ZOOM             = 0xFB,  // Zoom key
+	case irr::KEY_PA1              = 0xFD,  // PA1 key
+	case irr::KEY_OEM_CLEAR        = 0xFE,  // Clear key
+	case irr::KEY_NONE			 = 0xFF,
+	}
+}
 
 bool CIrrDeviceLinux::createWindow()
 {
