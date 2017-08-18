@@ -809,7 +809,4 @@ DISTFILES += \
     rpm/irrlicht-sailfish.yaml \
     irrlicht.png \
     irrlicht.desktop \
-    source/Irrlicht/jpeglib/jdosaobj.txt \
-    source/Irrlicht/jpeglib/jpegtran.1 \
-    source/Irrlicht/jpeglib/jmemdosa.asm \
     rpm/irrlicht.spec
