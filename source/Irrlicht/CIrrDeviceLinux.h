@@ -28,6 +28,8 @@
 #endif
 #include <X11/keysym.h>
 
+#elif defined(SAILFISH)
+#define KeySym uint32_t
 #else
 #define KeySym s32
 #endif
@@ -420,6 +422,9 @@ namespace irr
 		static struct wl_touch *wlTouch;
 
 		EKEY_CODE getKeyCode(uint32_t key);
+	protected: //Wayland callbacks
+		void seatHandleCapabilities(void *data, struct wl_seat *seat,
+		                        uint32_t capabilities);
 	private:
 		struct wl_surface *wlSurface;
 		struct wl_egl_window *wlEGLWindow;
@@ -450,6 +455,7 @@ namespace irr
 		struct SKeyMap
 		{
 			SKeyMap() {}
+#ifndef SAILFISH
 			SKeyMap(s32 x11, s32 win32)
 				: X11Key(x11), Win32Key(win32)
 			{
@@ -462,6 +468,20 @@ namespace irr
 			{
 				return X11Key<o.X11Key;
 			}
+#else
+			SKeyMap(KeySym key, s32 irrKey)
+			    : wlKey(key), IrrKey(irrKey)
+			{
+			}
+
+			KeySym wlKey;
+			s32 IrrKey;
+
+			bool operator<(const SKeyMap& o) const
+			{
+				return wlKey<o.wlKey;
+			}
+#endif
 		};
 
 		core::array<SKeyMap> KeyMap;
