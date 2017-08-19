@@ -504,9 +504,9 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		m+= " with id(";
 		m+= id;
 		m+= ") at ";
-		m+= x;
+		m+= wl_fixed_to_double(x);
 		m+= ", ";
-		m+= y;
+		m+= wl_fixed_to_double(y);
 		m+= ";";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
@@ -519,8 +519,8 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
-		irrevent.TouchInput.X = x;
-		irrevent.TouchInput.Y = y;
+		irrevent.TouchInput.X = wl_fixed_to_int(x);
+		irrevent.TouchInput.Y = wl_fixed_to_int(y);
 		device->postEventFromUser(irrevent);
 	}
 }
@@ -566,9 +566,9 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		m+= "] Touch motion with id(";
 		m+= id;
 		m+= ") at ";
-		m+= x;
+		m+= wl_fixed_to_double(x);
 		m+= ", ";
-		m+= y;
+		m+= wl_fixed_to_double(y);
 		m+= ";";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
@@ -580,8 +580,8 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_MOVED;
-		irrevent.TouchInput.X = x;
-		irrevent.TouchInput.Y = y;
+		irrevent.TouchInput.X = wl_fixed_to_int(x);
+		irrevent.TouchInput.Y = wl_fixed_to_int(y);
 		device->postEventFromUser(irrevent);
 	}
 }

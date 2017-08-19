@@ -93,7 +93,37 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
+	case EET_TOUCH_INPUT_EVENT:
+		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)
+		{
+			TouchID = evt.TouchInput.ID;
+			TouchPos.X = (f32)evt.TouchInput.X;
+			TouchPos.Y = (f32)evt.TouchInput.Y;
+			CenterCursor = TouchPos;
+			return true;
+		}
+		if(evt.TouchInput.Event == ETIE_MOVED)
+		{
+			TouchID = evt.TouchInput.ID;
+			f32 SpeedCoef = 0.1f;
+			// get realitive move
+			CenterCursor = TouchPos;
+//			CursorPos.X = (TouchPos.X - (f32)evt.TouchInput.X)*SpeedCoef;
+//			CursorPos.Y = (TouchPos.Y - (f32)evt.TouchInput.Y)*SpeedCoef;
+			TouchPos.X = (f32)evt.TouchInput.X;
+			TouchPos.Y = (f32)evt.TouchInput.Y;
+			CursorPos = TouchPos;
+			return true;
+		}
 
+		if(evt.TouchInput.Event == ETIE_LEFT_UP)
+		{
+			TouchID = evt.TouchInput.ID;
+			CursorControl->setPosition(0.5f, 0.5f);
+			CenterCursor = TouchPos;
+			CursorPos = CenterCursor;
+			return false;
+		}
 	default:
 		break;
 	}
