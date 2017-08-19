@@ -263,7 +263,7 @@ int IRRCALLCONV main(int argc, char* argv[])
 	camera which behaves like the ones in first person shooter games (FPS).
 	*/
 
-	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS(0,2.0f);
+	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS(0,1.0f);
 
 	/*
 		so we need a good starting Position in the level.
