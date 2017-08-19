@@ -114,6 +114,7 @@ struct wl_shell      *irr::CIrrDeviceLinux::wlShell      = NULL;
 struct wl_seat       *irr::CIrrDeviceLinux::wlSeat       = NULL;
 struct wl_keyboard   *irr::CIrrDeviceLinux::wlKeyboard   = NULL;
 struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
+struct wl_pointer    *irr::CIrrDeviceLinux::wlPointer    = NULL;
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
@@ -142,10 +143,55 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t mods_latched, uint32_t mods_locked,
                           uint32_t group);
 
+static void
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface,
+                     wl_fixed_t sx, wl_fixed_t sy);
+
+static void
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface);
+
+static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx, wl_fixed_t sy);
+
+static void
+pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                      uint32_t serial, uint32_t time, uint32_t button,
+                      uint32_t state);
+
+static void
+pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                    uint32_t time, uint32_t axis, wl_fixed_t value);
+static void
+touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                  uint32_t time, struct wl_surface *surface,
+                  int32_t id, wl_fixed_t x, wl_fixed_t y);
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, int32_t id);
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                    uint32_t time, int32_t id,
+                    wl_fixed_t x, wl_fixed_t y);
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch);
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch);
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
 };
-//static const struct wl_keyboard_listener keyboard_listener;
+
+static const struct wl_pointer_listener pointer_listener = {
+	pointer_handle_enter,
+	pointer_handle_leave,
+	pointer_handle_motion,
+	pointer_handle_button,
+	pointer_handle_axis,
+};
+
 static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_keymap,
 	keyboard_handle_enter,
@@ -154,6 +200,13 @@ static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_modifiers,
 };
 
+static const struct wl_touch_listener touch_listener = {
+	touch_handle_down,
+	touch_handle_up,
+	touch_handle_motion,
+	touch_handle_frame,
+	touch_handle_cancel,
+};
 // https://jan.newmarch.name/Wayland/Input/
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
@@ -221,8 +274,14 @@ static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
                          uint32_t capabilities)
 {
-	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+	if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !irr::CIrrDeviceLinux::wlPointer) {
 		irr::os::Printer::log("Display has a pointer");
+		irr::CIrrDeviceLinux::wlPointer = wl_seat_get_pointer(seat);
+		irr::os::Printer::log("Wayland add pointer listener");
+		wl_pointer_add_listener(irr::CIrrDeviceLinux::wlPointer, &pointer_listener, data);
+	} else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && irr::CIrrDeviceLinux::wlPointer) {
+		wl_pointer_destroy(irr::CIrrDeviceLinux::wlPointer);
+		irr::CIrrDeviceLinux::wlPointer = NULL;
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
@@ -237,8 +296,15 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		irr::CIrrDeviceLinux::wlKeyboard = NULL;
 	}
 
-	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH && !irr::CIrrDeviceLinux::wlTouch) {
 		irr::os::Printer::log("Display has a touch screen");
+		irr::CIrrDeviceLinux::wlTouch = wl_seat_get_touch(seat);
+		irr::os::Printer::log("Wayland add touch listener");
+		wl_touch_add_listener(irr::CIrrDeviceLinux::wlTouch, &touch_listener, data);
+	}
+	else if (capabilities & WL_SEAT_CAPABILITY_TOUCH && irr::CIrrDeviceLinux::wlTouch) {
+		wl_touch_destroy(irr::CIrrDeviceLinux::wlTouch);
+		irr::CIrrDeviceLinux::wlTouch = NULL;
 	}
 }
 
@@ -285,12 +351,12 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
 		switch(state)
 		{
-		case 1:
+		case 1: //down
 			irrevent.KeyInput.Key = device->getKeyCode(key);
 			irrevent.KeyInput.SystemKeyCode = key;
 			irrevent.KeyInput.PressedDown = true;
 			break;
-		case 0:
+		case 0: //up
 			irrevent.KeyInput.Key = device->getKeyCode(key);
 			irrevent.KeyInput.SystemKeyCode = key;
 			irrevent.KeyInput.PressedDown = false;
@@ -320,6 +386,219 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 		m+=group;
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
+#endif
+	/// TODO: read modifiers and add it to Irrlicht
+}
+/// Wayland pointer
+static void
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface,
+                     wl_fixed_t sx, wl_fixed_t sy)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+= "] Pointer entered surface ";
+		m+= (unsigned long)surface;
+		m+=" at ";
+		m+= sx;
+		m+=" ";
+		m+= sy;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+= "] Pointer left surface ";
+		m+= (unsigned long)surface;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Pointer moved at ";
+		m+= sx;
+		m+= ", ";
+		m+= sy;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                      uint32_t serial, uint32_t time, uint32_t button,
+                      uint32_t state)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+=  "][T:";
+		m+= time;
+		m+= "] Pointer button ";
+		m+= button;
+		m+=(state == 1)?" is down;":" is up;";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                    uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Pointer handle axis ";
+		m+= axis;
+		m+=" wl_fixed_t [";
+		m+=value;
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+/// Wayland touchscreen
+static void
+touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                  uint32_t time, struct wl_surface *surface,
+                  int32_t id, wl_fixed_t x, wl_fixed_t y)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] [S:";
+		m+= serial;
+		m+= " Touch down on ";
+		m+= (unsigned long)surface;
+		m+= " with id(";
+		m+= id;
+		m+= ") at ";
+		m+= x;
+		m+= ", ";
+		m+= y;
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO create SEvent for send touch to Irricht
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
+		irrevent.TouchInput.X = x;
+		irrevent.TouchInput.Y = y;
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, int32_t id)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] [S:";
+		m+= serial;
+		m+= " Touch up with id(";
+		m+= id;
+		m+= ");";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
+		irrevent.TouchInput.X = 0;
+		irrevent.TouchInput.Y = 0;
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                    uint32_t time, int32_t id,
+                    wl_fixed_t x, wl_fixed_t y)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Touch motion with id(";
+		m+= id;
+		m+= ") at ";
+		m+= x;
+		m+= ", ";
+		m+= y;
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_MOVED;
+		irrevent.TouchInput.X = x;
+		irrevent.TouchInput.Y = y;
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch)
+{
+#ifdef _DEBUG
+	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
+#endif
+}
+
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch)
+{
+#ifdef _DEBUG
+	irr::os::Printer::log("Wayland touch handle cancel", irr::ELL_DEBUG);
 #endif
 }
 

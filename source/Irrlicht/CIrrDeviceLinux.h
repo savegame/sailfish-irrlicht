@@ -420,6 +420,7 @@ namespace irr
 		static struct wl_seat  *wlSeat; // Group of Wayland input devices (mice, keyboard and touch)
 		static struct wl_keyboard *wlKeyboard;
 		static struct wl_touch *wlTouch;
+		static struct wl_pointer *wlPointer;
 
 		EKEY_CODE getKeyCode(uint32_t key);
 	protected: //Wayland callbacks
