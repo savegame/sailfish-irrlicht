@@ -49,6 +49,7 @@ CSceneNodeAnimatorCameraFPS::CSceneNodeAnimatorCameraFPS(gui::ICursorControl* cu
 		// create custom key map
 		setKeyMap(keyMapArray, keyMapSize);
 	}
+
 }
 
 
@@ -94,11 +95,14 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		}
 		break;
 	case EET_TOUCH_INPUT_EVENT:
+//		break;
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)
 		{
-			if(TouchID != -1)
-				return false;
-			TouchID = evt.TouchInput.ID;
+			TouchID[evt.TouchInput.ID] = true;
+//			if(evt.TouchInput.ID != 0)
+//				return false;
+			core::vector2di size;
+//			TouchID = evt.TouchInput.ID;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
 			CenterCursor = TouchPos;
@@ -107,9 +111,10 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		}
 		if(evt.TouchInput.Event == ETIE_MOVED)
 		{
-			if(TouchID != evt.TouchInput.ID)
-				return false;
-			f32 SpeedCoef = 0.1f;
+//			if(!TouchID[0])
+//				return false;
+//			CursorControl->setPosition(0.5f,0.5f);
+//			f32 SpeedCoef = 0.1f;
 			// get realitive move
 			CenterCursor = TouchPos;
 //			CursorPos.X = (TouchPos.X - (f32)evt.TouchInput.X)*SpeedCoef;
@@ -119,17 +124,17 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			CursorPos = TouchPos;
 			return true;
 		}
-
 		if(evt.TouchInput.Event == ETIE_LEFT_UP)
 		{
-			if(TouchID != evt.TouchInput.ID)
-				return false;
-			TouchID = -1;
-			CursorControl->setPosition(0.5f, 0.5f);
+			TouchID[evt.TouchInput.ID] = false;
+//			if(0 != evt.TouchInput.ID)
+//				return false;
+			CursorControl->setPosition(TouchPos);
 			CenterCursor = TouchPos;
 			CursorPos = CenterCursor;
 			return false;
 		}
+		break;
 	default:
 		break;
 	}
@@ -324,8 +329,12 @@ void CSceneNodeAnimatorCameraFPS::resetCursorPos()
 
 void CSceneNodeAnimatorCameraFPS::allKeysUp()
 {
-	for (u32 i=0; i<EKA_COUNT; ++i)
-		CursorKeys[i] = false;
+//	for (u32 i=0; i<EKA_COUNT; ++i)
+//		CursorKeys[i] = false;
+//	for (u32 i=0; i<TOUCH_COUNT; ++i)
+//		TouchID[i] = false;
+	memset(CursorKeys,false,EKA_COUNT*sizeof(bool));
+	memset(TouchID,false,TOUCH_COUNT*sizeof(bool));
 }
 
 

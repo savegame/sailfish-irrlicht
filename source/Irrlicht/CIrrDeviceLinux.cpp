@@ -229,6 +229,13 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, data);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
 	}
+	else
+	{
+		irr::core::stringc m = "Global registry handler interface \"";
+		m+=interface;
+		m+="\";";
+		irr::os::Printer::log(m.c_str());
+	}
 }
 
 static void
@@ -255,10 +262,15 @@ shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uin
 static void
 shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface)
 {
-	
+	int i = 0;
 }
 
-struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener = {&shell_surface_ping, &shell_surface_configure, &shell_surface_popup_done};
+struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener =
+{
+	shell_surface_ping,
+	shell_surface_configure,
+	shell_surface_popup_done
+};
 
 static void
 wl_callback_done(void *data, wl_callback *wl_callback, uint32_t callback_data)
@@ -1151,8 +1163,8 @@ bool CIrrDeviceLinux::createWindow()
 //	int width = 960,
 //	    height = 540;
 /* Jolla C */
-	int width = 720,
-	    height = 1280;
+//	int width = CreationParams.WindowSize.Width,
+//	    height = CreationParams.WindowSize.Height;
 
 	EGLint numConfigs;
 	EGLint majorVersion;
@@ -1198,6 +1210,8 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 	}
 	nativeDisplay = wlDisplay;
+	Width = CreationParams.WindowSize.Width;//wlCompositor->width;
+	Height = CreationParams.WindowSize.Height;//wlCompositor->height;
 
 	// second
 	wlSurface = wl_compositor_create_surface(CIrrDeviceLinux::wlCompositor);
@@ -1218,16 +1232,17 @@ bool CIrrDeviceLinux::createWindow()
 
 	wlWindow.shell_surface = wlShellSurface;
 	wlWindow.surface = wlSurface;
+	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
 //	wlWindow.egl_context =
 
 	wl_shell_surface_set_toplevel(wlShellSurface);
 
 	// creating window
 	wlRegion = wl_compositor_create_region(CIrrDeviceLinux::wlCompositor);
-	wl_region_add(wlRegion, 0, 0, width, height);
+	wl_region_add(wlRegion, 0, 0, Width, Height);
 	wl_surface_set_opaque_region(wlSurface, wlRegion);
 
-	wlEGLWindow = wl_egl_window_create(wlSurface, width, height);
+	wlEGLWindow = wl_egl_window_create(wlSurface, Width, Height);
 
 	if (wlEGLWindow == EGL_NO_SURFACE) {
 		os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
@@ -1236,12 +1251,6 @@ bool CIrrDeviceLinux::createWindow()
 	else
 		os::Printer::log("[Good] Wayland Window created !");
 
-	Width = width;
-	Height = height;
-	CreationParams.WindowSize.Width = width;
-	CreationParams.WindowSize.Height = height;
-//	window_width = width;
-//	window_height = height;
 	nativeWindow = (NativeWindowType)wlEGLWindow;
 	// create EGL Context
 	Display = eglGetDisplay( nativeDisplay );
@@ -1306,7 +1315,7 @@ bool CIrrDeviceLinux::createWindow()
 
 	wlWindow.egl_window = wlEGLWindow;
 	wlWindow.irrDevice = this;
-	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
+
 //	wl_
 //	wl_callback_add_listener( wlCallback, wlCallbackListener, this);
 ///////////////////////////////////////////////////////// TEST /////////////////////

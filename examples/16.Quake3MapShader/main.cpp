@@ -11,6 +11,7 @@ to ask the user for a driver type using the console.
 #include <irrlicht.h>
 #include "driverChoice.h"
 #include "exampleHelper.h"
+#include <vector>
 
 /*
 	define which Quake3 Level should be loaded
@@ -62,6 +63,19 @@ public:
 	{
 		FilenameTemplate.replace ( '/', '_' );
 		FilenameTemplate.replace ( '\\', '_' );
+
+		core::recti rect(core::vector2di(10,100), core::dimension2du(100,100));
+		button = Device->getGUIEnvironment()->addButton(rect,0,-1,L"Move");
+
+//		if( touchMap.)
+//		for(s32 i = 0; i < 20; i++ )
+//			touchMap.set(i,false);
+		touchMap.resize(20,false);
+	}
+
+	~CScreenShotFactory()
+	{
+		button->drop();
 	}
 
 	bool OnEvent(const SEvent& event)
@@ -91,6 +105,56 @@ public:
 				else
 					Node->setDebugDataVisible(scene::EDS_BBOX_ALL);
 			}
+
+
+		}
+		else if( event.EventType == EET_GUI_EVENT )
+		{
+			if( event.GUIEvent.Caller == button )
+			{
+				SEvent ne;
+				ne.EventType = EET_KEY_INPUT_EVENT;
+				ne.KeyInput.Key = EKC_KEY_UP;
+				ne.KeyInput.PressedDown = button->isPressed();
+				Device->postEventFromUser(ne);
+			}
+		}
+		// move touch events as mouse events
+		else if( event.EventType == EET_TOUCH_INPUT_EVENT )
+		{
+			/*SEvent ne;
+			ne.EventType = EET_MOUSE_INPUT_EVENT;
+			switch( event.TouchInput.Event )
+			{
+			case ETIE_PRESSED_DOWN:
+				touchMap[event.TouchInput.ID] = true;
+				if( touchMap[0] && !touchMap[1] )
+					ne.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
+				else if( touchMap[0] && touchMap[1] )
+					ne.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
+				else
+					ne.MouseInput.Event = EMIE_COUNT; // No event
+				break;
+			case ETIE_LEFT_UP:
+				touchMap[event.TouchInput.ID] = false;
+				if( !touchMap[0] )
+					ne.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
+				else if( !touchMap[0] && !touchMap[1] )
+					ne.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
+				else
+					ne.MouseInput.Event = EMIE_COUNT; // No event
+				break;
+			case ETIE_MOVED:
+					ne.MouseInput.Event = EMIE_MOUSE_MOVED;
+//					ne.MouseInput.ButtonStates
+				break;
+			}
+			if( ne.MouseInput.Event != EMIE_COUNT )
+			{
+				ne.MouseInput.X = event.TouchInput.X;
+				ne.MouseInput.Y = event.TouchInput.Y;
+				Device->postEventFromUser(ne);
+			}*/
 		}
 		return false;
 	}
@@ -100,6 +164,23 @@ private:
 	u32 Number;
 	core::stringc FilenameTemplate;
 	ISceneNode* Node;
+	gui::IGUIButton *button;
+//	struct TouchID
+//	{
+//		TouchID(s32 id, bool pressed)
+//			: ID(id), Pressed(pressed)
+//		{}
+
+//		bool operator<(const TouchID &o)
+//		{
+//			return ID<o.ID;
+//		}
+
+//		s32  ID;
+//		bool Pressed;
+//	};
+
+	std::vector<bool> touchMap;
 };
 
 
@@ -123,7 +204,8 @@ int IRRCALLCONV main(int argc, char* argv[])
 //		return 1;
 
 	// create device and exit if creation failed
-	const core::dimension2du videoDim(800,600);
+//	const core::dimension2du videoDim(540,960);
+	const core::dimension2du videoDim(720,1280);
 
 	IrrlichtDevice *device = createDevice(irr::video::EDT_OGLES2, videoDim, 32, false );
 
@@ -265,12 +347,26 @@ int IRRCALLCONV main(int argc, char* argv[])
 
 	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS(0,1.0f);
 
+//	scene::ICameraSceneNode* camera = smgr->addCameraSceneNode();
 	/*
 		so we need a good starting Position in the level.
 		we can ask the Quake3 Loader for all entities with class_name
 		"info_player_deathmatch"
 		we choose a random launch
 	*/
+	core::matrix4 m2;
+
+	f32 wd = (f32)(videoDim.Width*3.651*0.0001);
+	f32 hg = (f32)(videoDim.Height*3.651*0.0001);
+//	m2.bui
+//	m2.buildProjectionMatrixPerspectiveLH(wd,hg,camera->getNearValue(),camera->getFarValue());
+//	m2.setRotationAxisRadians(core::PI*0.5f, core::vector3df(0,0,1.0f));
+	m2.setRotationDegrees(core::vector3df(0,0,90.f));
+	camera->setViewMatrixAffector(m2);
+//	camera->setProjectionMatrix(m2);
+	camera->setAspectRatio( wd/hg );
+
+	camera->setRotation( core::vector3df(0,0,core::PI*0.5));
 	if ( mesh )
 	{
 		quake3::tQ3EntityList &entityList = mesh->getEntityList();
