@@ -26,9 +26,11 @@ debug: DEFINES += _DEBUG
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
-SOURCES +=  examples/16.Quake3MapShader/main.cpp \
-#SOURCES +=      examples/07.Collision/main.cpp \
-#    examples/07.Collision/irrapp.cpp
+SOURCES +=  \
+#	examples/16.Quake3MapShader/main.cpp \
+    #examples/07.Collision/main.cpp \
+    #examples/07.Collision/irrapp.cpp
+    examples/13.RenderToTexture/main.cpp
 
 SOURCES +=  source/Irrlicht/jpeglib/ansi2knr.c \
     source/Irrlicht/jpeglib/jaricom.c \
