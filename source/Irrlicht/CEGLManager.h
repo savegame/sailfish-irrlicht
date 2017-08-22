@@ -9,7 +9,7 @@
 
 #ifdef _IRR_COMPILE_WITH_EGL_MANAGER_
 
-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_) || defined(_IRR_COMPILE_WITH_FB_DEVICE_) || defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) || defined(__EMSCRIPTEN__)
+#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_) || defined(_IRR_COMPILE_WITH_FB_DEVICE_) || defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) || defined(__EMSCRIPTEN__) || defined(_IRR_COMPILE_WITH_X11_)
 #include <EGL/egl.h>
 #elif defined(SAILFISH)
 #include <wayland-client.h>

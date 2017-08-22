@@ -689,11 +689,13 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	Width(param.WindowSize.Width), Height(param.WindowSize.Height),
 	WindowHasFocus(false), WindowMinimized(false),
 	UseXVidMode(false), UseXRandR(false),
-    ExternalWindow(false), AutorepeatSupport(0),
-    wlListener ({
+    ExternalWindow(false), AutorepeatSupport(0)
+#ifdef SAILFISH
+    ,wlListener ({
       global_registry_handler,
       global_registry_remover
     })
+#endif
 {
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceLinux");
