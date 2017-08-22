@@ -1,6 +1,6 @@
 VERSION = 1.9.0
 sailfish: TEMPLATE = app #lib
-x11: TEMPLATE = lib
+x11: TEMPLATE = app #lib
 
 CONFIG += link_pkgconfig warn_off
 sailfish: CONFIG += sailfishapp
