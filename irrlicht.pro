@@ -1,10 +1,12 @@
 VERSION = 1.9.0
 sailfish: TEMPLATE = app #lib
 x11: TEMPLATE = app #lib
+macx: TEMPLATE = app #lib
 
-CONFIG += link_pkgconfig warn_off
+!macx: CONFIG += link_pkgconfig
+CONFIG += warn_off
 sailfish: CONFIG += sailfishapp
-x11: CONFIG-=qt
+macx|x11: CONFIG-=qt
 
 TARGET = irrlicht
 #DESTDIR = bin
@@ -19,6 +21,18 @@ sailfish: DEFINES += SAILFISH
 !sailfish: DEFINES += _IRR_COMPILE_WITH_OPENGL_
 !sailfish: DEFINES += NO_IRR_COMPILE_WITH_OGLES1_
 x11: DEFINES += _IRR_LINUX_X11_RANDR_
+
+macx {
+    # need homebrew sdl1 installed (wrong include path)
+    QMAKE_CXXFLAGS += $$system('/opt/local/bin/sdl-config --cflags')
+    QMAKE_CXXFLAGS += -I/opt/local/include/
+    LIBS += $$system('/opt/local/bin/sdl-config --libs')
+    LIBS += -Wl,-framework,OpenGL -Wl,-framework,Cocoa -Wl,-framework,Foundation -Wl,-framework,AppKit
+#    DEFINES += NO_IRR_COMPILE_WITH_OSX_DEVICE_
+    DEFINES += _IRR_COMPILE_WITH_OGLES2_
+#    DEFINES +=  _IRR_COMPILE_WITH_SDL_DEVICE_
+#    DEFINES += _IRR_COMPILE_WITH_OPENGL_
+}
 
 INCLUDEPATH += include
 INCLUDEPATH += source/Irrlicht
@@ -40,7 +54,7 @@ include(irrlicht.pri)
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
-SOURCES +=  \
+debug: SOURCES +=  \
 #	examples/16.Quake3MapShader/main.cpp \
     #examples/07.Collision/main.cpp \
     #examples/07.Collision/irrapp.cpp
@@ -51,3 +65,4 @@ DISTFILES += \
     irrlicht.png \
     irrlicht.desktop \
     rpm/irrlicht.spec
+

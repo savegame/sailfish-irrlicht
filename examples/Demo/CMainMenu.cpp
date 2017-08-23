@@ -27,9 +27,9 @@ CMainMenu::CMainMenu()
 
 bool CMainMenu::run()
 {
-	video::E_DRIVER_TYPE driverType = EDT_OPENGL;
+	video::E_DRIVER_TYPE driverType = irr::video::EDT_OPENGL;
 	if (!IrrlichtDevice::isDriverSupported(video::EDT_OPENGL))
-		driverType = video::video::EDT_BURNINGSVIDEO;
+		driverType = video::EDT_BURNINGSVIDEO;
 
 	MenuDevice = createDevice(driverType,
 		core::dimension2d<u32>(512, 384), 16, false, false, false, this);
@@ -275,7 +275,7 @@ bool CMainMenu::run()
 		{
 			if (!selected)
 			{
-				outDriver=video::E_DRIVER_TYPE(i);
+				driverType=video::E_DRIVER_TYPE(i);
 				break;
 			}
 			--selected;

@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #ifdef _IRR_OSX_PLATFORM_
 #include <sys/sysctl.h>
+//#import  <Foundation/Foundation.h>
 #endif
 #endif
 #endif
@@ -24,6 +25,10 @@
 #endif
 #if defined(_IRR_COMPILE_WITH_OSX_DEVICE_)
 #import <Cocoa/Cocoa.h>
+#ifdef __OBJC__
+//    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+#endif
 #endif
 
 #include "fast_atof.h"
