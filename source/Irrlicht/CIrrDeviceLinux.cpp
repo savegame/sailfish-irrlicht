@@ -99,7 +99,6 @@ namespace
 };
 #else
 
-
 static struct window {
 //	EGLContext egl_context;
 	struct wl_surface *surface;
@@ -115,6 +114,7 @@ struct wl_seat       *irr::CIrrDeviceLinux::wlSeat       = NULL;
 struct wl_keyboard   *irr::CIrrDeviceLinux::wlKeyboard   = NULL;
 struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
 struct wl_pointer    *irr::CIrrDeviceLinux::wlPointer    = NULL;
+struct wl_output     *irr::CIrrDeviceLinux::wlOutput     = NULL;
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
@@ -180,8 +180,27 @@ touch_handle_frame(void *data, struct wl_touch *wl_touch);
 static void
 touch_handle_cancel(void *data, struct wl_touch *wl_touch);
 
+static void
+output_handle_done(void *data, struct wl_output* wl_output);
+static void
+output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
+                       int32_t physical_width, int32_t physical_height, int32_t subpixel,
+                       const char *make, const char *model, int32_t transform);
+static void
+output_handle_mode(void *data, struct wl_output *wl_output,
+                   uint32_t flags, int32_t width, int32_t height, int32_t refresh);
+static void
+output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
+};
+
+static struct wl_output_listener output_listener = {
+	output_handle_geometry,
+	output_handle_mode,
+	output_handle_done,
+	output_handle_scale,
 };
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -229,6 +248,12 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, data);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
 	}
+	else if(strcmp(interface, "wl_output") == 0) {
+		irr::CIrrDeviceLinux::wlOutput = (wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 1);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_output\" done");
+		wl_output_add_listener(irr::CIrrDeviceLinux::wlOutput, &output_listener, data);
+		irr::os::Printer::log("[Good] wl_output_add_listener() done");
+	}
 	else
 	{
 		irr::core::stringc m = "Global registry handler interface \"";
@@ -244,6 +269,129 @@ global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
 	irr::core::stringc message = "Got a registry losing event for ";
 	message += id;
 	irr::os::Printer::log(message.c_str());
+}
+
+static void
+output_handle_done(void *data, struct wl_output* wl_output)
+{
+#ifdef _DEBUG
+	{
+		irr::os::Printer::log("wlOutput done;", irr::ELL_DEBUG);
+	}
+#endif
+}
+
+static void
+output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
+                       int32_t physical_width, int32_t physical_height, int32_t subpixel,
+                       const char *make, const char *model, int32_t transform)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::geometry (x:";
+		m+= x;
+		m+="; y:";
+		m+= y;
+		m+= "; w:";
+		m+= physical_width;
+		m+= "; h:";
+		m+= physical_height;
+		m+= "; sp:";
+		m+= subpixel;
+		m+= "; transform:";
+		switch(transform)
+		{
+		case  WL_OUTPUT_TRANSFORM_NORMAL:
+			m += "normal;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_90:
+			m += "90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_180:
+			m += "180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_270:
+			m += "270;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+			m += "flipped;";
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			m += "flipped 90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			m += "flipped 180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			m += "flipped 270;";
+			break;
+		}
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+}
+
+static void
+output_handle_mode(void *data, struct wl_output *wl_output,
+                   uint32_t flags, int32_t width, int32_t height, int32_t refresh)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::mode (";
+		m+= " w:";
+		m+= width;
+		m+= "; h:";
+		m+= height;
+		m+= "; refresh:";
+		m+= refresh;
+		m+= "; flags:";
+		m+= flags;
+		m+= " - ";
+		switch(flags)
+		{
+		case  WL_OUTPUT_TRANSFORM_NORMAL:
+			m += "normal;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_90:
+			m += "90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_180:
+			m += "180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_270:
+			m += "270;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+			m += "flipped;";
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			m += "flipped 90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			m += "flipped 180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			m += "flipped 270;";
+			break;
+		}
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	irr::CIrrDeviceLinux *dev = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	dev->setWindowSize( irr::core::dimension2du(width,height) );
+}
+
+static void
+output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::scale (";
+		m+= wl_fixed_to_double(factor);
+		m+= "; )";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
 }
 
 static void
@@ -1224,6 +1372,10 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Created compositor surface on Wayland");
 	}
 
+	// tranform window if needed
+	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
+//	wl_surface_set_buffer_transform(struct wl_client *client, struct wl_resource *resource, wl_output_transform:: WL_OUTPUT_TRANSFORM_90);
+
 	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceLinux::wlShell, wlSurface);
 	if (wlShellSurface == NULL) {
 		os::Printer::log("Can't create shell surface", ELOG_LEVEL::ELL_ERROR);
@@ -1318,8 +1470,11 @@ bool CIrrDeviceLinux::createWindow()
 	wlWindow.egl_window = wlEGLWindow;
 	wlWindow.irrDevice = this;
 
+//	wl_surface_set_buffer_transform(wlSurface,WL_OUTPUT_TRANSFORM_90);
+
 //	wl_
-//	wl_callback_add_listener( wlCallback, wlCallbackListener, this);
+	wlCallback = wl_display_sync(wlDisplay);
+	wl_callback_add_listener( wlCallback, &wlCallbackListener, this);
 ///////////////////////////////////////////////////////// TEST /////////////////////
 	GLint val = 0;
 	core::stringc str;
@@ -1903,6 +2058,9 @@ bool CIrrDeviceLinux::run()
 
 		} // end while
 	}
+#elif defined(SAILFISH)
+	/// TODO how to know is widwow closed or not?
+//	Close = wl_display_dispatch(wlDisplay) != -1;
 #endif //_IRR_COMPILE_WITH_X11_
 
 	if (!Close)
@@ -1954,6 +2112,10 @@ void CIrrDeviceLinux::setWindowCaption(const wchar_t* text)
 		XSetWMIconName(XDisplay, XWindow, &txt);
 		XFree(txt.value);
 	}
+#elif defined(SAILFISH)
+//	irr::core::stringw title(text);
+	/// TODO wchar_t to char
+	wl_shell_surface_set_title(wlShellSurface, "Sailfish Irrlicht Application");
 #endif
 }
 
@@ -2089,6 +2251,8 @@ void CIrrDeviceLinux::setWindowSize(const irr::core::dimension2d<u32>& size)
 	values.height = size.Height;
 	XConfigureWindow(XDisplay, XWindow, CWWidth | CWHeight, &values);
 	XFlush(XDisplay);
+#elif SAILFISH
+	CreationParams.WindowSize = size;
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 }
 
@@ -2202,6 +2366,9 @@ void CIrrDeviceLinux::maximizeWindow()
 	}
 
 	XMapWindow(XDisplay, XWindow);
+#elif defined(SAILFISH)
+	if(wlOutput)
+		wl_shell_surface_set_maximized(wlShellSurface, wlOutput);
 #endif
 }
 
@@ -2237,6 +2404,7 @@ core::position2di CIrrDeviceLinux::getWindowPosition()
 #ifdef _IRR_COMPILE_WITH_X11_
 	Window child;
 	XTranslateCoordinates(XDisplay, XWindow, DefaultRootWindow(XDisplay), 0, 0, &wx, &wy, &child);
+
 #endif
 	return core::position2di(wx, wy);
 }
@@ -2455,32 +2623,6 @@ void CIrrDeviceLinux::createKeyMap()
 	KeyMap.push_back(SKeyMap(KEY_7, KEY_KEY_7));
 	KeyMap.push_back(SKeyMap(KEY_8, KEY_KEY_8));
 	KeyMap.push_back(SKeyMap(KEY_9, KEY_KEY_9));
-	KeyMap.push_back(SKeyMap(KEY_A, KEY_KEY_A));
-	KeyMap.push_back(SKeyMap(KEY_B, KEY_KEY_B));
-	KeyMap.push_back(SKeyMap(KEY_C, KEY_KEY_C));
-	KeyMap.push_back(SKeyMap(KEY_D, KEY_KEY_D));
-	KeyMap.push_back(SKeyMap(KEY_E, KEY_KEY_E));
-	KeyMap.push_back(SKeyMap(KEY_F, KEY_KEY_F));
-	KeyMap.push_back(SKeyMap(KEY_G, KEY_KEY_G));
-	KeyMap.push_back(SKeyMap(KEY_H, KEY_KEY_H));
-	KeyMap.push_back(SKeyMap(KEY_I, KEY_KEY_I));
-	KeyMap.push_back(SKeyMap(KEY_J, KEY_KEY_J));
-	KeyMap.push_back(SKeyMap(KEY_K, KEY_KEY_K));
-	KeyMap.push_back(SKeyMap(KEY_L, KEY_KEY_L));
-	KeyMap.push_back(SKeyMap(KEY_M, KEY_KEY_M));
-	KeyMap.push_back(SKeyMap(KEY_N, KEY_KEY_N));
-	KeyMap.push_back(SKeyMap(KEY_O, KEY_KEY_O));
-	KeyMap.push_back(SKeyMap(KEY_P, KEY_KEY_P));
-	KeyMap.push_back(SKeyMap(KEY_Q, KEY_KEY_Q));
-	KeyMap.push_back(SKeyMap(KEY_R, KEY_KEY_R));
-	KeyMap.push_back(SKeyMap(KEY_S, KEY_KEY_S));
-	KeyMap.push_back(SKeyMap(KEY_T, KEY_KEY_T));
-	KeyMap.push_back(SKeyMap(KEY_U, KEY_KEY_U));
-	KeyMap.push_back(SKeyMap(KEY_V, KEY_KEY_V));
-	KeyMap.push_back(SKeyMap(KEY_W, KEY_KEY_W));
-	KeyMap.push_back(SKeyMap(KEY_X, KEY_KEY_X));
-	KeyMap.push_back(SKeyMap(KEY_Y, KEY_KEY_Y));
-	KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_Z));
 //	KeyMap.push_back(SKeyMap(KEY_, KEY_OEM_4));
 	KeyMap.push_back(SKeyMap(KEY_BACKSLASH, KEY_OEM_5));
 //	KeyMap.push_back(SKeyMap(XK_bracketright, KEY_OEM_6));

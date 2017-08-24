@@ -53,12 +53,12 @@ include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
 
 #SOURCES += main.cpp
-#SOURCES +=  examples/02.Quake3Map/main.cpp \
-debug: SOURCES +=  \
-#	examples/16.Quake3MapShader/main.cpp \
+SOURCES +=  examples/02.Quake3Map/main.cpp \
+#debug: SOURCES +=  \
+#        examples/16.Quake3MapShader/main.cpp \
     #examples/07.Collision/main.cpp \
     #examples/07.Collision/irrapp.cpp
-    examples/13.RenderToTexture/main.cpp
+#    examples/13.RenderToTexture/main.cpp
 
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \

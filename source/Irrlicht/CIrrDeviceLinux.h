@@ -35,10 +35,10 @@
 #endif
 
 #ifdef SAILFISH
-#include <wayland-client.h>
-#include <wayland-client-protocol.h>
-#include <wayland-egl.h>
-#include <EGL/egl.h>
+#	include <wayland-client.h>
+#	include <wayland-client-protocol.h>
+#	include <wayland-egl.h>
+#	include <EGL/egl.h>
 #endif
 
 namespace irr
@@ -421,6 +421,7 @@ namespace irr
 		static struct wl_keyboard *wlKeyboard;
 		static struct wl_touch *wlTouch;
 		static struct wl_pointer *wlPointer;
+		static struct wl_output *wlOutput;
 
 		EKEY_CODE getKeyCode(uint32_t key);
 	protected: //Wayland callbacks
