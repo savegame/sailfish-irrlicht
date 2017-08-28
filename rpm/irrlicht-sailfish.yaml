@@ -30,7 +30,7 @@ PkgConfigBR:
   - egl
   - zlib
   - libpng
-#  - bzip2
+  - dbus-1
 
 
 # Build dependencies without a pkgconfig setup can be listed here

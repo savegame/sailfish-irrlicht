@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Version=1.0
 Type=Application
-X-Nemo-Application-Type=silica-qt5
+#X-Nemo-Application-Type=wayland
 Name=Irrlicht
 Icon=irrlicht
 Exec=irrlicht

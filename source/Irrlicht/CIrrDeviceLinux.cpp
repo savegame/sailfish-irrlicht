@@ -27,6 +27,9 @@
 #ifndef SAILFISH
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
+#else
+#include <linux/input.h>
+#include <Keycodes.h>
 #endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
@@ -96,7 +99,6 @@ namespace
 };
 #else
 
-
 static struct window {
 //	EGLContext egl_context;
 	struct wl_surface *surface;
@@ -106,9 +108,125 @@ static struct window {
 //	EGLSurface egl_surface;
 } wlWindow;
 
-struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor= NULL;
-struct wl_shell *irr::CIrrDeviceLinux::wlShell = NULL;
+struct wl_compositor *irr::CIrrDeviceLinux::wlCompositor = NULL;
+struct wl_shell      *irr::CIrrDeviceLinux::wlShell      = NULL;
+struct wl_seat       *irr::CIrrDeviceLinux::wlSeat       = NULL;
+struct wl_keyboard   *irr::CIrrDeviceLinux::wlKeyboard   = NULL;
+struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
+struct wl_pointer    *irr::CIrrDeviceLinux::wlPointer    = NULL;
+struct wl_output     *irr::CIrrDeviceLinux::wlOutput     = NULL;
 
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+                        uint32_t capabilities);
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                       uint32_t format, int fd, uint32_t size);
+
+//static void
+//keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+//                      uint32_t serial, struct wl_surface *surface,
+//                      struct wl_array *keys);
+
+//static void
+//keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+//                      uint32_t serial, struct wl_surface *surface);
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                    uint32_t serial, uint32_t time, uint32_t key,
+                    uint32_t state);
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                          uint32_t serial, uint32_t mods_depressed,
+                          uint32_t mods_latched, uint32_t mods_locked,
+                          uint32_t group);
+
+static void
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface,
+                     wl_fixed_t sx, wl_fixed_t sy);
+
+static void
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface);
+
+static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx, wl_fixed_t sy);
+
+static void
+pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                      uint32_t serial, uint32_t time, uint32_t button,
+                      uint32_t state);
+
+static void
+pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                    uint32_t time, uint32_t axis, wl_fixed_t value);
+static void
+touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                  uint32_t time, struct wl_surface *surface,
+                  int32_t id, wl_fixed_t x, wl_fixed_t y);
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, int32_t id);
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                    uint32_t time, int32_t id,
+                    wl_fixed_t x, wl_fixed_t y);
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch);
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch);
+
+static void
+output_handle_done(void *data, struct wl_output* wl_output);
+static void
+output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
+                       int32_t physical_width, int32_t physical_height, int32_t subpixel,
+                       const char *make, const char *model, int32_t transform);
+static void
+output_handle_mode(void *data, struct wl_output *wl_output,
+                   uint32_t flags, int32_t width, int32_t height, int32_t refresh);
+static void
+output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
+
+static const struct wl_seat_listener seat_listener = {
+	seat_handle_capabilities,
+};
+
+static struct wl_output_listener output_listener = {
+	output_handle_geometry,
+	output_handle_mode,
+	output_handle_done,
+	output_handle_scale,
+};
+
+static const struct wl_pointer_listener pointer_listener = {
+	pointer_handle_enter,
+	pointer_handle_leave,
+	pointer_handle_motion,
+	pointer_handle_button,
+	pointer_handle_axis,
+};
+
+static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
+	irr::CIrrDeviceLinux::keyboard_handle_enter,
+	irr::CIrrDeviceLinux::keyboard_handle_leave,
+	keyboard_handle_key,
+	keyboard_handle_modifiers,
+};
+
+static const struct wl_touch_listener touch_listener = {
+	touch_handle_down,
+	touch_handle_up,
+	touch_handle_motion,
+	touch_handle_frame,
+	touch_handle_cancel,
+};
+// https://jan.newmarch.name/Wayland/Input/
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
            const char *interface, uint32_t version)
@@ -125,6 +243,24 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		                         &wl_shell_interface, 1);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_shell_interface\" done");
 	}
+	else if (strcmp(interface, "wl_seat") == 0) {
+		irr::CIrrDeviceLinux::wlSeat = (wl_seat*)wl_registry_bind(registry, id, &wl_seat_interface, 1);
+		wl_seat_add_listener(irr::CIrrDeviceLinux::wlSeat, &seat_listener, data);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_seat\" done");
+	}
+	else if(strcmp(interface, "wl_output") == 0) {
+		irr::CIrrDeviceLinux::wlOutput = (wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 1);
+		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_output\" done");
+		wl_output_add_listener(irr::CIrrDeviceLinux::wlOutput, &output_listener, data);
+		irr::os::Printer::log("[Good] wl_output_add_listener() done");
+	}
+	else
+	{
+		irr::core::stringc m = "Global registry handler interface \"";
+		m+=interface;
+		m+="\";";
+		irr::os::Printer::log(m.c_str());
+	}
 }
 
 static void
@@ -136,23 +272,557 @@ global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
 }
 
 static void
-shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial) {
+output_handle_done(void *data, struct wl_output* wl_output)
+{
+#ifdef _DEBUG
+	{
+		irr::os::Printer::log("wlOutput done;", irr::ELL_DEBUG);
+	}
+#endif
+}
+
+static void
+output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
+                       int32_t physical_width, int32_t physical_height, int32_t subpixel,
+                       const char *make, const char *model, int32_t transform)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::geometry (x:";
+		m+= x;
+		m+="; y:";
+		m+= y;
+		m+= "; w:";
+		m+= physical_width;
+		m+= "; h:";
+		m+= physical_height;
+		m+= "; sp:";
+		m+= subpixel;
+		m+= "; transform:";
+		switch(transform)
+		{
+		case  WL_OUTPUT_TRANSFORM_NORMAL:
+			m += "normal;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_90:
+			m += "90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_180:
+			m += "180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_270:
+			m += "270;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+			m += "flipped;";
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			m += "flipped 90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			m += "flipped 180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			m += "flipped 270;";
+			break;
+		}
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+}
+
+static void
+output_handle_mode(void *data, struct wl_output *wl_output,
+                   uint32_t flags, int32_t width, int32_t height, int32_t refresh)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::mode (";
+		m+= " w:";
+		m+= width;
+		m+= "; h:";
+		m+= height;
+		m+= "; refresh:";
+		m+= refresh;
+		m+= "; flags:";
+		m+= flags;
+		m+= " - ";
+		switch(flags)
+		{
+		case  WL_OUTPUT_TRANSFORM_NORMAL:
+			m += "normal;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_90:
+			m += "90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_180:
+			m += "180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_270:
+			m += "270;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+			m += "flipped;";
+			break;
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			m += "flipped 90;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			m += "flipped 180;";
+			break;
+		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			m += "flipped 270;";
+			break;
+		}
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	irr::CIrrDeviceLinux *dev = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	dev->setWindowSize( irr::core::dimension2du(width,height) );
+}
+
+static void
+output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "wlOutput::scale (";
+		m+= wl_fixed_to_double(factor);
+		m+= "; )";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+}
+
+static void
+shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial)
+{
 	wl_shell_surface_pong (shell_surface, serial);
 }
 
 static void
-shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height) {
-	struct window *window = (struct window *)data;
+shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height)
+{
+	struct window *window  = (struct window *)data;
 	wl_egl_window_resize (window->egl_window, width, height, 0, 0);
 }
 
 static void
-shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface) {
-
+shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface)
+{
+	int i = 0;
 }
 
-struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener = {&shell_surface_ping, &shell_surface_configure, &shell_surface_popup_done};
+struct wl_shell_surface_listener irr::CIrrDeviceLinux::shell_surface_listener =
+{
+	shell_surface_ping,
+	shell_surface_configure,
+	shell_surface_popup_done
+};
 
+static void
+wl_callback_done(void *data, wl_callback *wl_callback, uint32_t callback_data)
+{
+	int i = 0;
+}
+
+struct wl_callback_listener wlCallbackListener = {
+	wl_callback_done,
+};
+
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+                         uint32_t capabilities)
+{
+	if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !irr::CIrrDeviceLinux::wlPointer) {
+		irr::os::Printer::log("Display has a pointer");
+		irr::CIrrDeviceLinux::wlPointer = wl_seat_get_pointer(seat);
+		irr::os::Printer::log("Wayland add pointer listener");
+		wl_pointer_add_listener(irr::CIrrDeviceLinux::wlPointer, &pointer_listener, data);
+	} else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && irr::CIrrDeviceLinux::wlPointer) {
+		wl_pointer_destroy(irr::CIrrDeviceLinux::wlPointer);
+		irr::CIrrDeviceLinux::wlPointer = NULL;
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+		irr::os::Printer::log("Display has a keyboard");
+		irr::CIrrDeviceLinux::wlKeyboard = wl_seat_get_keyboard(seat);
+		irr::os::Printer::log("Wayland add keyboard listener");
+		wl_keyboard_add_listener(irr::CIrrDeviceLinux::wlKeyboard, &keyboard_listener, data);
+	}
+	else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)) {
+		irr::os::Printer::log("Display has no a keyboard",irr::ELL_WARNING);
+		wl_keyboard_destroy(irr::CIrrDeviceLinux::wlKeyboard);
+		irr::CIrrDeviceLinux::wlKeyboard = NULL;
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH && !irr::CIrrDeviceLinux::wlTouch) {
+		irr::os::Printer::log("Display has a touch screen");
+		irr::CIrrDeviceLinux::wlTouch = wl_seat_get_touch(seat);
+		irr::os::Printer::log("Wayland add touch listener");
+		wl_touch_add_listener(irr::CIrrDeviceLinux::wlTouch, &touch_listener, data);
+	}
+	else if (capabilities & WL_SEAT_CAPABILITY_TOUCH && irr::CIrrDeviceLinux::wlTouch) {
+		wl_touch_destroy(irr::CIrrDeviceLinux::wlTouch);
+		irr::CIrrDeviceLinux::wlTouch = NULL;
+	}
+}
+
+
+//// Wayland keyboard
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                       uint32_t format, int fd, uint32_t size)
+{
+}
+
+void
+irr::CIrrDeviceLinux::keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface,
+                      struct wl_array *keys)
+{
+	irr::os::Printer::log("Keyboard gained focus", irr::ELL_INFORMATION);
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	device->WindowHasFocus = true;
+}
+
+void
+irr::CIrrDeviceLinux::keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                      uint32_t serial, struct wl_surface *surface)
+{
+	irr::os::Printer::log("Keyboard lost focus", irr::ELL_INFORMATION);
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	device->WindowHasFocus = false;
+}
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                    uint32_t serial, uint32_t time, uint32_t key,
+                    uint32_t state)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "Key is ";
+		m+= key;
+		m+=" state is ";
+		m+= state;
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	{
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
+		switch(state)
+		{
+		case 1: //down
+			irrevent.KeyInput.Key = device->getKeyCode(key);
+			irrevent.KeyInput.SystemKeyCode = key;
+			irrevent.KeyInput.PressedDown = true;
+			break;
+		case 0: //up
+			irrevent.KeyInput.Key = device->getKeyCode(key);
+			irrevent.KeyInput.SystemKeyCode = key;
+			irrevent.KeyInput.PressedDown = false;
+			break;
+		}
+
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                          uint32_t serial, uint32_t mods_depressed,
+                          uint32_t mods_latched, uint32_t mods_locked,
+                          uint32_t group)
+{
+
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "Modifiers depressed ";
+		m+= mods_depressed;
+		m+=", latched ";
+		m+= mods_latched;
+		m+=", locked ";
+		m+=mods_locked;
+		m+=", group ";
+		m+=group;
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: read modifiers and add it to Irrlicht
+}
+/// Wayland pointer
+static void
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface,
+                     wl_fixed_t sx, wl_fixed_t sy)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+= "] Pointer entered surface ";
+		m+= (unsigned long)surface;
+		m+=" at ";
+		m+= sx;
+		m+=" ";
+		m+= sy;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+= "] Pointer left surface ";
+		m+= (unsigned long)surface;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Pointer moved at ";
+		m+= sx;
+		m+= ", ";
+		m+= sy;
+		m+=";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                      uint32_t serial, uint32_t time, uint32_t button,
+                      uint32_t state)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[S:";
+		m+= serial;
+		m+=  "][T:";
+		m+= time;
+		m+= "] Pointer button ";
+		m+= button;
+		m+=(state == 1)?" is down;":" is up;";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+static void
+pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                    uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Pointer handle axis ";
+		m+= axis;
+		m+=" wl_fixed_t [";
+		m+=value;
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO: create SEvent with mouse
+}
+
+/// Wayland touchscreen
+static void
+touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                  uint32_t time, struct wl_surface *surface,
+                  int32_t id, wl_fixed_t x, wl_fixed_t y)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] [S:";
+		m+= serial;
+		m+= " Touch down on ";
+		m+= (unsigned long)surface;
+		m+= " with id(";
+		m+= id;
+		m+= ") at ";
+		m+= wl_fixed_to_double(x);
+		m+= ", ";
+		m+= wl_fixed_to_double(y);
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	/// TODO create SEvent for send touch to Irricht
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
+		irrevent.TouchInput.X = wl_fixed_to_int(x);
+		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, int32_t id)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] [S:";
+		m+= serial;
+		m+= " Touch up with id(";
+		m+= id;
+		m+= ");";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
+		irrevent.TouchInput.X = 0;
+		irrevent.TouchInput.Y = 0;
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                    uint32_t time, int32_t id,
+                    wl_fixed_t x, wl_fixed_t y)
+{
+#ifdef _DEBUG
+	{
+		irr::core::stringc m = "[T:";
+		m+= time;
+		m+= "] Touch motion with id(";
+		m+= id;
+		m+= ") at ";
+		m+= wl_fixed_to_double(x);
+		m+= ", ";
+		m+= wl_fixed_to_double(y);
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+#endif
+	if(data)
+	{
+		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+		irr::SEvent irrevent;
+		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+		irrevent.TouchInput.ID = id;
+		irrevent.TouchInput.Event = irr::ETIE_MOVED;
+		irrevent.TouchInput.X = wl_fixed_to_int(x);
+		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+		device->postEventFromUser(irrevent);
+	}
+}
+
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch)
+{
+#ifdef _DEBUG
+	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
+#endif
+}
+
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch)
+{
+#ifdef _DEBUG
+	irr::os::Printer::log("Wayland touch handle cancel", irr::ELL_DEBUG);
+#endif
+}
+
+irr::EKEY_CODE irr::CIrrDeviceLinux::getKeyCode(uint32_t key)
+{
+	EKEY_CODE keyCode = KEY_NONE;
+
+	SKeyMap mp;
+	mp.wlKey = key;
+	const s32 idx = KeyMap.binary_search(mp);
+	if (idx != -1)
+	{
+		keyCode = (EKEY_CODE)KeyMap[idx].IrrKey;
+	}
+	if (keyCode == 0)
+	{
+		// Any value is better than none, that allows at least using the keys.
+		// Worst case is that some keys will be identical, still better than _all_
+		// unknown keys being identical.
+		if ( !mp.wlKey )
+		{
+			keyCode = (EKEY_CODE)key;
+			os::Printer::log("No such IrrKey, using event keycode", core::stringc(key).c_str(), ELL_INFORMATION);
+		}
+		else if (idx == -1)
+		{
+			keyCode = (EKEY_CODE)mp.wlKey;
+			os::Printer::log("EKEY_CODE not found, using orig. Wayland keycode", core::stringc(mp.wlKey).c_str(), ELL_INFORMATION);
+		}
+		else
+		{
+			keyCode = (EKEY_CODE)mp.wlKey;
+			os::Printer::log("EKEY_CODE is 0, using orig. Wayland keycode", core::stringc(mp.wlKey).c_str(), ELL_INFORMATION);
+		}
+	}
+	return keyCode;
+}
+
+void irr::CIrrDeviceLinux::seatHandleCapabilities(void *data, wl_seat *seat, uint32_t capabilities)
+{
+	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+		irr::os::Printer::log("Display has a pointer");
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+		irr::os::Printer::log("Display has a keyboard");
+		wlKeyboard = wl_seat_get_keyboard(seat);
+		irr::os::Printer::log("Wayland add keyboard listener");
+		wl_keyboard_add_listener(wlKeyboard, &keyboard_listener, data);
+	}
+	else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)) {
+		irr::os::Printer::log("Display has no a keyboard",irr::ELL_WARNING);
+		wl_keyboard_destroy(wlKeyboard);
+		wlKeyboard = NULL;
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+		irr::os::Printer::log("Display has a touch screen");
+	}
+}
 #endif
 
 namespace irr
@@ -169,13 +839,15 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	HasNetWM(false),
 #endif
 	Width(param.WindowSize.Width), Height(param.WindowSize.Height),
-	WindowHasFocus(false), WindowMinimized(false),
+    WindowHasFocus(true), WindowMinimized(false),
 	UseXVidMode(false), UseXRandR(false),
-    ExternalWindow(false), AutorepeatSupport(0),
-    listener ({
+    ExternalWindow(false), AutorepeatSupport(0)
+#ifdef SAILFISH
+    ,wlListener ({
       global_registry_handler,
       global_registry_remover
     })
+#endif
 {
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceLinux");
@@ -414,14 +1086,15 @@ bool CIrrDeviceLinux::switchToFullscreen(bool reset)
 	}
 	else
 	#endif
+    #if defined(_IRR_COMPILE_WITH_X11_)
 	{
 		os::Printer::log("VidMode or RandR extension must be installed to allow Irrlicht "
 		"to switch to fullscreen mode. Running in windowed mode instead.", ELL_WARNING);
 		CreationParams.Fullscreen = false;
 	}
+    #endif
 	return CreationParams.Fullscreen;
 }
-
 
 #if defined(_IRR_COMPILE_WITH_X11_)
 void IrrPrintXGrabError(int grabResult, const c8 * grabCommand )
@@ -452,6 +1125,7 @@ void IrrPrintXGrabError(int grabResult, const c8 * grabCommand )
 	}
 }
 #endif
+
 
 
 bool CIrrDeviceLinux::createWindow()
@@ -643,8 +1317,8 @@ bool CIrrDeviceLinux::createWindow()
 //	int width = 960,
 //	    height = 540;
 /* Jolla C */
-	int width = 720,
-	    height = 1280;
+//	int width = CreationParams.WindowSize.Width,
+//	    height = CreationParams.WindowSize.Height;
 
 	EGLint numConfigs;
 	EGLint majorVersion;
@@ -674,7 +1348,7 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] wl_display_connect() done");
 
 	wlRegistry = wl_display_get_registry(wlDisplay);
-	wl_registry_add_listener(wlRegistry, &listener, NULL);
+	wl_registry_add_listener(wlRegistry, &wlListener, this);
 
 	// This call the attached listener global_registry_handler
 	wl_display_dispatch(wlDisplay);
@@ -690,6 +1364,8 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 	}
 	nativeDisplay = wlDisplay;
+	Width = CreationParams.WindowSize.Width;//wlCompositor->width;
+	Height = CreationParams.WindowSize.Height;//wlCompositor->height;
 
 	// second
 	wlSurface = wl_compositor_create_surface(CIrrDeviceLinux::wlCompositor);
@@ -699,6 +1375,10 @@ bool CIrrDeviceLinux::createWindow()
 	} else {
 		os::Printer::log("[Good] Created compositor surface on Wayland");
 	}
+
+	// tranform window if needed
+	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
+//	wl_surface_set_buffer_transform(struct wl_client *client, struct wl_resource *resource, wl_output_transform:: WL_OUTPUT_TRANSFORM_90);
 
 	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceLinux::wlShell, wlSurface);
 	if (wlShellSurface == NULL) {
@@ -710,16 +1390,17 @@ bool CIrrDeviceLinux::createWindow()
 
 	wlWindow.shell_surface = wlShellSurface;
 	wlWindow.surface = wlSurface;
+	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
 //	wlWindow.egl_context =
 
 	wl_shell_surface_set_toplevel(wlShellSurface);
 
 	// creating window
 	wlRegion = wl_compositor_create_region(CIrrDeviceLinux::wlCompositor);
-	wl_region_add(wlRegion, 0, 0, width, height);
+	wl_region_add(wlRegion, 0, 0, Width, Height);
 	wl_surface_set_opaque_region(wlSurface, wlRegion);
 
-	wlEGLWindow = wl_egl_window_create(wlSurface, width, height);
+	wlEGLWindow = wl_egl_window_create(wlSurface, Width, Height);
 
 	if (wlEGLWindow == EGL_NO_SURFACE) {
 		os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
@@ -728,12 +1409,6 @@ bool CIrrDeviceLinux::createWindow()
 	else
 		os::Printer::log("[Good] Wayland Window created !");
 
-	Width = width;
-	Height = height;
-	CreationParams.WindowSize.Width = width;
-	CreationParams.WindowSize.Height = height;
-//	window_width = width;
-//	window_height = height;
 	nativeWindow = (NativeWindowType)wlEGLWindow;
 	// create EGL Context
 	Display = eglGetDisplay( nativeDisplay );
@@ -798,7 +1473,12 @@ bool CIrrDeviceLinux::createWindow()
 
 	wlWindow.egl_window = wlEGLWindow;
 	wlWindow.irrDevice = this;
-	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
+
+//	wl_surface_set_buffer_transform(wlSurface,WL_OUTPUT_TRANSFORM_90);
+
+//	wl_
+	wlCallback = wl_display_sync(wlDisplay);
+	wl_callback_add_listener( wlCallback, &wlCallbackListener, this);
 ///////////////////////////////////////////////////////// TEST /////////////////////
 	GLint val = 0;
 	core::stringc str;
@@ -1382,6 +2062,14 @@ bool CIrrDeviceLinux::run()
 
 		} // end while
 	}
+#elif defined(SAILFISH)
+	/// TODO how to know is widwow closed or not?
+	wl_display_dispatch_pending(wlDisplay);
+	bool testClose = wl_display_dispatch(wlDisplay) == -1;
+	if(testClose)
+	{
+		irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
+	}
 #endif //_IRR_COMPILE_WITH_X11_
 
 	if (!Close)
@@ -1433,6 +2121,10 @@ void CIrrDeviceLinux::setWindowCaption(const wchar_t* text)
 		XSetWMIconName(XDisplay, XWindow, &txt);
 		XFree(txt.value);
 	}
+#elif defined(SAILFISH)
+//	irr::core::stringw title(text);
+	/// TODO wchar_t to char
+	wl_shell_surface_set_title(wlShellSurface, "Sailfish Irrlicht Application");
 #endif
 }
 
@@ -1568,6 +2260,8 @@ void CIrrDeviceLinux::setWindowSize(const irr::core::dimension2d<u32>& size)
 	values.height = size.Height;
 	XConfigureWindow(XDisplay, XWindow, CWWidth | CWHeight, &values);
 	XFlush(XDisplay);
+#elif SAILFISH
+	CreationParams.WindowSize = size;
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 }
 
@@ -1681,6 +2375,9 @@ void CIrrDeviceLinux::maximizeWindow()
 	}
 
 	XMapWindow(XDisplay, XWindow);
+#elif defined(SAILFISH)
+	if(wlOutput)
+		wl_shell_surface_set_maximized(wlShellSurface, wlOutput);
 #endif
 }
 
@@ -1716,6 +2413,7 @@ core::position2di CIrrDeviceLinux::getWindowPosition()
 #ifdef _IRR_COMPILE_WITH_X11_
 	Window child;
 	XTranslateCoordinates(XDisplay, XWindow, DefaultRootWindow(XDisplay), 0, 0, &wx, &wy, &child);
+
 #endif
 	return core::position2di(wx, wy);
 }
@@ -1921,6 +2619,84 @@ void CIrrDeviceLinux::createKeyMap()
 	KeyMap.push_back(SKeyMap(XK_Super_L, KEY_LWIN));
 	KeyMap.push_back(SKeyMap(XK_Super_R, KEY_RWIN));
 
+	KeyMap.sort();
+#elif defined(SAILFISH)
+	KeyMap.clear();
+	KeyMap.push_back(SKeyMap(KEY_0, KEY_KEY_0));
+	KeyMap.push_back(SKeyMap(KEY_1, KEY_KEY_1));
+	KeyMap.push_back(SKeyMap(KEY_2, KEY_KEY_2));
+	KeyMap.push_back(SKeyMap(KEY_3, KEY_KEY_3));
+	KeyMap.push_back(SKeyMap(KEY_4, KEY_KEY_4));
+	KeyMap.push_back(SKeyMap(KEY_5, KEY_KEY_5));
+	KeyMap.push_back(SKeyMap(KEY_6, KEY_KEY_6));
+	KeyMap.push_back(SKeyMap(KEY_7, KEY_KEY_7));
+	KeyMap.push_back(SKeyMap(KEY_8, KEY_KEY_8));
+	KeyMap.push_back(SKeyMap(KEY_9, KEY_KEY_9));
+//	KeyMap.push_back(SKeyMap(KEY_, KEY_OEM_4));
+	KeyMap.push_back(SKeyMap(KEY_BACKSLASH, KEY_OEM_5));
+//	KeyMap.push_back(SKeyMap(XK_bracketright, KEY_OEM_6));
+//	KeyMap.push_back(SKeyMap(XK_asciicircum, KEY_OEM_5));
+//	KeyMap.push_back(SKeyMap(XK_dead_circumflex, KEY_OEM_5));
+//	KeyMap.push_back(SKeyMap(XK_degree, 0)); //?
+//	KeyMap.push_back(SKeyMap(XK_underscore, KEY_MINUS)); //?
+//	KeyMap.push_back(SKeyMap(XK_grave, KEY_OEM_3));
+//	KeyMap.push_back(SKeyMap(XK_dead_grave, KEY_OEM_3));
+//	KeyMap.push_back(SKeyMap(XK_acute, KEY_OEM_6));
+//	KeyMap.push_back(SKeyMap(XK_dead_acute, KEY_OEM_6));
+	KeyMap.push_back(SKeyMap(KEY_A, KEY_KEY_A));
+	KeyMap.push_back(SKeyMap(KEY_B, KEY_KEY_B));
+	KeyMap.push_back(SKeyMap(KEY_C, KEY_KEY_C));
+	KeyMap.push_back(SKeyMap(KEY_D, KEY_KEY_D));
+	KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_E));
+	KeyMap.push_back(SKeyMap(KEY_F, KEY_KEY_F));
+	KeyMap.push_back(SKeyMap(KEY_G, KEY_KEY_G));
+	KeyMap.push_back(SKeyMap(KEY_H, KEY_KEY_H));
+	KeyMap.push_back(SKeyMap(KEY_I, KEY_KEY_I));
+	KeyMap.push_back(SKeyMap(KEY_J, KEY_KEY_J));
+	KeyMap.push_back(SKeyMap(KEY_K, KEY_KEY_K));
+	KeyMap.push_back(SKeyMap(KEY_L, KEY_KEY_L));
+	KeyMap.push_back(SKeyMap(KEY_M, KEY_KEY_M));
+	KeyMap.push_back(SKeyMap(KEY_N, KEY_KEY_N));
+	KeyMap.push_back(SKeyMap(KEY_O, KEY_KEY_O));
+	KeyMap.push_back(SKeyMap(KEY_P, KEY_KEY_P));
+	KeyMap.push_back(SKeyMap(KEY_Q, KEY_KEY_Q));
+	KeyMap.push_back(SKeyMap(KEY_R, KEY_KEY_R));
+	KeyMap.push_back(SKeyMap(KEY_S, KEY_KEY_S));
+	KeyMap.push_back(SKeyMap(KEY_T, KEY_KEY_T));
+	KeyMap.push_back(SKeyMap(KEY_U, KEY_KEY_U));
+	KeyMap.push_back(SKeyMap(KEY_V, KEY_KEY_V));
+	KeyMap.push_back(SKeyMap(KEY_W, KEY_KEY_W));
+	KeyMap.push_back(SKeyMap(KEY_X, KEY_KEY_X));
+	KeyMap.push_back(SKeyMap(KEY_Y, KEY_KEY_Y));
+	KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_Z));
+	KeyMap.push_back(SKeyMap(KEY_F1, EKC_KEY_F1));
+	KeyMap.push_back(SKeyMap(KEY_F2, EKC_KEY_F2));
+	KeyMap.push_back(SKeyMap(KEY_F3, EKC_KEY_F3));
+	KeyMap.push_back(SKeyMap(KEY_F4, EKC_KEY_F4));
+	KeyMap.push_back(SKeyMap(KEY_F5, EKC_KEY_F5));
+	KeyMap.push_back(SKeyMap(KEY_F6, EKC_KEY_F6));
+	KeyMap.push_back(SKeyMap(KEY_F7, EKC_KEY_F7));
+	KeyMap.push_back(SKeyMap(KEY_F8, EKC_KEY_F8));
+	KeyMap.push_back(SKeyMap(KEY_F9, EKC_KEY_F9));
+	KeyMap.push_back(SKeyMap(KEY_F10, EKC_KEY_F10));
+	KeyMap.push_back(SKeyMap(KEY_F11, EKC_KEY_F11));
+	KeyMap.push_back(SKeyMap(KEY_F12, EKC_KEY_F12));
+	KeyMap.push_back(SKeyMap(KEY_ESC, KEY_ESCAPE));
+	KeyMap.push_back(SKeyMap(KEY_INSERT, EKC_KEY_INSERT));
+	KeyMap.push_back(SKeyMap(KEY_DELETE, EKC_KEY_DELETE));
+	KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
+	KeyMap.push_back(SKeyMap(KEY_LEFT, EKC_KEY_LEFT));
+	KeyMap.push_back(SKeyMap(KEY_UP, EKC_KEY_UP));
+	KeyMap.push_back(SKeyMap(KEY_RIGHT, EKC_KEY_RIGHT));
+	KeyMap.push_back(SKeyMap(KEY_DOWN, EKC_KEY_DOWN));
+//	KeyMap.push_back(SKeyMap(KEY_PRIOR, KEY_PRIOR));
+	KeyMap.push_back(SKeyMap(KEY_PAGEUP, KEY_PRIOR));
+	KeyMap.push_back(SKeyMap(KEY_NEXT, EKC_KEY_NEXT));
+	KeyMap.push_back(SKeyMap(KEY_PAGEDOWN, EKC_KEY_NEXT));
+	KeyMap.push_back(SKeyMap(KEY_END, EKC_KEY_END));
+	KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
+	KeyMap.push_back(SKeyMap(KEY_NUMLOCK, EKC_KEY_NUMLOCK));
+	KeyMap.push_back(SKeyMap(KEY_SPACE, EKC_KEY_SPACE));
 	KeyMap.sort();
 #endif
 }

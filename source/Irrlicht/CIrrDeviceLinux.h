@@ -28,15 +28,17 @@
 #endif
 #include <X11/keysym.h>
 
+#elif defined(SAILFISH)
+#define KeySym uint32_t
 #else
 #define KeySym s32
 #endif
 
 #ifdef SAILFISH
-#include <wayland-client.h>
-#include <wayland-client-protocol.h>
-#include <wayland-egl.h>
-#include <EGL/egl.h>
+#	include <wayland-client.h>
+#	include <wayland-client-protocol.h>
+#	include <wayland-egl.h>
+#	include <EGL/egl.h>
 #endif
 
 namespace irr
@@ -411,10 +413,29 @@ namespace irr
 		#endif
 #elif defined(SAILFISH)
 	public:
-		const struct wl_registry_listener listener;
+		const  struct wl_registry_listener wlListener;
 		static struct wl_compositor *wlCompositor;
 		static struct wl_shell *wlShell;
 		static struct wl_shell_surface_listener shell_surface_listener;
+		static struct wl_seat  *wlSeat; // Group of Wayland input devices (mice, keyboard and touch)
+		static struct wl_keyboard *wlKeyboard;
+		static struct wl_touch *wlTouch;
+		static struct wl_pointer *wlPointer;
+		static struct wl_output *wlOutput;
+
+		static void
+		keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		                      uint32_t serial, struct wl_surface *surface,
+		                      struct wl_array *keys);
+
+		static void
+		keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		                      uint32_t serial, struct wl_surface *surface);
+
+		EKEY_CODE getKeyCode(uint32_t key);
+	protected: //Wayland callbacks
+		void seatHandleCapabilities(void *data, struct wl_seat *seat,
+		                        uint32_t capabilities);
 	private:
 		struct wl_surface *wlSurface;
 		struct wl_egl_window *wlEGLWindow;
@@ -422,28 +443,30 @@ namespace irr
 		struct wl_shell_surface *wlShellSurface;
 		struct wl_display * wlDisplay;
 		struct wl_registry *wlRegistry;
+		struct wl_callback *wlCallback;
+
 		/// Native System informations
 		NativeDisplayType nativeDisplay;
 		NativeWindowType nativeWindow;
-		//        uint16_t window_width, window_height;
 		/// EGL display
 		EGLDisplay  Display;
-//		/// EGL context
+		/// EGL context
 		EGLContext  Context;
-//		/// EGL surface
+		/// EGL surface
 		EGLSurface  Surface;
 #endif
-		u32 Width, Height;
+		u32  Width, Height;
 		bool WindowHasFocus;
 		bool WindowMinimized;
 		bool UseXVidMode;
 		bool UseXRandR;
 		bool ExternalWindow;
-		int AutorepeatSupport;
+		int  AutorepeatSupport;
 
 		struct SKeyMap
 		{
 			SKeyMap() {}
+#ifndef SAILFISH
 			SKeyMap(s32 x11, s32 win32)
 				: X11Key(x11), Win32Key(win32)
 			{
@@ -456,6 +479,20 @@ namespace irr
 			{
 				return X11Key<o.X11Key;
 			}
+#else
+			SKeyMap(KeySym key, s32 irrKey)
+			    : wlKey(key), IrrKey(irrKey)
+			{
+			}
+
+			KeySym wlKey;
+			s32 IrrKey;
+
+			bool operator<(const SKeyMap& o) const
+			{
+				return wlKey<o.wlKey;
+			}
+#endif
 		};
 
 		core::array<SKeyMap> KeyMap;

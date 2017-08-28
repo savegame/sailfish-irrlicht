@@ -33,6 +33,7 @@ BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(egl)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libpng)
+BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  bzip2-devel
 BuildRequires:  desktop-file-utils
 

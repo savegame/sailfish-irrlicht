@@ -58,7 +58,7 @@ int main()
 	// create device and exit if creation failed
 
 	IrrlichtDevice *device =
-	    createDevice(irr::video::EDT_OGLES2, core::dimension2d<u32>(640, 480));
+	    createDevice(irr::video::EDT_OGLES2, core::dimension2d<u32>(400, 200));
 
 	if (device == 0)
 		return 1; // could not create selected driver.
@@ -129,7 +129,7 @@ int main()
 	first person shooter games (FPS) and hence use
 	irr::scene::ISceneManager::addCameraSceneNodeFPS().
 	*/
-	smgr->addCameraSceneNodeFPS();
+	smgr->addCameraSceneNodeFPS(0,1.0f);
 
 	/*
 	The mouse cursor needs not be visible, so we hide it via the
@@ -150,7 +150,7 @@ int main()
 
 	while(device->run())
 	{
-//		if (device->isWindowActive())
+		if (device->isWindowActive())
 		{
 			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,200,200,200));
 			smgr->drawAll();
@@ -169,8 +169,8 @@ int main()
 				lastFPS = fps;
 			}
 		}
-//		else
-//			device->yield();
+		else
+			device->yield();
 	}
 
 	/*

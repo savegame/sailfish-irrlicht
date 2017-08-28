@@ -43,7 +43,9 @@
 //! Example: NO_IRR_COMPILE_WITH_X11_ would disable X11
 
 //! Uncomment this line to compile with the SDL device
-//#define _IRR_COMPILE_WITH_SDL_DEVICE_
+#ifndef SAILFISH
+#define _IRR_COMPILE_WITH_SDL_DEVICE_
+#endif
 #ifdef NO_IRR_COMPILE_WITH_SDL_DEVICE_
 #undef _IRR_COMPILE_WITH_SDL_DEVICE_
 #endif
@@ -98,6 +100,7 @@
 #define NO_IRR_COMPILE_WITH_OGLES1_
 #define NO_IRR_COMPILE_WITH_OGLES2_
 #define NO_IRR_COMPILE_WITH_WEBGL1_
+#undef  _IRR_COMPILE_WITH_SDL_DEVICE_
 #endif
 #endif
 
@@ -238,7 +241,7 @@ define out. */
 #endif
 
 //! Define _IRR_COMPILE_WITH_OGLES1_ to compile the Irrlicht engine with OpenGL ES 1.1.
-/** If you do not wish the engine to be compiled with OpenGL ES 1.1, comment this
+/** If you do not wish the engine tls -l o be compiled with OpenGL ES 1.1, comment this
 define out. */
 #define _IRR_COMPILE_WITH_OGLES1_
 #ifdef NO_IRR_COMPILE_WITH_OGLES1_

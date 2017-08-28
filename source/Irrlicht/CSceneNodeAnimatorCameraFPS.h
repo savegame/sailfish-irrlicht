@@ -130,7 +130,11 @@ namespace scene
 
 		core::array<SKeyMap> KeyMap;
 		core::position2d<f32> CenterCursor, CursorPos;
-
+//#ifdef SAILFISH
+#define TOUCH_COUNT 20
+		core::vector2df   TouchPos;
+		bool              TouchID[TOUCH_COUNT];
+//#endif
 		bool CursorKeys[EKA_COUNT];
 
 		bool firstUpdate;

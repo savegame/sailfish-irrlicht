@@ -1,96 +1,3 @@
-TEMPLATE = app #lib
-
-CONFIG += link_pkgconfig warn_off sailfishapp
-
-TARGET = irrlicht
-#DESTDIR = bin
-
-PKGCONFIG += wayland-client wayland-egl zlib libpng egl
-LIBS += -lbz2
-DEFINES += SAILFISH
-
-INCLUDEPATH += include
-INCLUDEPATH += source/Irrlicht
-INCLUDEPATH += source/Irrlicht/libjpeg
-
-removespec.target = rpm/irrlicht.spec
-removespec.command = rm -f rpm/irrlicht.spec
-QMAKE_EXTRA_TARGETS += removespec
-
-media.files = media
-media.path = /usr/share/$$TARGET/
-
-INSTALLS += media
-
-debug: DEFINES += _DEBUG
-
-SOURCES += main.cpp
-#SOURCES +=  examples/02.Quake3Map/main.cpp \
-#SOURCES +=  examples/16.Quake3MapShader/main.cpp \
-#SOURCES +=      examples/07.Collision/main.cpp \
-#    examples/07.Collision/irrapp.cpp
-
-SOURCES +=  source/Irrlicht/jpeglib/ansi2knr.c \
-    source/Irrlicht/jpeglib/jaricom.c \
-    source/Irrlicht/jpeglib/jcapimin.c \
-    source/Irrlicht/jpeglib/jcapistd.c \
-    source/Irrlicht/jpeglib/jcarith.c \
-    source/Irrlicht/jpeglib/jccoefct.c \
-    source/Irrlicht/jpeglib/jccolor.c \
-    source/Irrlicht/jpeglib/jcdctmgr.c \
-    source/Irrlicht/jpeglib/jchuff.c \
-    source/Irrlicht/jpeglib/jcinit.c \
-    source/Irrlicht/jpeglib/jcmainct.c \
-    source/Irrlicht/jpeglib/jcmarker.c \
-    source/Irrlicht/jpeglib/jcmaster.c \
-    source/Irrlicht/jpeglib/jcomapi.c \
-    source/Irrlicht/jpeglib/jcparam.c \
-    source/Irrlicht/jpeglib/jcprepct.c \
-    source/Irrlicht/jpeglib/jcsample.c \
-    source/Irrlicht/jpeglib/jctrans.c \
-    source/Irrlicht/jpeglib/jdapimin.c \
-    source/Irrlicht/jpeglib/jdapistd.c \
-    source/Irrlicht/jpeglib/jdarith.c \
-    source/Irrlicht/jpeglib/jdatadst.c \
-    source/Irrlicht/jpeglib/jdatasrc.c \
-    source/Irrlicht/jpeglib/jdcoefct.c \
-    source/Irrlicht/jpeglib/jdcolor.c \
-    source/Irrlicht/jpeglib/jddctmgr.c \
-    source/Irrlicht/jpeglib/jdhuff.c \
-    source/Irrlicht/jpeglib/jdinput.c \
-    source/Irrlicht/jpeglib/jdmainct.c \
-    source/Irrlicht/jpeglib/jdmarker.c \
-    source/Irrlicht/jpeglib/jdmaster.c \
-    source/Irrlicht/jpeglib/jdmerge.c \
-    source/Irrlicht/jpeglib/jdpostct.c \
-    source/Irrlicht/jpeglib/jdsample.c \
-    source/Irrlicht/jpeglib/jdtrans.c \
-    source/Irrlicht/jpeglib/jerror.c \
-    source/Irrlicht/jpeglib/jfdctflt.c \
-    source/Irrlicht/jpeglib/jfdctfst.c \
-    source/Irrlicht/jpeglib/jfdctint.c \
-    source/Irrlicht/jpeglib/jidctflt.c \
-    source/Irrlicht/jpeglib/jidctfst.c \
-    source/Irrlicht/jpeglib/jidctint.c \
-    source/Irrlicht/jpeglib/jmemansi.c \
-    source/Irrlicht/jpeglib/jmemmgr.c \
-    source/Irrlicht/jpeglib/jquant1.c \
-    source/Irrlicht/jpeglib/jquant2.c \
-    source/Irrlicht/jpeglib/jutils.c \
-    source/Irrlicht/jpeglib/rdbmp.c \
-    source/Irrlicht/jpeglib/rdcolmap.c \
-    source/Irrlicht/jpeglib/rdgif.c \
-    source/Irrlicht/jpeglib/rdppm.c \
-    source/Irrlicht/jpeglib/rdrle.c \
-    source/Irrlicht/jpeglib/rdswitch.c \
-    source/Irrlicht/jpeglib/rdtarga.c \
-    source/Irrlicht/jpeglib/transupp.c \
-    source/Irrlicht/jpeglib/wrbmp.c \
-    source/Irrlicht/jpeglib/wrgif.c \
-    source/Irrlicht/jpeglib/wrppm.c \
-    source/Irrlicht/jpeglib/wrrle.c \
-    source/Irrlicht/jpeglib/wrtarga.c
-
 HEADERS += \
     include/aabbox3d.h \
     include/CDynamicMeshBuffer.h \
@@ -523,7 +430,6 @@ HEADERS += \
     source/Irrlicht/IBurningShader.h \
     source/Irrlicht/IDepthBuffer.h \
     source/Irrlicht/IImagePresenter.h \
-    source/Irrlicht/Irrlicht.aps \
     source/Irrlicht/ISceneNodeAnimatorFinishing.h \
     source/Irrlicht/ITriangleRenderer.h \
     source/Irrlicht/IZBuffer.h \
@@ -535,31 +441,7 @@ HEADERS += \
     source/Irrlicht/SB3DStructs.h \
     source/Irrlicht/SoftwareDriver2_compile_config.h \
     source/Irrlicht/SoftwareDriver2_helper.h \
-    source/Irrlicht/wglext.h \
-    source/Irrlicht/jpeglib/cderror.h \
-    source/Irrlicht/jpeglib/cdjpeg.h \
-    source/Irrlicht/jpeglib/jconfig.h \
-    source/Irrlicht/jpeglib/jdct.h \
-    source/Irrlicht/jpeglib/jerror.h \
-    source/Irrlicht/jpeglib/jinclude.h \
-    source/Irrlicht/jpeglib/jmemsys.h \
-    source/Irrlicht/jpeglib/jmorecfg.h \
-    source/Irrlicht/jpeglib/jpegint.h \
-    source/Irrlicht/jpeglib/jpeglib.h \
-    source/Irrlicht/jpeglib/jversion.h \
-    source/Irrlicht/jpeglib/transupp.h
-#    source/Irrlicht/jpeglib/cderror.h \
-#    source/Irrlicht/jpeglib/cdjpeg.h \
-#    source/Irrlicht/jpeglib/jconfig.h \
-#    source/Irrlicht/jpeglib/jdct.h \
-#    source/Irrlicht/jpeglib/jerror.h \
-#    source/Irrlicht/jpeglib/jinclude.h \
-#    source/Irrlicht/jpeglib/jmemsys.h \
-#    source/Irrlicht/jpeglib/jmorecfg.h \
-#    source/Irrlicht/jpeglib/jpegint.h \
-#    source/Irrlicht/jpeglib/jpeglib.h \
-#    source/Irrlicht/jpeglib/jversion.h \
-#    source/Irrlicht/jpeglib/transupp.h
+    source/Irrlicht/wglext.h
 
 SOURCES += \
     source/Irrlicht/aesGladman/aescrypt.cpp \
@@ -803,13 +685,10 @@ SOURCES += \
     source/Irrlicht/leakHunter.cpp \
     source/Irrlicht/os.cpp \
     source/Irrlicht/utf8.cpp \
-    source/Irrlicht/lzma/LzmaDec.c
+    source/Irrlicht/lzma/LzmaDec.c \
+    source/Irrlicht/CGLXManager.cpp
 
-DISTFILES += \
-    rpm/irrlicht-sailfish.yaml \
-    irrlicht.png \
-    irrlicht.desktop \
-    source/Irrlicht/jpeglib/jdosaobj.txt \
-    source/Irrlicht/jpeglib/jpegtran.1 \
-    source/Irrlicht/jpeglib/jmemdosa.asm \
-    rpm/irrlicht.spec
+sailfish {
+    SOURCES += \
+
+}
