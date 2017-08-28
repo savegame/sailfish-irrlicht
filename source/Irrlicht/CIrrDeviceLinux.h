@@ -423,6 +423,15 @@ namespace irr
 		static struct wl_pointer *wlPointer;
 		static struct wl_output *wlOutput;
 
+		static void
+		keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		                      uint32_t serial, struct wl_surface *surface,
+		                      struct wl_array *keys);
+
+		static void
+		keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		                      uint32_t serial, struct wl_surface *surface);
+
 		EKEY_CODE getKeyCode(uint32_t key);
 	protected: //Wayland callbacks
 		void seatHandleCapabilities(void *data, struct wl_seat *seat,

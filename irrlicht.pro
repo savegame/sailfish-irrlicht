@@ -7,11 +7,13 @@ macx: TEMPLATE = app #lib
 CONFIG += warn_off
 sailfish: CONFIG += sailfishapp
 macx|x11: CONFIG-=qt
-
+sailfish:QT += compositor widgets core
+#sailfish: CONFIG += wayland-compositor
+sailfish: INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 TARGET = irrlicht
 #DESTDIR = bin
 
-sailfish: PKGCONFIG += wayland-client wayland-egl dbus-1
+sailfish: PKGCONFIG += wayland-client wayland-egl
 PKGCONFIG += zlib libpng egl
 !sailfish: PKGCONFIG += bzip2
 x11: PKGCONFIG += x11 xrandr gl glesv2 xxf86vm sdl
@@ -53,9 +55,10 @@ include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
 
 #SOURCES += main.cpp
-SOURCES +=  examples/02.Quake3Map/main.cpp \
-#debug: SOURCES +=  \
-#        examples/16.Quake3MapShader/main.cpp \
+#SOURCES +=  examples/02.Quake3Map/main.cpp \
+SOURCES +=  \
+        examples/16.Quake3MapShader/main.cpp \
+#    waylandtest_main.cpp
     #examples/07.Collision/main.cpp \
     #examples/07.Collision/irrapp.cpp
 #    examples/13.RenderToTexture/main.cpp

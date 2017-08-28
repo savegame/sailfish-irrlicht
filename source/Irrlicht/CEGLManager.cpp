@@ -363,9 +363,6 @@ bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 //		os::Printer::log("Could not make the current window current !\n");
 //		return false;
 //	}
-#ifdef SAILFISH
-	wl_display_dispatch_pending((wl_display*)nativeDisplay);
-#endif
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
 
 	if (testEGLError())

@@ -123,14 +123,14 @@ static void
 keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
                        uint32_t format, int fd, uint32_t size);
 
-static void
-keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
-                      uint32_t serial, struct wl_surface *surface,
-                      struct wl_array *keys);
+//static void
+//keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+//                      uint32_t serial, struct wl_surface *surface,
+//                      struct wl_array *keys);
 
-static void
-keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
-                      uint32_t serial, struct wl_surface *surface);
+//static void
+//keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+//                      uint32_t serial, struct wl_surface *surface);
 
 static void
 keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
@@ -213,8 +213,8 @@ static const struct wl_pointer_listener pointer_listener = {
 
 static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_keymap,
-	keyboard_handle_enter,
-	keyboard_handle_leave,
+	irr::CIrrDeviceLinux::keyboard_handle_enter,
+	irr::CIrrDeviceLinux::keyboard_handle_leave,
 	keyboard_handle_key,
 	keyboard_handle_modifiers,
 };
@@ -476,19 +476,23 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 {
 }
 
-static void
-keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+void
+irr::CIrrDeviceLinux::keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface,
                       struct wl_array *keys)
 {
 	irr::os::Printer::log("Keyboard gained focus", irr::ELL_INFORMATION);
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	device->WindowHasFocus = true;
 }
 
-static void
-keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+void
+irr::CIrrDeviceLinux::keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
 	irr::os::Printer::log("Keyboard lost focus", irr::ELL_INFORMATION);
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	device->WindowHasFocus = false;
 }
 
 static void
@@ -835,7 +839,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	HasNetWM(false),
 #endif
 	Width(param.WindowSize.Width), Height(param.WindowSize.Height),
-	WindowHasFocus(false), WindowMinimized(false),
+    WindowHasFocus(true), WindowMinimized(false),
 	UseXVidMode(false), UseXRandR(false),
     ExternalWindow(false), AutorepeatSupport(0)
 #ifdef SAILFISH
@@ -2060,7 +2064,12 @@ bool CIrrDeviceLinux::run()
 	}
 #elif defined(SAILFISH)
 	/// TODO how to know is widwow closed or not?
-//	Close = wl_display_dispatch(wlDisplay) != -1;
+	wl_display_dispatch_pending(wlDisplay);
+	bool testClose = wl_display_dispatch(wlDisplay) == -1;
+	if(testClose)
+	{
+		irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
+	}
 #endif //_IRR_COMPILE_WITH_X11_
 
 	if (!Close)

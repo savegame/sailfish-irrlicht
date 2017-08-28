@@ -150,7 +150,7 @@ int main()
 
 	while(device->run())
 	{
-//		if (device->isWindowActive())
+		if (device->isWindowActive())
 		{
 			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,200,200,200));
 			smgr->drawAll();
@@ -169,8 +169,8 @@ int main()
 				lastFPS = fps;
 			}
 		}
-//		else
-//			device->yield();
+		else
+			device->yield();
 	}
 
 	/*

@@ -188,7 +188,7 @@ private:
 Ok, lets start.
 */
 
-int IRRCALLCONV main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	/*
 	Like in the HelloWorld example, we create an IrrlichtDevice with
@@ -345,9 +345,9 @@ int IRRCALLCONV main(int argc, char* argv[])
 	camera which behaves like the ones in first person shooter games (FPS).
 	*/
 
-//	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
-	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNode();
-	scene::ICameraSceneNode* displayCamera = smgr->addCameraSceneNode();
+	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
+//	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNode();
+//	scene::ICameraSceneNode* displayCamera = smgr->addCameraSceneNode();
 
 
 //	scene::ICameraSceneNode* camera = smgr->addCameraSceneNode();
@@ -399,7 +399,7 @@ int IRRCALLCONV main(int argc, char* argv[])
 				core::vector3df target(0.f, 0.f, 1.f);
 				target.rotateXZBy(angle);
 
-				viewCamera->setPosition(pos);
+//				viewCamera->setPosition(pos);
 //				camera->setTarget(pos + target);
 
 				++index;
@@ -413,7 +413,7 @@ int IRRCALLCONV main(int argc, char* argv[])
 			} while ( notEndList );
 		}
 	}
-
+	viewCamera->setPosition(core::vector3df(1300,144,1249));
 	/*
 	The mouse cursor needs not to be visible, so we make it invisible.
 	*/
@@ -458,38 +458,43 @@ int IRRCALLCONV main(int argc, char* argv[])
 //	camera->setViewMatrixAffector(affector);
 
 	while(device->run())
-//	if (device->isWindowActive())
+	if (device->isWindowActive())
 	{
 		//camera->setRotation( core::vector3df(0,0,camera->getRotation().Z + core::PI*0.05));
-		driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,20,20,40));
+		if (device->isWindowActive())
+			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,20,20,40));
+		else
+			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(255,255,255,40));
 		smgr->drawAll();
 		gui->drawAll();
 		driver->endScene();
 
-//		int fps = driver->getFPS();
-//		//if (lastFPS != fps)
-//		{
-//			io::IAttributes * const attr = smgr->getParameters();
-//			core::stringw str = L"Q3 [";
-//			str += driver->getName();
-//			str += "] FPS:";
-//			str += fps;
-//#ifdef _IRR_SCENEMANAGER_DEBUG
-//			str += " Cull:";
-//			str += attr->getAttributeAsInt("calls");
-//			str += "/";
-//			str += attr->getAttributeAsInt("culled");
-//			str += " Draw: ";
-//			str += attr->getAttributeAsInt("drawn_solid");
-//			str += "/";
-//			str += attr->getAttributeAsInt("drawn_transparent");
-//			str += "/";
-//			str += attr->getAttributeAsInt("drawn_transparent_effect");
-//#endif
-//			device->setWindowCaption(str.c_str());
-//			lastFPS = fps;
-//		}
+		int fps = driver->getFPS();
+		if (lastFPS != fps)
+		{
+			io::IAttributes * const attr = smgr->getParameters();
+			core::stringw str = L"Q3 [";
+			str += driver->getName();
+			str += "] FPS:";
+			str += fps;
+#ifdef _IRR_SCENEMANAGER_DEBUG
+			str += " Cull:";
+			str += attr->getAttributeAsInt("calls");
+			str += "/";
+			str += attr->getAttributeAsInt("culled");
+			str += " Draw: ";
+			str += attr->getAttributeAsInt("drawn_solid");
+			str += "/";
+			str += attr->getAttributeAsInt("drawn_transparent");
+			str += "/";
+			str += attr->getAttributeAsInt("drawn_transparent_effect");
+#endif
+			device->setWindowCaption(str.c_str());
+			lastFPS = fps;
+		}
 	}
+//	else
+//	    device->yield();
 
 	/*
 	In the end, delete the Irrlicht device.
