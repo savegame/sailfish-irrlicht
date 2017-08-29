@@ -192,6 +192,29 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 static void
 output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
 
+static void
+display_handle_error(void *data, struct wl_display *wl_display, void *object_id,
+                  uint32_t code, const char *message);
+
+static void
+display_handle_delete_id(void *data, struct wl_display *wl_display, uint32_t id);
+
+static void
+surface_handle_enter(void *data, struct wl_surface *wl_surface, struct wl_output *output);
+
+static void
+surface_handle_leave(void *data, struct wl_surface *wl_surface, struct wl_output *output);
+
+struct wl_surface_listener surface_listener = {
+	surface_handle_enter,
+	surface_handle_leave
+};
+
+struct wl_display_listener display_listener = {
+	display_handle_error,
+	display_handle_delete_id,
+};
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
 };
@@ -226,6 +249,47 @@ static const struct wl_touch_listener touch_listener = {
 	touch_handle_frame,
 	touch_handle_cancel,
 };
+
+static void
+surface_handle_enter(void *data, struct wl_surface *wl_surface, struct wl_output *output)
+{
+	irr::os::Printer::log("surface_handle_enter", irr::ELL_DEBUG);
+}
+
+static void
+surface_handle_leave(void *data, struct wl_surface *wl_surface, struct wl_output *output)
+{
+	irr::os::Printer::log("surface_handle_leave", irr::ELL_DEBUG);
+}
+
+static void
+display_handle_error(void *data,
+                  struct wl_display *wl_display,
+                  void *object_id,
+                  uint32_t code,
+                  const char *message)
+{
+	irr::core::stringc m = "display_handle_error() object_id: ";
+	m+= (uint32_t)object_id;
+	m+= "; code: ";
+	m+= code;
+	m+= "; message: \"";
+	m+= message;
+	m+= "\";";
+	irr::os::Printer::log(m.c_str(), irr::ELL_ERROR);
+}
+
+static void
+display_handle_delete_id(void *data,
+                      struct wl_display *wl_display,
+                      uint32_t id)
+{
+	irr::core::stringc m = "display_handle_delete_id() id:";
+	m+= id;
+	m+= ";";
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+}
+
 // https://jan.newmarch.name/Wayland/Input/
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
@@ -734,7 +798,7 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		m+= ", ";
 		m+= wl_fixed_to_double(y);
 		m+= ";";
-		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+//		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 #endif
 	if(data)
@@ -754,7 +818,7 @@ static void
 touch_handle_frame(void *data, struct wl_touch *wl_touch)
 {
 #ifdef _DEBUG
-	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
+//	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
 #endif
 }
 
@@ -1339,13 +1403,13 @@ bool CIrrDeviceLinux::createWindow()
 
 	// first
 	wlDisplay = wl_display_connect(NULL);
-
 	if (wlDisplay == NULL) {
 		os::Printer::log("Can't connect to wayland display", ELOG_LEVEL::ELL_ERROR);
 		return false;
 	}
 	else
 		os::Printer::log("[Good] wl_display_connect() done");
+	wl_display_add_listener(wlDisplay, &display_listener, this);
 
 	wlRegistry = wl_display_get_registry(wlDisplay);
 	wl_registry_add_listener(wlRegistry, &wlListener, this);
@@ -1375,6 +1439,7 @@ bool CIrrDeviceLinux::createWindow()
 	} else {
 		os::Printer::log("[Good] Created compositor surface on Wayland");
 	}
+	wl_surface_add_listener(wlSurface, &surface_listener, this);
 
 	// tranform window if needed
 	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
@@ -1393,7 +1458,8 @@ bool CIrrDeviceLinux::createWindow()
 	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
 //	wlWindow.egl_context =
 
-	wl_shell_surface_set_toplevel(wlShellSurface);
+//	wl_shell_surface_set_toplevel(wlShellSurface);
+	wl_shell_surface_set_fullscreen(wlShellSurface, Width, Height, wlOutput);
 
 	// creating window
 	wlRegion = wl_compositor_create_region(CIrrDeviceLinux::wlCompositor);
