@@ -448,12 +448,20 @@ namespace irr
 		/// Native System informations
 		NativeDisplayType nativeDisplay;
 		NativeWindowType nativeWindow;
-		/// EGL display
-		EGLDisplay  Display;
-		/// EGL context
-		EGLContext  Context;
-		/// EGL surface
-		EGLSurface  Surface;
+		/// EGL components
+		EGLDisplay  Display;/// EGL display
+		EGLContext  Context;/// EGL context
+		EGLSurface  Surface;/// EGL surface
+		u32  PhysicalWidth, PhysicalHeight;
+		u32  dpi;
+	public:
+		void setPhysicalSize(u32  width, u32 height)
+		{
+			PhysicalWidth = width;
+			PhysicalHeight = height;
+		}
+
+	private:
 #endif
 		u32  Width, Height;
 		bool WindowHasFocus;

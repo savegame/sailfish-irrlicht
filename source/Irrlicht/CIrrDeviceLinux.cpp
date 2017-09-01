@@ -30,6 +30,7 @@
 #else
 #include <linux/input.h>
 #include <Keycodes.h>
+#include <wayland-util.h>
 #endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
@@ -393,6 +394,11 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 #endif
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	if(device)
+	{
+		device->setPhysicalSize((irr::s32)physical_width, (irr::s32)physical_height);
+	}
 }
 
 static void
@@ -911,6 +917,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
       global_registry_handler,
       global_registry_remover
     })
+    , PhysicalWidth(0), PhysicalHeight(0)
 #endif
 {
 	#ifdef _DEBUG
@@ -1402,6 +1409,7 @@ bool CIrrDeviceLinux::createWindow()
 	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
 
 	// first
+//	wl_display_list();
 	wlDisplay = wl_display_connect(NULL);
 	if (wlDisplay == NULL) {
 		os::Printer::log("Can't connect to wayland display", ELOG_LEVEL::ELL_ERROR);
@@ -2130,11 +2138,69 @@ bool CIrrDeviceLinux::run()
 	}
 #elif defined(SAILFISH)
 	/// TODO how to know is widwow closed or not?
-	wl_display_dispatch_pending(wlDisplay);
-	bool testClose = wl_display_dispatch(wlDisplay) == -1;
-	if(testClose)
+	if(wlDisplay)
 	{
-		irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
+		int err = wl_display_get_error(wlDisplay);
+		if (err != 0) {
+			struct wl_interface *interface = nullptr;
+			uint32_t id;
+			int code = wl_display_get_protocol_error(wlDisplay, (const struct wl_interface **)&interface, &id);
+            irr:core::stringc m = "wl_display_error (";
+			m+=err;
+			m+=") object_id: ";
+			m+=id;
+			m+=" interface_ptr:";
+			m+=(long)interface;
+			m+=";";
+			irr::os::Printer::log(m.c_str(), irr::ELL_ERROR);
+			if( irr::os::Printer::Logger->getLogLevel() == irr::ELL_DEBUG )
+			{// trace error to terminal
+				m = " Interface: name(";
+				m += interface->name;
+				m += ")";
+				irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+				irr::os::Printer::log("---------------- Events:", irr::ELL_DEBUG);
+				for(int i = 0; i < interface->event_count; i++ )
+				{
+					m = "Event[";
+					m += i;
+					m += "] name(";
+					m += interface->events[i].name;
+					m += ") signature(";
+					m += interface->events[i].signature;
+					m += ");";
+					irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+					const struct wl_interface *ff = *interface->events[i].types;
+					if( strcmp( interface->events[i].name, "delete_id") == 0 && ff )
+					{
+						m = "Event Interface name(";
+						m += ff->name;
+						irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+					}
+				}
+				irr::os::Printer::log("---------------- Methods:", irr::ELL_DEBUG);
+				for(int i = 0; i < interface->method_count; i++ )
+				{
+					m = "Method[";
+					m += i;
+					m += "] name(";
+					m += interface->methods[i].name;
+					m += ") signature(";
+					m += interface->methods[i].signature;
+					m += ");";
+					irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+				}
+				irr::os::Printer::log("-------------------------", irr::ELL_DEBUG);
+			}
+			Close = true;
+//			handle_error(code, interface, id);
+		}
+		wl_display_dispatch_pending(wlDisplay);
+		bool testClose = wl_display_dispatch(wlDisplay) == -1;
+		if(testClose)
+		{
+			irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
+		}
 	}
 #endif //_IRR_COMPILE_WITH_X11_
 
@@ -2328,6 +2394,13 @@ void CIrrDeviceLinux::setWindowSize(const irr::core::dimension2d<u32>& size)
 	XFlush(XDisplay);
 #elif SAILFISH
 	CreationParams.WindowSize = size;
+	if(PhysicalHeight != 0 && PhysicalWidth != 0)
+	{
+#define dot2mm_dpi 0.03937
+		f32 dpiW = (f32)CreationParams.WindowSize.Width/(f32)PhysicalWidth;
+		f32 dpiH = (f32)CreationParams.WindowSize.Height/(f32)PhysicalHeight;
+		dpi = dot2mm_dpi*((dpiW > dpiH)?dpiW:dpiH);
+	}
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 }
 
@@ -2405,7 +2478,7 @@ video::IVideoModeList* CIrrDeviceLinux::getVideoModeList()
 		}
 	}
 #endif
-
+	VideoModeList->addMode( core::dimension2du(Width, Height), 32 );
 	return VideoModeList;
 }
 
