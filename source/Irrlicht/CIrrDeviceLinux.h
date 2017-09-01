@@ -452,10 +452,10 @@ namespace irr
 		EGLDisplay  Display;/// EGL display
 		EGLContext  Context;/// EGL context
 		EGLSurface  Surface;/// EGL surface
-		u32  PhysicalWidth, PhysicalHeight;
+		s32  PhysicalWidth, PhysicalHeight;
 		u32  dpi;
 	public:
-		void setPhysicalSize(u32  width, u32 height)
+		void setPhysicalSize(s32  width, s32 height)
 		{
 			PhysicalWidth = width;
 			PhysicalHeight = height;
