@@ -5,7 +5,7 @@ macx: TEMPLATE = app #lib
 
 !macx: CONFIG += link_pkgconfig
 CONFIG += warn_off
-sailfish: CONFIG += sailfishapp
+sailfish: CONFIG += sailfishapp wayland-compositor
 macx|x11: CONFIG-=qt
 sailfish:QT += compositor widgets core
 #sailfish: CONFIG += wayland-compositor

@@ -2140,6 +2140,7 @@ bool CIrrDeviceLinux::run()
 	/// TODO how to know is widwow closed or not?
 	if(wlDisplay)
 	{
+		struct wl_callback *cb = wl_display_sync(wlDisplay);
 		int err = wl_display_get_error(wlDisplay);
 		if (err != 0) {
 			struct wl_interface *interface = nullptr;
@@ -2162,16 +2163,17 @@ bool CIrrDeviceLinux::run()
 				irr::os::Printer::log("---------------- Events:", irr::ELL_DEBUG);
 				for(int i = 0; i < interface->event_count; i++ )
 				{
+					const struct wl_message &message = interface->events[i];
 					m = "Event[";
 					m += i;
 					m += "] name(";
-					m += interface->events[i].name;
+					m += message.name;
 					m += ") signature(";
-					m += interface->events[i].signature;
+					m += message.signature;
 					m += ");";
 					irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
-					const struct wl_interface *ff = *interface->events[i].types;
-					if( strcmp( interface->events[i].name, "delete_id") == 0 && ff )
+					const struct wl_interface *ff = *message.types;
+					if( strcmp( message.name, "delete_id") == 0 && ff )
 					{
 						m = "Event Interface name(";
 						m += ff->name;
@@ -2396,10 +2398,10 @@ void CIrrDeviceLinux::setWindowSize(const irr::core::dimension2d<u32>& size)
 	CreationParams.WindowSize = size;
 	if(PhysicalHeight != 0 && PhysicalWidth != 0)
 	{
-#define dot2mm_dpi 0.03937
+#define mm2inch 25,4000508
 		f32 dpiW = (f32)CreationParams.WindowSize.Width/(f32)PhysicalWidth;
 		f32 dpiH = (f32)CreationParams.WindowSize.Height/(f32)PhysicalHeight;
-		dpi = dot2mm_dpi*((dpiW > dpiH)?dpiW:dpiH);
+		dpi = mm2inch*((dpiW > dpiH)?dpiW:dpiH);
 	}
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 }
