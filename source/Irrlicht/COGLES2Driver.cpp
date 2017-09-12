@@ -69,7 +69,9 @@ COGLES2Driver::COGLES2Driver(const SIrrlichtCreationParameters& params, io::IFil
  	)
 	if (!ContextManager)
 		return;
-
+#if defined(SAILFISH) && defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+	ScreenSize = params.WindowSize;
+#endif
 	ContextManager->grab();
 	ContextManager->generateSurface();
 	ContextManager->generateContext();

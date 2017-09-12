@@ -195,7 +195,8 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
         Screen((SDL_Surface*)param.WindowId),
         SDL_Flags(SDL_ANYFORMAT),
     #else
-        Screen((SDL_Window*)param.WindowId),
+        Screen(nullptr),
+        Surface((SDL_Surface*)param.WindowId),
         SDL_Flags(SDL_WINDOW_OPENGL),
     #endif
 	MouseX(0), MouseY(0), MouseXRel(0), MouseYRel(0), MouseButtonStates(0),
@@ -243,6 +244,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	sdlversion += ".";
 	sdlversion += Info.version.patch;
 #else
+	//SDL_GetWindowWMInfo();
 	core::stringc sdlversion = "SDL Version 2.0";
 
 #endif //_IRR_EMSCRIPTEN_PLATFORM_ && SAILFISH
@@ -346,6 +348,8 @@ bool CIrrDeviceSDL::createWindow()
 		WindowMinimized = false;
 		Width = dm.w;
 		Height = dm.h;
+		CreationParams.WindowSize.Width = Width;
+		CreationParams.WindowSize.Height = Height;
 		SDL_DestroyWindow(Screen);
 		Screen = nullptr;
 #endif
