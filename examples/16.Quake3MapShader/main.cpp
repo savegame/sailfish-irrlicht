@@ -75,7 +75,7 @@ public:
 
 	~CScreenShotFactory()
 	{
-		button->drop();
+//		button->drop();
 	}
 
 	bool OnEvent(const SEvent& event)
@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
 //	camera->setViewMatrixAffector(affector);
 
 	while(device->run())
-//	if (device->isWindowActive())
+	if (device->isWindowActive())
 	{
 		//camera->setRotation( core::vector3df(0,0,camera->getRotation().Z + core::PI*0.05));
 		if (device->isWindowActive())
@@ -494,8 +494,8 @@ int main(int argc, char* argv[])
 			lastFPS = fps;
 		}
 	}
-//	else
-//	    device->yield();
+	else
+		device->yield();
 
 	/*
 	In the end, delete the Irrlicht device.

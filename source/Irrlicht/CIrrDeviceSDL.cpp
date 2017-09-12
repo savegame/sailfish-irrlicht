@@ -332,6 +332,23 @@ bool CIrrDeviceSDL::createWindow()
 	if (CreationParams.DriverType == video::EDT_OPENGL)
 #endif
 	{
+#ifdef SAILFISH
+		// get resolution
+		Screen = SDL_CreateWindow(title,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          128, 128,
+		                          SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
+		SDL_DisplayMode dm;
+		SDL_GetDesktopDisplayMode(0,&dm);
+		SDL_SetWindowSize( Screen, dm.w, dm.h );
+		WindowHasFocus = true;
+		WindowMinimized = false;
+		Width = dm.w;
+		Height = dm.h;
+		SDL_DestroyWindow(Screen);
+		Screen = nullptr;
+#endif
 		if (CreationParams.Bits==16)
 		{
 			SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 4 );
@@ -434,8 +451,11 @@ bool CIrrDeviceSDL::createWindow()
 		return false;
 	}
 
-	Surface = SDL_GetWindowSurface(Screen);
 
+#ifdef SAILFISH
+	Surface = SDL_GetWindowSurface(Screen);
+	// resize widow to right resolution
+#endif
 	return true;
 #endif // !_IRR_EMSCRIPTEN_PLATFORM_
 }
@@ -504,6 +524,7 @@ void CIrrDeviceSDL::createDriver()
 			ContextManager->initialize(CreationParams, data);
 
 			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
+//			VideoDriver->OnResize( core::dimension2du(Width, Height) );
 #endif
 		}
 #else
@@ -724,7 +745,7 @@ bool CIrrDeviceSDL::run()
 #endif
 				irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
 #ifdef SAILFISH
-				irrevent.KeyInput.Char = SDL_event.key.keysym.sym;
+				irrevent.KeyInput.Char = SDL_event.key.keysym.scancode;
 #else
 				irrevent.KeyInput.Char = SDL_event.key.keysym.unicode;
 #endif
@@ -761,10 +782,12 @@ bool CIrrDeviceSDL::run()
 
 			switch(SDL_event.window.event)
 			{
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
 			case SDL_WINDOWEVENT_ENTER:
 				WindowMinimized = false;
 				WindowHasFocus = true;
 				break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
 			case SDL_WINDOWEVENT_LEAVE:
 				WindowMinimized = true;
 				WindowHasFocus = false;
@@ -786,6 +809,32 @@ bool CIrrDeviceSDL::run()
 				if (VideoDriver)
 					VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
 			}
+			break;
+#else
+#endif
+#if defined(SAILFISH) && defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+		/* Touch events */
+		case SDL_FINGERUP:
+		case SDL_FINGERMOTION:
+		case SDL_FINGERDOWN:
+		    {
+			    irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+				irrevent.TouchInput.X = (irr::s32)SDL_event.tfinger.x;
+				irrevent.TouchInput.Y = (irr::s32)SDL_event.tfinger.y;
+				irrevent.TouchInput.ID = SDL_event.tfinger.fingerId;
+				switch( SDL_event.tfinger.type)
+				{
+				case SDL_FINGERMOTION:
+					irrevent.TouchInput.Event = irr::ETIE_MOVED;
+					break;
+				case SDL_FINGERDOWN:
+					irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
+					break;
+				case SDL_FINGERUP:
+					irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
+					break;
+				}
+		    }
 			break;
 #endif
 		case SDL_USEREVENT:

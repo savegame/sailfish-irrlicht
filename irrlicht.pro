@@ -66,6 +66,5 @@ SOURCES +=  \
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \
     irrlicht.png \
-    irrlicht.desktop \
-    rpm/irrlicht.spec
+    irrlicht.desktop
 

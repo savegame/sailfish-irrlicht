@@ -33,7 +33,6 @@ PkgConfigBR:
   - sdl2
   - SDL2_image
   - SDL2_mixer
-  - SDL2_ttf
 
 
 # Build dependencies without a pkgconfig setup can be listed here
