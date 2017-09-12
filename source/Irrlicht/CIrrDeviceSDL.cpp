@@ -838,9 +838,23 @@ bool CIrrDeviceSDL::run()
 					irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
 					break;
 				}
+				postEventFromUser(irrevent);
 		    }
 			break;
 #endif
+		case SDL_DOLLARGESTURE:
+			break;
+		case SDL_DOLLARRECORD:
+			break;
+		case SDL_MULTIGESTURE:
+			break;
+		case SDL_CONTROLLERAXISMOTION:     /**< Game controller axis motion */
+		case SDL_CONTROLLERBUTTONDOWN:     /**< Game controller button pressed */
+		case SDL_CONTROLLERBUTTONUP:       /**< Game controller button released */
+		case SDL_CONTROLLERDEVICEADDED:    /**< A new Game controller has been inserted into the system */
+		case SDL_CONTROLLERDEVICEREMOVED:  /**< An opened Game controller has been removed */
+		case SDL_CONTROLLERDEVICEREMAPPED: /**< The controller mapping was updated */
+			break;
 		case SDL_USEREVENT:
 			irrevent.EventType = irr::EET_USER_EVENT;
 			irrevent.UserEvent.UserData1 = reinterpret_cast<uintptr_t>(SDL_event.user.data1);
