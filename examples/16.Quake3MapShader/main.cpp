@@ -224,6 +224,7 @@ int main(int argc, char* argv[])
 	device->getSceneManager().
 	*/
 	video::IVideoDriver* driver = device->getVideoDriver();
+	driver->getScreenSize();
 	scene::ISceneManager* smgr = device->getSceneManager();
 	gui::IGUIEnvironment* gui = device->getGUIEnvironment();
 
@@ -458,7 +459,7 @@ int main(int argc, char* argv[])
 //	camera->setViewMatrixAffector(affector);
 
 	while(device->run())
-	if (device->isWindowActive())
+//	if (device->isWindowActive())
 	{
 		//camera->setRotation( core::vector3df(0,0,camera->getRotation().Z + core::PI*0.05));
 		if (device->isWindowActive())

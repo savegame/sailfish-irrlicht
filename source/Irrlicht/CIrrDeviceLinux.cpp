@@ -2258,7 +2258,9 @@ void CIrrDeviceLinux::setWindowCaption(const wchar_t* text)
 #elif defined(SAILFISH)
 //	irr::core::stringw title(text);
 	/// TODO wchar_t to char
-	wl_shell_surface_set_title(wlShellSurface, "Sailfish Irrlicht Application");
+	irr::core::stringc title;
+	title = text;
+	wl_shell_surface_set_title(wlShellSurface, title.c_str() );
 #endif
 }
 

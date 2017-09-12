@@ -13,7 +13,7 @@ sailfish: INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 TARGET = irrlicht
 #DESTDIR = bin
 
-sailfish: PKGCONFIG += wayland-client wayland-egl
+sailfish: PKGCONFIG += wayland-client wayland-egl sdl2 SDL2_image SDL2_mixer SDL2_ttf
 PKGCONFIG += zlib libpng egl
 !sailfish: PKGCONFIG += bzip2
 x11: PKGCONFIG += x11 xrandr gl glesv2 xxf86vm sdl

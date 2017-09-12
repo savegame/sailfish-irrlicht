@@ -17,14 +17,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "SIrrCreationParameters.h"
+#ifndef SAILFISH
 #include <SDL/SDL_syswm.h>
 #include <SDL/SDL_video.h>
+#else
+#include <SDL_syswm.h>
+#include <SDL_video.h>
+#endif
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 #include "CEGLManager.h"
 #endif
 #include <emscripten.h>
+#elif defined(SAILFISH)
+#ifdef _IRR_COMPILE_WITH_OGLES2_
+#include "CEGLManager.h"
+#endif
 #endif
 
 #ifdef _MSC_VER
@@ -45,7 +54,7 @@ namespace irr
 				io::IFileSystem* io, CIrrDeviceSDL* device);
 		#endif
 
-		#if defined(_IRR_COMPILE_WITH_OGLES2_) && defined(_IRR_EMSCRIPTEN_PLATFORM_)
+        #if defined(_IRR_COMPILE_WITH_OGLES2_) &&  ( defined(_IRR_EMSCRIPTEN_PLATFORM_) || defined(SAILFISH) )
 		IVideoDriver* createOGLES2Driver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 		#endif
 
@@ -182,13 +191,23 @@ bool CIrrDeviceSDL::isNoUnicodeKey(EKEY_CODE key) const
 //! constructor
 CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	: CIrrDeviceStub(param),
-	Screen((SDL_Surface*)param.WindowId), SDL_Flags(SDL_ANYFORMAT),
+    #ifndef SAILFISH
+        Screen((SDL_Surface*)param.WindowId),
+        SDL_Flags(SDL_ANYFORMAT),
+    #else
+        Screen((SDL_Window*)param.WindowId),
+        SDL_Flags(SDL_WINDOW_OPENGL),
+    #endif
 	MouseX(0), MouseY(0), MouseXRel(0), MouseYRel(0), MouseButtonStates(0),
 	Width(param.WindowSize.Width), Height(param.WindowSize.Height),
 	Resizable(false), WindowHasFocus(false), WindowMinimized(false)
 {
 	#ifdef _DEBUG
+#ifdef SAILFISH
+	setDebugName("CIrrDeviceSDL2");
+#else
 	setDebugName("CIrrDeviceSDL");
+#endif
 	#endif
 
 	// Initialize SDL... Timer for sleep, video for the obvious, and
@@ -207,29 +226,33 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	SDL_putenv("SDL_VIDEODRIVER=directx");
 #elif defined(_IRR_OSX_PLATFORM_)
 	SDL_putenv("SDL_VIDEODRIVER=Quartz");
-#elif !defined(_IRR_EMSCRIPTEN_PLATFORM_)
+#elif !defined(_IRR_EMSCRIPTEN_PLATFORM_) && !defined(SAILFISH)
 	SDL_putenv("SDL_VIDEODRIVER=x11");
 #endif
 //	SDL_putenv("SDL_WINDOWID=");
 
+#ifndef SAILFISH
 	SDL_VERSION(&Info.version);
-
-#ifndef _IRR_EMSCRIPTEN_PLATFORM_
+#endif
+#if !defined(_IRR_EMSCRIPTEN_PLATFORM_) && !defined(SAILFISH)
 	SDL_GetWMInfo(&Info);
-#endif //_IRR_EMSCRIPTEN_PLATFORM_
 	core::stringc sdlversion = "SDL Version ";
 	sdlversion += Info.version.major;
 	sdlversion += ".";
 	sdlversion += Info.version.minor;
 	sdlversion += ".";
 	sdlversion += Info.version.patch;
+#else
+	core::stringc sdlversion = "SDL Version 2.0";
 
+#endif //_IRR_EMSCRIPTEN_PLATFORM_ && SAILFISH
 	Operator = new COSOperator(sdlversion);
 	os::Printer::log(sdlversion.c_str(), ELL_INFORMATION);
 
 	// create keymap
 	createKeyMap();
 	// enable key to character translation
+#ifndef SAILFISH
 	SDL_EnableUNICODE(1);
 
 	(void)SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -244,7 +267,10 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	else
 		SDL_Flags = SDL_SWSURFACE;
 #endif //_IRR_EMSCRIPTEN_PLATFORM_
-
+#else
+	SDL_Flags |= SDL_WINDOW_FULLSCREEN;
+	SDL_Flags |= SDL_WINDOW_OPENGL;
+#endif
 	// create window
 	if (CreationParams.DriverType != video::EDT_NULL)
 	{
@@ -299,8 +325,12 @@ bool CIrrDeviceSDL::createWindow()
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
 	if ( Close )
 		return false;
-
+	const char *title = "Irrlicht + SDL2";
+#ifdef SAILFISH
+	if (CreationParams.DriverType == video::EDT_OGLES2 || CreationParams.DriverType == video::EDT_OPENGL)
+#else
 	if (CreationParams.DriverType == video::EDT_OPENGL)
+#endif
 	{
 		if (CreationParams.Bits==16)
 		{
@@ -327,13 +357,29 @@ bool CIrrDeviceSDL::createWindow()
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
 		}
 		if ( !Screen )
+#ifndef SAILFISH
 			Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+#else // SDL2 on Sailfish
+			Screen = SDL_CreateWindow(title,
+			                          SDL_WINDOWPOS_UNDEFINED,
+			                          SDL_WINDOWPOS_UNDEFINED,
+			                          Width, Height,
+			                          SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
+#endif
 		if ( !Screen && CreationParams.AntiAlias>1)
 		{
 			while (--CreationParams.AntiAlias>1)
 			{
 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
+#ifndef SAILFISH
 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+#else
+				Screen = SDL_CreateWindow(title,
+				                          SDL_WINDOWPOS_UNDEFINED,
+				                          SDL_WINDOWPOS_UNDEFINED,
+				                          Width, Height,
+				                          SDL_Flags);
+#endif
 				if (Screen)
 					break;
 			}
@@ -341,28 +387,54 @@ bool CIrrDeviceSDL::createWindow()
 			{
 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
+#ifndef SAILFISH
 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+#else
+				Screen = SDL_CreateWindow(title,
+				                          SDL_WINDOWPOS_UNDEFINED,
+				                          SDL_WINDOWPOS_UNDEFINED,
+				                          Width, Height,
+				                          SDL_Flags);
+#endif
 				if (Screen)
 					os::Printer::log("AntiAliasing disabled due to lack of support!" );
 			}
 		}
 	}
 	else if ( !Screen )
+#ifndef SAILFISH
 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+#else
+		Screen = SDL_CreateWindow(title,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          Width, Height,
+		                          SDL_Flags);
+#endif
 
 	if ( !Screen && CreationParams.Doublebuffer)
 	{
 		// Try single buffer
 		if (CreationParams.DriverType == video::EDT_OPENGL)
 			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+#ifndef SAILFISH
 		SDL_Flags &= ~SDL_DOUBLEBUF;
 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+#else
+		Screen = SDL_CreateWindow(title,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          SDL_WINDOWPOS_UNDEFINED,
+		                          Width, Height,
+		                          SDL_Flags);
+#endif
 	}
 	if ( !Screen )
 	{
 		os::Printer::log( "Could not initialize display!" );
 		return false;
 	}
+
+	Surface = SDL_GetWindowSurface(Screen);
 
 	return true;
 #endif // !_IRR_EMSCRIPTEN_PLATFORM_
@@ -417,14 +489,22 @@ void CIrrDeviceSDL::createDriver()
 		break;
 
 	case video::EDT_OGLES2:
-#if defined(_IRR_COMPILE_WITH_OGLES2_) && defined(_IRR_EMSCRIPTEN_PLATFORM_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) &&  (defined(_IRR_EMSCRIPTEN_PLATFORM_) || defined(SAILFISH) )
 		{
 			video::SExposedVideoData data;
-
+#ifndef SAILFISH
+//			data.OpenGLLinux.X11Window = (unsigned long)Screen;
+//			VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, this);
+#else
+//			SDL_SysWMinfo wmInfo;
+//			data.OGLESWayland.Window = SDL_GetWindowWMInfo(Screen,&wmInfo);
+			data.OGLESWayland.Window = Screen;
+			data.OGLESWayland.Surface = Surface;
 			ContextManager = new video::CEGLManager();
 			ContextManager->initialize(CreationParams, data);
 
 			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
+#endif
 		}
 #else
 		os::Printer::log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
@@ -460,6 +540,8 @@ void CIrrDeviceSDL::createDriver()
 	{
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 		Screen = SDL_SetVideoMode( Width, Height, 32, SDL_OPENGL );
+#elif defined(SAILFISH)
+
 #else //_IRR_EMSCRIPTEN_PLATFORM_
 		Screen = SDL_SetVideoMode( Width, Height, 0, SDL_Flags );
 #endif //_IRR_EMSCRIPTEN_PLATFOR
@@ -493,7 +575,20 @@ bool CIrrDeviceSDL::run()
 
 			postEventFromUser(irrevent);
 			break;
-
+#ifdef SAILFISH
+		case SDL_MOUSEWHEEL:
+			if(SDL_event.wheel.y > 0 )
+			{
+				irrevent.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
+				irrevent.MouseInput.Wheel = 1.0f;
+			}
+			else
+			{
+				irrevent.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
+				irrevent.MouseInput.Wheel = -1.0f;
+			}
+			break;
+#endif
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
 
@@ -570,7 +665,7 @@ bool CIrrDeviceSDL::run()
 					MouseButtonStates &= !irr::EMBSM_MIDDLE;
 				}
 				break;
-
+#ifndef SAILFISH
 			case SDL_BUTTON_WHEELUP:
 				irrevent.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
 				irrevent.MouseInput.Wheel = 1.0f;
@@ -580,6 +675,7 @@ bool CIrrDeviceSDL::run()
 				irrevent.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
 				irrevent.MouseInput.Wheel = -1.0f;
 				break;
+#endif
 			}
 
 			irrevent.MouseInput.ButtonStates = MouseButtonStates;
@@ -627,7 +723,11 @@ bool CIrrDeviceSDL::run()
 				}
 #endif
 				irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
+#ifdef SAILFISH
+				irrevent.KeyInput.Char = SDL_event.key.keysym.sym;
+#else
 				irrevent.KeyInput.Char = SDL_event.key.keysym.unicode;
+#endif
 				irrevent.KeyInput.Key = key;
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 				// On emscripten SDL does not (yet?) return 0 for invalid keysym.unicode's.
@@ -647,16 +747,32 @@ bool CIrrDeviceSDL::run()
 		case SDL_QUIT:
 			Close = true;
 			break;
-
+#ifndef SAILFISH
 		case SDL_ACTIVEEVENT:
 			if ((SDL_event.active.state == SDL_APPMOUSEFOCUS) ||
-					(SDL_event.active.state == SDL_APPINPUTFOCUS))
+			        (SDL_event.active.state == SDL_APPINPUTFOCUS))
 				WindowHasFocus = (SDL_event.active.gain==1);
 			else
 			if (SDL_event.active.state == SDL_APPACTIVE)
 				WindowMinimized = (SDL_event.active.gain!=1);
 			break;
+#else
+		case SDL_WINDOWEVENT:
 
+			switch(SDL_event.window.event)
+			{
+			case SDL_WINDOWEVENT_ENTER:
+				WindowMinimized = false;
+				WindowHasFocus = true;
+				break;
+			case SDL_WINDOWEVENT_LEAVE:
+				WindowMinimized = true;
+				WindowHasFocus = false;
+				break;
+			}
+			break;
+#endif
+#ifndef SAILFISH // no need resize window
 		case SDL_VIDEORESIZE:
 			if ((SDL_event.resize.w != (int)Width) || (SDL_event.resize.h != (int)Height))
 			{
@@ -671,7 +787,7 @@ bool CIrrDeviceSDL::run()
 					VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
 			}
 			break;
-
+#endif
 		case SDL_USEREVENT:
 			irrevent.EventType = irr::EET_USER_EVENT;
 			irrevent.UserEvent.UserData1 = reinterpret_cast<uintptr_t>(SDL_event.user.data1);
@@ -781,6 +897,7 @@ bool CIrrDeviceSDL::activateJoysticks(core::array<SJoystickInfo> & joystickInfo)
 	joystickInfo.reallocate(numJoysticks);
 
 	int joystick = 0;
+
 	for (; joystick<numJoysticks; ++joystick)
 	{
 		Joysticks.push_back(SDL_JoystickOpen(joystick));
@@ -789,7 +906,11 @@ bool CIrrDeviceSDL::activateJoysticks(core::array<SJoystickInfo> & joystickInfo)
 		info.Joystick = joystick;
 		info.Axes = SDL_JoystickNumAxes(Joysticks[joystick]);
 		info.Buttons = SDL_JoystickNumButtons(Joysticks[joystick]);
+#ifdef SAILFISH
+		info.Name = SDL_JoystickName(Joysticks[joystick]);
+#else
 		info.Name = SDL_JoystickName(joystick);
+#endif
 		info.PovHat = (SDL_JoystickNumHats(Joysticks[joystick]) > 0)
 						? SJoystickInfo::POV_HAT_PRESENT : SJoystickInfo::POV_HAT_ABSENT;
 
@@ -839,23 +960,30 @@ void CIrrDeviceSDL::sleep(u32 timeMs, bool pauseTimer)
 void CIrrDeviceSDL::setWindowCaption(const wchar_t* text)
 {
 	core::stringc textc = text;
+#ifndef SAILFISH
 	SDL_WM_SetCaption( textc.c_str( ), textc.c_str( ) );
+#else
+	SDL_SetWindowTitle(Screen, textc.c_str() );
+#endif
 }
 
 
 //! presents a surface in the client area
 bool CIrrDeviceSDL::present(video::IImage* surface, void* windowId, core::rect<s32>* srcClip)
 {
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#if defined(_IRR_EMSCRIPTEN_PLATFORM_) || defined(SAILFISH)
 	return true;
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
 	SDL_Surface *sdlSurface = SDL_CreateRGBSurfaceFrom(
 			surface->getData(), surface->getDimension().Width, surface->getDimension().Height,
 			surface->getBitsPerPixel(), surface->getPitch(),
 			surface->getRedMask(), surface->getGreenMask(), surface->getBlueMask(), surface->getAlphaMask());
+	Surface = sdlSurface;
 	if (!sdlSurface)
 		return false;
+#ifndef SAILFISH
 	SDL_SetAlpha(sdlSurface, 0, 0);
+#endif
 	SDL_SetColorKey(sdlSurface, 0, 0);
 	sdlSurface->format->BitsPerPixel=surface->getBitsPerPixel();
 	sdlSurface->format->BytesPerPixel=surface->getBytesPerPixel();
@@ -937,7 +1065,8 @@ void CIrrDeviceSDL::closeDevice()
 //! \return Pointer to a list with all video modes supported
 video::IVideoModeList* CIrrDeviceSDL::getVideoModeList()
 {
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+	//TODO get normal code for WiveMode in SDL 2 SDL_GetDisplayMode in SDL_video.h
+#if defined(_IRR_EMSCRIPTEN_PLATFORM_) || defined(SAILFISH)
 	os::Printer::log("VideoModeList not available on the web." , ELL_WARNING);
 	return VideoModeList;
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
@@ -966,8 +1095,8 @@ video::IVideoModeList* CIrrDeviceSDL::getVideoModeList()
 //! Sets if the window should be resizable in windowed mode.
 void CIrrDeviceSDL::setResizable(bool resize)
 {
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
-	os::Printer::log("Resizable not available on the web." , ELL_WARNING);
+#if defined(_IRR_EMSCRIPTEN_PLATFORM_) || defined(SAILFISH)
+	os::Printer::log("Resizable not available." , ELL_WARNING);
 	return;
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
 	if (resize != Resizable)
@@ -986,7 +1115,11 @@ void CIrrDeviceSDL::setResizable(bool resize)
 //! Minimizes window if possible
 void CIrrDeviceSDL::minimizeWindow()
 {
+#ifndef SAILFISH
 	SDL_WM_IconifyWindow();
+//#else
+//	SDL_RaiseWindow(Screen);
+#endif
 }
 
 
@@ -1013,6 +1146,8 @@ bool CIrrDeviceSDL::isFullscreen() const
 {
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 	return SDL_GetWindowFlags(0) == SDL_WINDOW_FULLSCREEN;
+//#elif defined(SAILFISH)
+//	return SDL_GetWindowDisplayMode
 #else
 
 	return CIrrDeviceStub::isFullscreen();
@@ -1077,6 +1212,7 @@ video::ECOLOR_FORMAT CIrrDeviceSDL::getColorFormat() const
 {
 	if (Screen)
 	{
+#ifndef SAILFISH
 		if (Screen->format->BitsPerPixel==16)
 		{
 			if (Screen->format->Amask != 0)
@@ -1091,6 +1227,24 @@ video::ECOLOR_FORMAT CIrrDeviceSDL::getColorFormat() const
 			else
 				return video::ECF_R8G8B8;
 		}
+#else
+		SDL_DisplayMode dm;
+		SDL_GetDesktopDisplayMode(0,&dm);
+		if(	SDL_BITSPERPIXEL(dm.format) == 16)
+		{
+			if(dm.format == SDL_PIXELFORMAT_ARGB1555)
+				return video::ECF_A1R5G5B5;
+			else
+				return video::ECF_R5G6B5;
+		}
+		else
+		{
+			if (dm.format == SDL_PIXELFORMAT_ARGB8888)
+				return video::ECF_A8R8G8B8;
+			else
+				return video::ECF_R8G8B8;
+		}
+#endif
 	}
 	else
 		return CIrrDeviceStub::getColorFormat();
@@ -1133,11 +1287,12 @@ void CIrrDeviceSDL::createKeyMap()
 	KeyMap.push_back(SKeyMap(SDLK_RIGHT, KEY_RIGHT));
 	KeyMap.push_back(SKeyMap(SDLK_DOWN, KEY_DOWN));
 
+#ifndef SAILFISH
 	// select missing
 	KeyMap.push_back(SKeyMap(SDLK_PRINT, KEY_PRINT));
 	// execute missing
 	KeyMap.push_back(SKeyMap(SDLK_PRINT, KEY_SNAPSHOT));
-
+#endif
 	KeyMap.push_back(SKeyMap(SDLK_INSERT, KEY_INSERT));
 	KeyMap.push_back(SKeyMap(SDLK_DELETE, KEY_DELETE));
 	KeyMap.push_back(SKeyMap(SDLK_HELP, KEY_HELP));
@@ -1180,11 +1335,13 @@ void CIrrDeviceSDL::createKeyMap()
 	KeyMap.push_back(SKeyMap(SDLK_y, KEY_KEY_Y));
 	KeyMap.push_back(SKeyMap(SDLK_z, KEY_KEY_Z));
 
+#ifndef SAILFISH
 	KeyMap.push_back(SKeyMap(SDLK_LSUPER, KEY_LWIN));
 	KeyMap.push_back(SKeyMap(SDLK_RSUPER, KEY_RWIN));
+#endif
 	// apps missing
 	KeyMap.push_back(SKeyMap(SDLK_POWER, KEY_SLEEP)); //??
-
+#ifndef SAILFISH
 	KeyMap.push_back(SKeyMap(SDLK_KP0, KEY_NUMPAD0));
 	KeyMap.push_back(SKeyMap(SDLK_KP1, KEY_NUMPAD1));
 	KeyMap.push_back(SKeyMap(SDLK_KP2, KEY_NUMPAD2));
@@ -1195,6 +1352,7 @@ void CIrrDeviceSDL::createKeyMap()
 	KeyMap.push_back(SKeyMap(SDLK_KP7, KEY_NUMPAD7));
 	KeyMap.push_back(SKeyMap(SDLK_KP8, KEY_NUMPAD8));
 	KeyMap.push_back(SKeyMap(SDLK_KP9, KEY_NUMPAD9));
+#endif
 	KeyMap.push_back(SKeyMap(SDLK_KP_MULTIPLY, KEY_MULTIPLY));
 	KeyMap.push_back(SKeyMap(SDLK_KP_PLUS, KEY_ADD));
 //	KeyMap.push_back(SKeyMap(SDLK_KP_, KEY_SEPARATOR));
@@ -1218,9 +1376,10 @@ void CIrrDeviceSDL::createKeyMap()
 	KeyMap.push_back(SKeyMap(SDLK_F14, KEY_F14));
 	KeyMap.push_back(SKeyMap(SDLK_F15, KEY_F15));
 	// no higher F-keys
-
+#ifndef SAILFISH
 	KeyMap.push_back(SKeyMap(SDLK_NUMLOCK, KEY_NUMLOCK));
 	KeyMap.push_back(SKeyMap(SDLK_SCROLLOCK, KEY_SCROLL));
+#endif
 	KeyMap.push_back(SKeyMap(SDLK_LSHIFT, KEY_LSHIFT));
 	KeyMap.push_back(SKeyMap(SDLK_RSHIFT, KEY_RSHIFT));
 	KeyMap.push_back(SKeyMap(SDLK_LCTRL,  KEY_LCONTROL));

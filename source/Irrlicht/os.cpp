@@ -8,7 +8,11 @@
 #include "irrMath.h"
 
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+#ifdef SAILFISH
+    #include <SDL_endian.h>
+#else
 	#include <SDL/SDL_endian.h>
+#endif
 	#define bswap_16(X) SDL_Swap16(X)
 	#define bswap_32(X) SDL_Swap32(X)
 	#define bswap_64(X) SDL_Swap64(X)

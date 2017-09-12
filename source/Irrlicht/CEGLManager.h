@@ -12,11 +12,15 @@
 #if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_) || defined(_IRR_COMPILE_WITH_FB_DEVICE_) || defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) || defined(__EMSCRIPTEN__) || defined(_IRR_COMPILE_WITH_X11_)
 #include <EGL/egl.h>
 #elif defined(SAILFISH)
-#include <wayland-client.h>
-#include <wayland-server.h>
-#include <wayland-egl.h>
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
+# ifndef _IRR_COMPILE_WITH_SDL_DEVICE_
+#  include <wayland-client.h>
+#  include <wayland-server.h>
+#  include <wayland-egl.h>
+# else
+#  include <EGL/egl.h>
+#  include <GLES2/gl2.h>
+#  include <SDL_video.h>
+# endif
 #else
 #include <GLES/egl.h>
 #endif
@@ -89,8 +93,11 @@ namespace video
 		NativeWindowType EglWindow;
 		EGLDisplay EglDisplay;
 		EGLSurface EglSurface;
+#if defined(SAILFISH) && defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+		SDL_GLContext SdlContext;
+#else
 		EGLContext EglContext;
-
+#endif
 		EGLConfig EglConfig;
 
 		SIrrlichtCreationParameters Params;

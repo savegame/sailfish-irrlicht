@@ -13,8 +13,10 @@
 #include "SExposedVideoData.h"
 #include "IContextManager.h"
 #include "SColor.h"
+#ifndef SAILFISH
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#endif
 
 // we can't include glx.h here, because gl.h has incompatible types with ogl es headers and it
 // cause redefinition errors, thats why we use ugly trick with void* types and casts.
@@ -24,6 +26,7 @@ namespace irr
 namespace video
 {
     // GLX manager.
+
     class CGLXManager : public IContextManager
     {
     public:

@@ -81,6 +81,11 @@ namespace irr
 			dev = new CIrrDeviceMacOSX(params);
 #endif
 
+#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
+		if (params.DeviceType == EIDT_SDL || (!dev && params.DeviceType == EIDT_BEST))
+			dev = new CIrrDeviceSDL(params);
+#endif
+
 #ifdef _IRR_COMPILE_WITH_X11_DEVICE_
 		if (params.DeviceType == EIDT_X11 || (!dev && params.DeviceType == EIDT_BEST))
 			dev = new CIrrDeviceLinux(params);
@@ -94,11 +99,6 @@ namespace irr
 #ifdef _IRR_COMPILE_WITH_ANDROID_DEVICE_
 		if (params.DeviceType == EIDT_ANDROID || (!dev && params.DeviceType == EIDT_BEST))
 			dev = new CIrrDeviceAndroid(params);
-#endif
-
-#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
-		if (params.DeviceType == EIDT_SDL || (!dev && params.DeviceType == EIDT_BEST))
-			dev = new CIrrDeviceSDL(params);
 #endif
 
 #ifdef _IRR_COMPILE_WITH_FB_DEVICE_

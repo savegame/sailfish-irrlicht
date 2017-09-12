@@ -13,8 +13,8 @@
 #include <android/native_activity.h>
 #endif
 
-#ifdef SAILFISH
-
+#if defined(SAILFISH) && defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+//#include <SDL_egl.h>
 #endif
 
 namespace irr
@@ -23,7 +23,10 @@ namespace video
 {
 
 CEGLManager::CEGLManager() : IContextManager(), EglWindow(0), EglDisplay(EGL_NO_DISPLAY),
-    EglSurface(EGL_NO_SURFACE), EglContext(EGL_NO_CONTEXT), EglConfig(0), MajorVersion(0), MinorVersion(0)
+#if !defined(SAILFISH) && !defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+    EglContext(EGL_NO_CONTEXT),
+#endif
+    EglSurface(EGL_NO_SURFACE), EglConfig(0), MajorVersion(0), MinorVersion(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CEGLManager");
@@ -56,11 +59,17 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #elif defined(SAILFISH)
 	{
+#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
+		EglWindow = (NativeWindowType)Data.OGLESWayland.Window;
+		EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
+#else
 		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
 		EglWindow = (NativeWindowType)Data.OGLESWayland.Window;
 		EglSurface = (EGLSurface)Data.OGLESWayland.Surface;
 		EglContext = (EGLContext)Data.OGLESWayland.Context;
 		nativeDisplay = (NativeDisplayType)Data.OGLESWayland.nativeDisplay;
+#endif
 	}
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
@@ -302,8 +311,10 @@ bool CEGLManager::generateContext()
     if (EglDisplay == EGL_NO_DISPLAY || EglSurface == EGL_NO_SURFACE)
         return false;
 
+#if !defined(SAILFISH) && !defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
     if (EglContext != EGL_NO_CONTEXT)
         return true;
+#endif
 
 	EGLint OpenGLESVersion = 0;
 
@@ -331,6 +342,9 @@ bool CEGLManager::generateContext()
 
 //#else
 	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
+#elif defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+	SdlContext = SDL_GL_CreateContext((SDL_Window*)EglWindow);
+	//EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
 #endif
 	if (testEGLError())
 	{
@@ -345,14 +359,17 @@ bool CEGLManager::generateContext()
 
 void CEGLManager::destroyContext()
 {
+#if !defined(SAILFISH) && !defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
     if (EglContext == EGL_NO_CONTEXT)
         return;
-
 	// We must unbind current EGL context before destroy it.
 	eglMakeCurrent(EglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	eglDestroyContext(EglDisplay, EglContext);
 
     EglContext = EGL_NO_CONTEXT;
+#else
+	SDL_GL_DeleteContext(SdlContext);
+#endif
 }
 
 bool CEGLManager::activateContext(const SExposedVideoData& videoData)
@@ -363,8 +380,11 @@ bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 //		os::Printer::log("Could not make the current window current !\n");
 //		return false;
 //	}
+#if !defined(SAILFISH) && !defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
-
+#else
+	SDL_GL_MakeCurrent((SDL_Window*)EglWindow, SdlContext);
+#endif
 	if (testEGLError())
 	{
 		os::Printer::log("Could not make EGL context current.");
@@ -381,7 +401,11 @@ const SExposedVideoData& CEGLManager::getContext() const
 
 bool CEGLManager::swapBuffers()
 {
+#if !defined(SAILFISH) && !defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
     return (eglSwapBuffers(EglDisplay, EglSurface)==EGL_TRUE);
+#else
+	SDL_GL_SwapWindow((SDL_Window*)EglWindow);
+#endif
 }
 
 bool CEGLManager::testEGLError()
