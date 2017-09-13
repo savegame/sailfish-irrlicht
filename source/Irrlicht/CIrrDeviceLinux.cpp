@@ -31,6 +31,7 @@
 #include <linux/input.h>
 #include <Keycodes.h>
 #include <wayland-util.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
 #endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
@@ -116,6 +117,7 @@ struct wl_keyboard   *irr::CIrrDeviceLinux::wlKeyboard   = NULL;
 struct wl_touch      *irr::CIrrDeviceLinux::wlTouch      = NULL;
 struct wl_pointer    *irr::CIrrDeviceLinux::wlPointer    = NULL;
 struct wl_output     *irr::CIrrDeviceLinux::wlOutput     = NULL;
+struct qt_surface_extension *irr::CIrrDeviceLinux::qtSurfaceExtension = NULL;
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
@@ -205,6 +207,38 @@ surface_handle_enter(void *data, struct wl_surface *wl_surface, struct wl_output
 
 static void
 surface_handle_leave(void *data, struct wl_surface *wl_surface, struct wl_output *output);
+
+/**
+ * onscreen_visibility - (none)
+ * @visible: (none)
+ */
+static void
+qt_extended_surface_handle_onscreen_visibility(void *data,
+                struct qt_extended_surface *qt_extended_surface,
+                int32_t visible);
+/**
+ * set_generic_property - (none)
+ * @name: (none)
+ * @value: (none)
+ */
+static void
+qt_extended_surface_handle_set_generic_property(void *data,
+                 struct qt_extended_surface *qt_extended_surface,
+                 const char *name,
+                 struct wl_array *value);
+/**
+ * close - (none)
+ */
+static void
+qt_extended_surface_handle_close(void *data,
+          struct qt_extended_surface *qt_extended_surface);
+
+struct qt_extended_surface_listener extended_surface_listener = {
+	qt_extended_surface_handle_onscreen_visibility,
+	qt_extended_surface_handle_set_generic_property,
+	qt_extended_surface_handle_close,
+};
+
 
 struct wl_surface_listener surface_listener = {
 	surface_handle_enter,
@@ -318,6 +352,14 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_output\" done");
 		wl_output_add_listener(irr::CIrrDeviceLinux::wlOutput, &output_listener, data);
 		irr::os::Printer::log("[Good] wl_output_add_listener() done");
+	}
+	else if (strcmp(interface, "qt_surface_extension") == 0)
+	{
+		irr::CIrrDeviceLinux::qtSurfaceExtension
+		        = (struct qt_surface_extension*)wl_registry_bind(registry, id,
+		                &qt_surface_extension_interface, 1);
+		qt_extended_surface_add_listener(irr::CIrrDeviceLinux::qtSurfaceExtension,
+		                                 &extended_surface_listener, data)
 	}
 	else
 	{
@@ -538,6 +580,30 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
+static void
+qt_extended_surface_handle_onscreen_visibility(
+        void *data,struct qt_extended_surface *qt_extended_surface, int32_t visible)
+{
+
+}
+
+static void
+qt_extended_surface_handle_set_generic_property(
+        void *data, struct qt_extended_surface *qt_extended_surface,
+        const char *name, struct wl_array *value)
+{
+
+}
+
+static void
+qt_extended_surface_handle_close(
+        void *data, struct qt_extended_surface *qt_extended_surface)
+{
+	irr::core::stringc m = "Close!!!!";
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+	device->closeDevice();
+}
 
 //// Wayland keyboard
 static void
