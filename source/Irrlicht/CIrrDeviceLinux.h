@@ -39,6 +39,7 @@
 #	include <wayland-client-protocol.h>
 #	include <wayland-egl.h>
 #	include <EGL/egl.h>
+#   include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
 #endif
 
 namespace irr
@@ -422,6 +423,7 @@ namespace irr
 		static struct wl_touch *wlTouch;
 		static struct wl_pointer *wlPointer;
 		static struct wl_output *wlOutput;
+		static struct qt_surface_extension *qtSurfaceExtension;
 
 		static void
 		keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
@@ -438,6 +440,7 @@ namespace irr
 		                        uint32_t capabilities);
 	private:
 		struct wl_surface *wlSurface;
+		struct qt_extended_surface *qtExtendedSurface;
 		struct wl_egl_window *wlEGLWindow;
 		struct wl_region *wlRegion;
 		struct wl_shell_surface *wlShellSurface;
