@@ -583,6 +583,21 @@ bool CIrrDeviceSDL::run()
 	SEvent irrevent;
 	SDL_Event SDL_event;
 
+//	if( !isWindowActive() ) {
+//		if(!Close && SDL_PollEvent( &SDL_event ))
+//		{
+//			if( !SDL_event.type == SDL_WINDOWEVENT )
+//				return !Close;
+
+//			if( SDL_event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED )
+//			{
+//				WindowMinimized = false;
+//				WindowHasFocus = true;
+//			}
+//		}
+//		return !Close;
+//	}
+
 	while ( !Close && SDL_PollEvent( &SDL_event ) )
 	{
 		// os::Printer::log("event: ", core::stringc((int)SDL_event.type).c_str(),   ELL_INFORMATION);	// just for debugging
@@ -817,6 +832,42 @@ bool CIrrDeviceSDL::run()
 #else
 #endif
 #if defined(SAILFISH) && defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+		case SDL_DOLLARGESTURE:
+			break;
+		case SDL_DOLLARRECORD:
+			break;
+		case SDL_MULTIGESTURE:
+		    {// multitouch gesture
+			    SDL_Point touchLocation;
+				int state = 0;
+				//Rotation detected
+				if( fabs( SDL_event.mgesture.dTheta ) > 3.14 / 180.0 )
+				{
+					touchLocation.x = SDL_event.mgesture.x * Width;
+					touchLocation.y = SDL_event.mgesture.y * Height;
+//					currentTexture = &gRotateTexture;
+					state = 1;
+				}
+				//Pinch detected
+				else if( fabs( SDL_event.mgesture.dDist ) > 0.002 )
+				{
+					touchLocation.x = SDL_event.mgesture.x * Width;
+					touchLocation.y = SDL_event.mgesture.y * Height;
+					//Pinch open
+					if( SDL_event.mgesture.dDist > 0 )
+					{
+//						currentTexture = &gPinchOpenTexture;
+						state = 2;
+					}
+					//Pinch close
+					else
+					{
+//						currentTexture = &gPinchCloseTexture;
+						state = 3;
+					}
+				}
+		    }
+			break;
 		/* Touch events */
 		case SDL_FINGERUP:
 		case SDL_FINGERMOTION:
@@ -825,7 +876,7 @@ bool CIrrDeviceSDL::run()
 			    irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 				irrevent.TouchInput.X = (irr::s32)SDL_event.tfinger.x;
 				irrevent.TouchInput.Y = (irr::s32)SDL_event.tfinger.y;
-				irrevent.TouchInput.ID = SDL_event.tfinger.fingerId;
+				irrevent.TouchInput.ID = SDL_event.tfinger.touchId;
 				switch( SDL_event.tfinger.type)
 				{
 				case SDL_FINGERMOTION:
@@ -841,13 +892,7 @@ bool CIrrDeviceSDL::run()
 				postEventFromUser(irrevent);
 		    }
 			break;
-#endif
-		case SDL_DOLLARGESTURE:
-			break;
-		case SDL_DOLLARRECORD:
-			break;
-		case SDL_MULTIGESTURE:
-			break;
+
 		case SDL_CONTROLLERAXISMOTION:     /**< Game controller axis motion */
 		case SDL_CONTROLLERBUTTONDOWN:     /**< Game controller button pressed */
 		case SDL_CONTROLLERBUTTONUP:       /**< Game controller button released */
@@ -855,6 +900,7 @@ bool CIrrDeviceSDL::run()
 		case SDL_CONTROLLERDEVICEREMOVED:  /**< An opened Game controller has been removed */
 		case SDL_CONTROLLERDEVICEREMAPPED: /**< The controller mapping was updated */
 			break;
+#endif
 		case SDL_USEREVENT:
 			irrevent.EventType = irr::EET_USER_EVENT;
 			irrevent.UserEvent.UserData1 = reinterpret_cast<uintptr_t>(SDL_event.user.data1);

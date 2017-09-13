@@ -96,11 +96,12 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		break;
 	case EET_TOUCH_INPUT_EVENT:
 //		break;
+#define FIRST_TOUCH_ID 0
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)
 		{
 			TouchID[evt.TouchInput.ID] = true;
-//			if(evt.TouchInput.ID != 0)
-//				return false;
+			if(evt.TouchInput.ID != FIRST_TOUCH_ID)
+				return false;
 			core::vector2di size;
 //			TouchID = evt.TouchInput.ID;
 			TouchPos.X = (f32)evt.TouchInput.X;
@@ -111,8 +112,8 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		}
 		if(evt.TouchInput.Event == ETIE_MOVED)
 		{
-//			if(!TouchID[0])
-//				return false;
+			if(evt.TouchInput.ID != FIRST_TOUCH_ID)
+				return false;
 //			CursorControl->setPosition(0.5f,0.5f);
 //			f32 SpeedCoef = 0.1f;
 			// get realitive move
@@ -127,8 +128,8 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		if(evt.TouchInput.Event == ETIE_LEFT_UP)
 		{
 			TouchID[evt.TouchInput.ID] = false;
-//			if(0 != evt.TouchInput.ID)
-//				return false;
+			if(FIRST_TOUCH_ID != evt.TouchInput.ID)
+				return false;
 			CursorControl->setPosition(TouchPos);
 			CenterCursor = TouchPos;
 			CursorPos = CenterCursor;
