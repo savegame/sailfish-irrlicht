@@ -75,7 +75,7 @@ public:
 
 	~CScreenShotFactory()
 	{
-		button->drop();
+//		button->drop();
 	}
 
 	bool OnEvent(const SEvent& event)
@@ -204,14 +204,14 @@ int main(int argc, char* argv[])
 //		return 1;
 
 	// create device and exit if creation failed
-//	const core::dimension2du videoDim(540,960);
-	const core::dimension2du videoDim(720,1280);
+//	core::dimension2du videoDim(540,960);
+	core::dimension2du videoDim(720,1280);
 
 	IrrlichtDevice *device = createDevice(irr::video::EDT_OGLES2, videoDim, 32, false );
 
 	if (device == 0)
 		return 1; // could not create selected driver.
-
+	videoDim = device->getVideoDriver()->getScreenSize();
 	const char* mapname=0;
 	if (argc>2)
 		mapname = argv[2];

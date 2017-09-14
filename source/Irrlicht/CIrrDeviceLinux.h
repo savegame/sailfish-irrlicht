@@ -447,6 +447,7 @@ namespace irr
 		struct wl_display * wlDisplay;
 		struct wl_registry *wlRegistry;
 		struct wl_callback *wlCallback;
+//		struct qt_extended_surface *qtExt
 
 		/// Native System informations
 		NativeDisplayType nativeDisplay;

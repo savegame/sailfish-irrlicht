@@ -12,6 +12,7 @@ sailfish:QT += compositor widgets core
 sailfish: INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 TARGET = irrlicht
 #DESTDIR = bin
+INCLUDEPATH += third_party/wayland
 
 sailfish: PKGCONFIG += wayland-client wayland-egl
 PKGCONFIG += zlib libpng egl

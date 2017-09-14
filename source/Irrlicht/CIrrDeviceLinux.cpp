@@ -32,6 +32,7 @@
 #include <Keycodes.h>
 #include <wayland-util.h>
 #include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
+#include <wayland-client-protocol.h>
 #endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
@@ -358,8 +359,8 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		irr::CIrrDeviceLinux::qtSurfaceExtension
 		        = (struct qt_surface_extension*)wl_registry_bind(registry, id,
 		                &qt_surface_extension_interface, 1);
-		qt_extended_surface_add_listener(irr::CIrrDeviceLinux::qtSurfaceExtension,
-		                                 &extended_surface_listener, data)
+//		qt_extended_surface_add_listener(irr::CIrrDeviceLinux::qtSurfaceExtension,
+//		                                 &extended_surface_listener, data)
 	}
 	else
 	{
@@ -584,7 +585,8 @@ static void
 qt_extended_surface_handle_onscreen_visibility(
         void *data,struct qt_extended_surface *qt_extended_surface, int32_t visible)
 {
-
+	irr::core::stringc m = "qt_extended_surface_handle_onscreen_visibility";
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG );
 }
 
 static void
@@ -592,7 +594,8 @@ qt_extended_surface_handle_set_generic_property(
         void *data, struct qt_extended_surface *qt_extended_surface,
         const char *name, struct wl_array *value)
 {
-
+	irr::core::stringc m = "qt_extended_surface_handle_set_generic_property";
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG );
 }
 
 static void
@@ -620,6 +623,7 @@ irr::CIrrDeviceLinux::keyboard_handle_enter(void *data, struct wl_keyboard *keyb
 	irr::os::Printer::log("Keyboard gained focus", irr::ELL_INFORMATION);
 	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
 	device->WindowHasFocus = true;
+	device->WindowMinimized = false;
 }
 
 void
@@ -629,6 +633,7 @@ irr::CIrrDeviceLinux::keyboard_handle_leave(void *data, struct wl_keyboard *keyb
 	irr::os::Printer::log("Keyboard lost focus", irr::ELL_INFORMATION);
 	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
 	device->WindowHasFocus = false;
+	device->WindowMinimized = true;
 }
 
 static void
@@ -1091,7 +1096,11 @@ CIrrDeviceLinux::~CIrrDeviceLinux()
 		XFree(VisualInfo);
 
 #elif defined(SAILFISH)
+//	qt_extended_surface_destroy(qtExtendedSurface );
+//	wl_shell_surface_destroy(wlShellSurface);
+//	wl_surface_destroy(wlSurface);
 	wl_display_disconnect((wl_display*)wlDisplay);
+//	wl_
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
@@ -1514,6 +1523,13 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Created compositor surface on Wayland");
 	}
 	wl_surface_add_listener(wlSurface, &surface_listener, this);
+
+	qtExtendedSurface = qt_surface_extension_get_extended_surface(qtSurfaceExtension, wlSurface);
+	if(qtExtendedSurface == NULL) {
+		os::Printer::log("Can't get qt_extended_surface pointer");
+		return false;
+	}
+	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
 
 	// tranform window if needed
 	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
@@ -2206,7 +2222,7 @@ bool CIrrDeviceLinux::run()
 	/// TODO how to know is widwow closed or not?
 	if(wlDisplay)
 	{
-		struct wl_callback *cb = wl_display_sync(wlDisplay);
+/*		struct wl_callback *cb = wl_display_sync(wlDisplay);
 		int err = wl_display_get_error(wlDisplay);
 		if (err != 0) {
 			struct wl_interface *interface = nullptr;
@@ -2262,13 +2278,13 @@ bool CIrrDeviceLinux::run()
 			}
 			Close = true;
 //			handle_error(code, interface, id);
-		}
+		}*/
 		wl_display_dispatch_pending(wlDisplay);
-		bool testClose = wl_display_dispatch(wlDisplay) == -1;
-		if(testClose)
-		{
-			irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
-		}
+//		bool testClose = wl_display_dispatch(wlDisplay) == -1;
+//		if(testClose)
+//		{
+//			irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
+//		}
 	}
 #endif //_IRR_COMPILE_WITH_X11_
 
