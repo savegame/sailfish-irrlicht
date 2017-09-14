@@ -434,6 +434,37 @@ namespace irr
 		keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 		                      uint32_t serial, struct wl_surface *surface);
 
+		/**
+		 * onscreen_visibility - (none)
+		 * @visible: (none)
+		 */
+		static void
+		qt_extended_surface_handle_onscreen_visibility(void *data,
+		                struct qt_extended_surface *qt_extended_surface,
+		                int32_t visible);
+		/**
+		 * set_generic_property - (none)
+		 * @name: (none)
+		 * @value: (none)
+		 */
+		static void
+		qt_extended_surface_handle_set_generic_property(void *data,
+		                 struct qt_extended_surface *qt_extended_surface,
+		                 const char *name,
+		                 struct wl_array *value);
+		/**
+		 * close - (none)
+		 */
+		static void
+		qt_extended_surface_handle_close(void *data,
+		          struct qt_extended_surface *qt_extended_surface);
+
+		struct qt_extended_surface_listener extended_surface_listener = {
+			qt_extended_surface_handle_onscreen_visibility,
+			qt_extended_surface_handle_set_generic_property,
+			qt_extended_surface_handle_close,
+		};
+
 		EKEY_CODE getKeyCode(uint32_t key);
 	protected: //Wayland callbacks
 		void seatHandleCapabilities(void *data, struct wl_seat *seat,

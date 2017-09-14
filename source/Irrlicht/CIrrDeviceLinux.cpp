@@ -209,36 +209,36 @@ surface_handle_enter(void *data, struct wl_surface *wl_surface, struct wl_output
 static void
 surface_handle_leave(void *data, struct wl_surface *wl_surface, struct wl_output *output);
 
-/**
- * onscreen_visibility - (none)
- * @visible: (none)
- */
-static void
-qt_extended_surface_handle_onscreen_visibility(void *data,
-                struct qt_extended_surface *qt_extended_surface,
-                int32_t visible);
-/**
- * set_generic_property - (none)
- * @name: (none)
- * @value: (none)
- */
-static void
-qt_extended_surface_handle_set_generic_property(void *data,
-                 struct qt_extended_surface *qt_extended_surface,
-                 const char *name,
-                 struct wl_array *value);
-/**
- * close - (none)
- */
-static void
-qt_extended_surface_handle_close(void *data,
-          struct qt_extended_surface *qt_extended_surface);
+///**
+// * onscreen_visibility - (none)
+// * @visible: (none)
+// */
+//static void
+//qt_extended_surface_handle_onscreen_visibility(void *data,
+//                struct qt_extended_surface *qt_extended_surface,
+//                int32_t visible);
+///**
+// * set_generic_property - (none)
+// * @name: (none)
+// * @value: (none)
+// */
+//static void
+//qt_extended_surface_handle_set_generic_property(void *data,
+//                 struct qt_extended_surface *qt_extended_surface,
+//                 const char *name,
+//                 struct wl_array *value);
+///**
+// * close - (none)
+// */
+//static void
+//qt_extended_surface_handle_close(void *data,
+//          struct qt_extended_surface *qt_extended_surface);
 
-struct qt_extended_surface_listener extended_surface_listener = {
-	qt_extended_surface_handle_onscreen_visibility,
-	qt_extended_surface_handle_set_generic_property,
-	qt_extended_surface_handle_close,
-};
+//struct qt_extended_surface_listener extended_surface_listener = {
+//	qt_extended_surface_handle_onscreen_visibility,
+//	qt_extended_surface_handle_set_generic_property,
+//	qt_extended_surface_handle_close,
+//};
 
 
 struct wl_surface_listener surface_listener = {
@@ -581,16 +581,30 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
-static void
-qt_extended_surface_handle_onscreen_visibility(
+void
+irr::CIrrDeviceLinux::qt_extended_surface_handle_onscreen_visibility(
         void *data,struct qt_extended_surface *qt_extended_surface, int32_t visible)
 {
 	irr::core::stringc m = "qt_extended_surface_handle_onscreen_visibility";
+	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux *>(data);
+	switch(visible)
+	{
+	case 5: //fullscreen
+		m = "Window is focused.";
+		device->WindowHasFocus = true;
+		device->WindowMinimized = false;
+		break;
+	case 3: //in pause
+		m = "Window is minimized";
+		device->WindowHasFocus = false;
+		device->WindowMinimized = true;
+		break;
+	}
 	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG );
 }
 
-static void
-qt_extended_surface_handle_set_generic_property(
+void
+irr::CIrrDeviceLinux::qt_extended_surface_handle_set_generic_property(
         void *data, struct qt_extended_surface *qt_extended_surface,
         const char *name, struct wl_array *value)
 {
@@ -598,11 +612,11 @@ qt_extended_surface_handle_set_generic_property(
 	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG );
 }
 
-static void
-qt_extended_surface_handle_close(
+void
+irr::CIrrDeviceLinux::qt_extended_surface_handle_close(
         void *data, struct qt_extended_surface *qt_extended_surface)
 {
-	irr::core::stringc m = "Close!!!!";
+	irr::core::stringc m = "Close IrrlichtDevice. Bye bye!";
 	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
 	device->closeDevice();
@@ -620,20 +634,20 @@ irr::CIrrDeviceLinux::keyboard_handle_enter(void *data, struct wl_keyboard *keyb
                       uint32_t serial, struct wl_surface *surface,
                       struct wl_array *keys)
 {
-	irr::os::Printer::log("Keyboard gained focus", irr::ELL_INFORMATION);
+	irr::os::Printer::log("Keyboard gained focus", irr::ELL_DEBUG);
 	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
-	device->WindowHasFocus = true;
-	device->WindowMinimized = false;
+//	device->WindowHasFocus = true;
+//	device->WindowMinimized = false;
 }
 
 void
 irr::CIrrDeviceLinux::keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
-	irr::os::Printer::log("Keyboard lost focus", irr::ELL_INFORMATION);
+	irr::os::Printer::log("Keyboard lost focus", irr::ELL_DEBUG);
 	irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
-	device->WindowHasFocus = false;
-	device->WindowMinimized = true;
+//	device->WindowHasFocus = false;
+//	device->WindowMinimized = true;
 }
 
 static void
@@ -2220,7 +2234,7 @@ bool CIrrDeviceLinux::run()
 	}
 #elif defined(SAILFISH)
 	/// TODO how to know is widwow closed or not?
-	if(wlDisplay)
+	if(!Close && wlDisplay)
 	{
 /*		struct wl_callback *cb = wl_display_sync(wlDisplay);
 		int err = wl_display_get_error(wlDisplay);
@@ -2279,13 +2293,15 @@ bool CIrrDeviceLinux::run()
 			Close = true;
 //			handle_error(code, interface, id);
 		}*/
-		wl_display_dispatch_pending(wlDisplay);
+		wl_display_dispatch(wlDisplay);
 //		bool testClose = wl_display_dispatch(wlDisplay) == -1;
 //		if(testClose)
 //		{
 //			irr::os::Printer::log( "CIrrDeviceLinux::run() : wl_display_dispatch() == -1", irr::ELL_DEBUG);
 //		}
 	}
+	else
+		irr::os::Printer::log( "Close", irr::ELL_DEBUG);
 #endif //_IRR_COMPILE_WITH_X11_
 
 	if (!Close)
