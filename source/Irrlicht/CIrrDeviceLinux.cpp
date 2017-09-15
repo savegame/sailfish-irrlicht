@@ -840,6 +840,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
 		irrevent.TouchInput.X = wl_fixed_to_int(x);
 		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
 		device->postEventFromUser(irrevent);
 	}
 }
@@ -867,8 +868,8 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
-		irrevent.TouchInput.X = 0;
-		irrevent.TouchInput.Y = 0;
+		irrevent.TouchInput.X = device->getLastTouchPos(id).X;
+		irrevent.TouchInput.Y = device->getLastTouchPos(id).Y;
 		device->postEventFromUser(irrevent);
 	}
 }
@@ -901,6 +902,7 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		irrevent.TouchInput.Event = irr::ETIE_MOVED;
 		irrevent.TouchInput.X = wl_fixed_to_int(x);
 		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
 		device->postEventFromUser(irrevent);
 	}
 }
@@ -954,6 +956,21 @@ irr::EKEY_CODE irr::CIrrDeviceLinux::getKeyCode(uint32_t key)
 		}
 	}
 	return keyCode;
+}
+
+void irr::CIrrDeviceLinux::setLastTouchPos(int touchID, irr::s32 X, irr::s32 Y) {
+	if( touchID < 10 && touchID >= 0 )
+	{
+		m_touchPos[touchID] = core::vector2di(X,Y);
+	}
+}
+
+irr::core::vector2di irr::CIrrDeviceLinux::getLastTouchPos(irr::s32 touchID)
+{
+	if( touchID < 10 && touchID >= 0 )
+	{
+		return m_touchPos[touchID];
+	}
 }
 
 void irr::CIrrDeviceLinux::seatHandleCapabilities(void *data, wl_seat *seat, uint32_t capabilities)
@@ -1026,6 +1043,8 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters& param)
 	Operator = new COSOperator(linuxversion, this);
 	os::Printer::log(linuxversion.c_str(), ELL_INFORMATION);
 
+//	m_touchPos.reallocate(10);
+//	m_touchPos.
 	// create keymap
 	createKeyMap();
 
@@ -1113,7 +1132,34 @@ CIrrDeviceLinux::~CIrrDeviceLinux()
 //	qt_extended_surface_destroy(qtExtendedSurface );
 //	wl_shell_surface_destroy(wlShellSurface);
 //	wl_surface_destroy(wlSurface);
-	wl_display_disconnect((wl_display*)wlDisplay);
+	if(wlDisplay)
+	{
+		if ( GUIEnvironment )
+		{
+			GUIEnvironment->drop();
+			GUIEnvironment = NULL;
+		}
+
+		if ( SceneManager )
+		{
+			SceneManager->drop();
+			SceneManager = NULL;
+		}
+
+		if ( VideoDriver )
+		{
+			VideoDriver->drop();
+			VideoDriver = NULL;
+		}
+
+		if (ContextManager)
+		{
+			ContextManager->destroyContext();
+			ContextManager->destroySurface();
+		}
+
+		wl_display_disconnect((wl_display*)wlDisplay);
+	}
 //	wl_
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 

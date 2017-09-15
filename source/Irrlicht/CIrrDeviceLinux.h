@@ -466,9 +466,21 @@ namespace irr
 		};
 
 		EKEY_CODE getKeyCode(uint32_t key);
+
+		void setLastTouchPos(int touchID, s32 X, s32 Y);
+
+		core::vector2di getLastTouchPos(s32 touchID);
 	protected: //Wayland callbacks
 		void seatHandleCapabilities(void *data, struct wl_seat *seat,
 		                        uint32_t capabilities);
+
+//		struct TouchPos {
+//			s32 X;
+//			s32 Y;
+//			s32 ID;
+//		};
+		irr::core::vector2di m_touchPos[15];
+//		irr::core::array< irr::core::vector2di > m_touchPos;
 	private:
 		struct wl_surface *wlSurface;
 		struct qt_extended_surface *qtExtendedSurface;
