@@ -110,6 +110,39 @@ bool CGUICheckBox::OnEvent(const SEvent& event)
 				return true;
 			}
 			break;
+		case EET_TOUCH_INPUT_EVENT:
+			if (event.TouchInput.Event == ETIE_PRESSED_DOWN)
+			{
+				Pressed = true;
+				CheckTime = os::Timer::getTime();
+				return true;
+			}
+			else
+			if (event.TouchInput.Event == ETIE_LEFT_UP)
+			{
+				bool wasPressed = Pressed;
+				Pressed = false;
+
+				if (wasPressed && Parent)
+				{
+					if ( !AbsoluteClippingRect.isPointInside( core::position2d<s32>(event.TouchInput.X, event.TouchInput.Y) ) )
+					{
+						Pressed = false;
+						return true;
+					}
+
+					SEvent newEvent;
+					newEvent.EventType = EET_GUI_EVENT;
+					newEvent.GUIEvent.Caller = this;
+					newEvent.GUIEvent.Element = 0;
+					Checked = !Checked;
+					newEvent.GUIEvent.EventType = EGET_CHECKBOX_CHANGED;
+					Parent->OnEvent(newEvent);
+				}
+
+				return true;
+			}
+			break;
 		default:
 			break;
 		}

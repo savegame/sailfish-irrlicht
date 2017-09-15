@@ -234,6 +234,88 @@ bool CGUIScrollBar::OnEvent(const SEvent& event)
 				break;
 			}
 		} break;
+		case EET_TOUCH_INPUT_EVENT:
+		{
+			const core::position2di p(event.TouchInput.X, event.TouchInput.Y);
+			bool isInside = isPointInside ( p );
+			switch(event.TouchInput.Event)
+			{
+			case ETIE_PRESSED_DOWN:
+			{
+				if (isInside)
+				{
+					Dragging = true;
+					DraggedBySlider = SliderRect.isPointInside(p);
+					TrayClick = !DraggedBySlider;
+					DesiredPos = getPosFromMousePos(p);
+					return true;
+				}
+				break;
+			}
+			case ETIE_LEFT_UP:
+			case ETIE_MOVED:
+			{
+//				if ( !event.MouseInput.isLeftPressed () )
+//					Dragging = false;
+
+//				if ( !Dragging )
+//				{
+//					if ( event.MouseInput.Event == EMIE_MOUSE_MOVED )
+//						break;
+//					return isInside;
+//				}
+
+				if ( event.TouchInput.Event == ETIE_LEFT_UP )
+					Dragging = false;
+
+				const s32 newPos = getPosFromMousePos(p);
+				const s32 oldPos = Pos;
+
+				if (!DraggedBySlider)
+				{
+					if ( isInside )
+					{
+						DraggedBySlider = SliderRect.isPointInside(p);
+						TrayClick = !DraggedBySlider;
+					}
+
+					if (DraggedBySlider)
+					{
+						setPos(newPos);
+					}
+					else
+					{
+						TrayClick = false;
+						if (event.TouchInput.Event == EMIE_MOUSE_MOVED)
+							return isInside;
+					}
+				}
+
+				if (DraggedBySlider)
+				{
+					setPos(newPos);
+				}
+				else
+				{
+					DesiredPos = newPos;
+				}
+
+				if (Pos != oldPos && Parent)
+				{
+					SEvent newEvent;
+					newEvent.EventType = EET_GUI_EVENT;
+					newEvent.GUIEvent.Caller = this;
+					newEvent.GUIEvent.Element = 0;
+					newEvent.GUIEvent.EventType = EGET_SCROLL_BAR_CHANGED;
+					Parent->OnEvent(newEvent);
+				}
+				return isInside;
+			} break;
+
+			default:
+				break;
+			}
+		} break;
 		default:
 			break;
 		}

@@ -181,6 +181,10 @@ namespace gui
 		bool MoveOverSelect;
 		bool AutoScroll;
 		bool HighlightWhenNotFocused;
+#ifdef SAILFISH
+		core::position2di touchPos;
+		f32				  touchDist;
+#endif
 	};
 
 

@@ -606,6 +606,54 @@ bool CGUIEnvironment::postEventFromUser(const SEvent& event)
 		}
 
 		break;
+	case EET_TOUCH_INPUT_EVENT:
+
+		updateHoveredElement(core::position2d<s32>(event.TouchInput.X, event.TouchInput.Y));
+
+		if ( Hovered != Focus )
+		{
+			IGUIElement * focusCandidate = Hovered;
+
+			// Only allow enabled elements to be focused (unless EFF_CAN_FOCUS_DISABLED is set)
+			if ( Hovered && !Hovered->isEnabled() && !(FocusFlags & EFF_CAN_FOCUS_DISABLED))
+				focusCandidate = NULL;	// we still remove focus from the active element
+
+			// Please don't merge this into a single if clause, it's easier to debug the way it is
+			if (FocusFlags & EFF_SET_ON_LMOUSE_DOWN &&
+			    event.TouchInput.Event == ETIE_PRESSED_DOWN )
+			{
+				setFocus(focusCandidate);
+			}
+			else if ( FocusFlags & EFF_SET_ON_MOUSE_OVER &&
+			    event.TouchInput.Event == ETIE_MOVED )
+			{
+				setFocus(focusCandidate);
+			}
+		}
+
+		// sending input to focus
+		if (Focus && Focus->OnEvent(event))
+			return true;
+
+		// focus could have died in last call
+		if (!Focus && Hovered)
+		{
+			return Hovered->OnEvent(event);
+		}
+//		SEvent me;
+//		me.EventType = EET_MOUSE_INPUT_EVENT;
+//		me.MouseInput.X = event.TouchInput.X;
+//		me.MouseInput.X = event.TouchInput.X;
+
+//		if( event.TouchInput.Event == ETIE_PRESSED_DOWN )
+//			me.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
+//		else if( event.TouchInput.Event == ETIE_LEFT_UP )
+//			me.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
+//		else if (event.TouchInput.Event == ETIE_MOVED)
+//			me.MouseInput.Event = EMIE_MOUSE_MOVED;
+
+//		return postEventFromUser(me);
+		break;
 	case EET_KEY_INPUT_EVENT:
 		{
 			if (Focus && Focus->OnEvent(event))

@@ -209,6 +209,42 @@ bool CGUIWindow::OnEvent(const SEvent& event)
 			default:
 				break;
 			}
+		case EET_TOUCH_INPUT_EVENT:
+			switch(event.TouchInput.Event)
+			{
+			case ETIE_PRESSED_DOWN:
+				DragStart.X = event.TouchInput.X;
+				DragStart.Y = event.TouchInput.Y;
+				Dragging = IsDraggable;
+				if (Parent)
+					Parent->bringToFront(this);
+				return true;
+			case ETIE_LEFT_UP:
+				Dragging = false;
+				return true;
+			case ETIE_MOVED:
+//				if (!event.MouseInput.isLeftPressed())
+//					Dragging = false;
+
+				if (Dragging)
+				{
+					// gui window should not be dragged outside its parent
+					if (Parent &&
+					    (event.TouchInput.X < Parent->getAbsolutePosition().UpperLeftCorner.X +1 ||
+					        event.TouchInput.Y < Parent->getAbsolutePosition().UpperLeftCorner.Y +1 ||
+					        event.TouchInput.X > Parent->getAbsolutePosition().LowerRightCorner.X -1 ||
+					        event.TouchInput.Y > Parent->getAbsolutePosition().LowerRightCorner.Y -1))
+						return true;
+
+					move(core::position2d<s32>(event.TouchInput.X - DragStart.X, event.TouchInput.Y - DragStart.Y));
+					DragStart.X = event.TouchInput.X;
+					DragStart.Y = event.TouchInput.Y;
+					return true;
+				}
+				break;
+			default:
+				break;
+			}
 		default:
 			break;
 		}

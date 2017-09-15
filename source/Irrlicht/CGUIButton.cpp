@@ -216,6 +216,47 @@ bool CGUIButton::OnEvent(const SEvent& event)
 			return true;
 		}
 		break;
+	case EET_TOUCH_INPUT_EVENT:
+		if (event.TouchInput.Event == ETIE_PRESSED_DOWN)
+		{
+			if (!IsPushButton)
+				setPressed(true);
+
+			return true;
+		}
+		else
+		if (event.TouchInput.Event == ETIE_LEFT_UP)
+		{
+			bool wasPressed = Pressed;
+
+			if ( !AbsoluteClippingRect.isPointInside( core::position2d<s32>(event.TouchInput.X, event.TouchInput.Y ) ) )
+			{
+				if (!IsPushButton)
+					setPressed(false);
+				return true;
+			}
+
+			if (!IsPushButton)
+				setPressed(false);
+			else
+			{
+				setPressed(!Pressed);
+			}
+
+			if ((!IsPushButton && wasPressed && Parent) ||
+			    (IsPushButton && wasPressed != Pressed))
+			{
+				SEvent newEvent;
+				newEvent.EventType = EET_GUI_EVENT;
+				newEvent.GUIEvent.Caller = this;
+				newEvent.GUIEvent.Element = 0;
+				newEvent.GUIEvent.EventType = EGET_BUTTON_CLICKED;
+				Parent->OnEvent(newEvent);
+			}
+
+			return true;
+		}
+		break;
 	default:
 		break;
 	}

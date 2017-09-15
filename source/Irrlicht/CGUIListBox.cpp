@@ -442,6 +442,47 @@ bool CGUIListBox::OnEvent(const SEvent& event)
 				}
 			}
 			break;
+		case EET_TOUCH_INPUT_EVENT:
+		    {
+			    core::position2d<s32> p(event.MouseInput.X, event.MouseInput.Y);
+
+				switch(event.TouchInput.Event)
+				{
+				// TODO scrool on any pos ()
+//				case EMIE_MOUSE_WHEEL:
+//					ScrollBar->setPos(ScrollBar->getPos() + (event.MouseInput.Wheel < 0 ? -1 : 1)*-ItemHeight/2);
+//					return true;
+
+				case ETIE_PRESSED_DOWN:
+				{
+					Selecting = true;
+					return true;
+				}
+
+				case ETIE_LEFT_UP:
+				{
+					Selecting = false;
+
+					if (isPointInside(p))
+						selectNew(event.MouseInput.Y);
+
+					return true;
+				}
+
+//				case ETIE_MOVED:
+//					if (Selecting || MoveOverSelect)
+//					{
+//						if (isPointInside(p))
+//						{
+//							selectNew(event.MouseInput.Y, true);
+//							return true;
+//						}
+//					}
+				default:
+				break;
+				}
+		    }
+			break;
 		case EET_LOG_TEXT_EVENT:
 		case EET_USER_EVENT:
 		case EET_JOYSTICK_INPUT_EVENT:
