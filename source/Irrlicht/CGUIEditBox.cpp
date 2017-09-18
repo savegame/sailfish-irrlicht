@@ -593,6 +593,46 @@ bool CGUIEditBox::processKey(const SEvent& event)
 				textChanged = true;
 			}
 			break;
+		case KEY_BACK:
+			if ( !isEnabled() )
+				break;
+
+			if (Text.size())
+			{
+				core::stringw s;
+
+				if (MarkBegin != MarkEnd)
+				{
+					// delete marked text
+					const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
+					const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
+
+					s = Text.subString(0, realmbgn);
+					s.append( Text.subString(realmend, Text.size()-realmend) );
+					Text = s;
+
+					CursorPos = realmbgn;
+				}
+				else
+				{
+					// delete text behind cursor
+					if (CursorPos>0)
+						s = Text.subString(0, CursorPos-1);
+					else
+						s = L"";
+					s.append( Text.subString(CursorPos, Text.size()-CursorPos) );
+					Text = s;
+					--CursorPos;
+				}
+
+				if (CursorPos < 0)
+					CursorPos = 0;
+				BlinkStartTime = os::Timer::getTime();
+				newMarkBegin = 0;
+				newMarkEnd = 0;
+				textChanged = true;
+			}
+			break;
 		default:
 			return false;
 		}

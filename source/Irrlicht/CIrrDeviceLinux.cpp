@@ -836,7 +836,6 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 #endif
-	/// TODO create SEvent for send touch to Irricht
 	if(data)
 	{
 		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
