@@ -501,6 +501,9 @@ namespace irr
 		EGLSurface  Surface;/// EGL surface
 		s32  PhysicalWidth, PhysicalHeight;
 		u32  dpi;
+
+		wchar_t Key2Wchar[255];
+//		char    Key2Char [255];
 	public:
 		void setPhysicalSize(s32  width, s32 height)
 		{
@@ -508,6 +511,8 @@ namespace irr
 			PhysicalHeight = height;
 		}
 
+//		char charFromKey(int key);
+		wchar_t Key2WChar(uint32_t key) const;
 	private:
 #endif
 		u32  Width, Height;
@@ -535,10 +540,16 @@ namespace irr
 				return X11Key<o.X11Key;
 			}
 #else
+//			SKeyMap(KeySym key, s32 irrKey, wchar_t sign)
+//			    : wlKey(key), IrrKey(irrKey), wcharKey(sign)
+//			{
+//			}
+
 			SKeyMap(KeySym key, s32 irrKey)
-			    : wlKey(key), IrrKey(irrKey)
+			    : wlKey(key), IrrKey(irrKey)/*, wcharKey(L".")*/
 			{
 			}
+
 
 			KeySym wlKey;
 			s32 IrrKey;

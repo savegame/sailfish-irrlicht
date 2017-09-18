@@ -668,6 +668,12 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	{
 		irr::SEvent irrevent;
 		irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
+//		irr::core::stringw str;
+		irrevent.KeyInput.Char = device->Key2WChar(key);
+		/// TODO get Modifiers status
+		///
+		irrevent.KeyInput.Shift = false;
+		irrevent.KeyInput.Control = false;
 		switch(state)
 		{
 		case 1: //down
@@ -994,6 +1000,13 @@ void irr::CIrrDeviceLinux::seatHandleCapabilities(void *data, wl_seat *seat, uin
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
 		irr::os::Printer::log("Display has a touch screen");
 	}
+}
+
+wchar_t irr::CIrrDeviceLinux::Key2WChar(uint32_t key) const
+{
+	if( key < 0 || key > 254 )
+		return *(L".");
+	return Key2Wchar[key];
 }
 #endif
 
@@ -2906,6 +2919,50 @@ void CIrrDeviceLinux::createKeyMap()
 
 	KeyMap.sort();
 #elif defined(SAILFISH)
+	Key2Wchar[KEY_0] = *L"0";
+	Key2Wchar[KEY_1] += *L"1";
+	Key2Wchar[KEY_2] += *L"2";
+	Key2Wchar[KEY_3] += *L"3";
+	Key2Wchar[KEY_4] += *L"4";
+	Key2Wchar[KEY_5] += *L"5";
+	Key2Wchar[KEY_6] += *L"6";
+	Key2Wchar[KEY_7] += *L"7";
+	Key2Wchar[KEY_8] += *L"8";
+	Key2Wchar[KEY_9] += *L"9";
+
+	Key2Wchar[KEY_A] += *L"a";
+	Key2Wchar[KEY_B] += *L"b";
+	Key2Wchar[KEY_C] += *L"c";
+	Key2Wchar[KEY_D] += *L"d";
+	Key2Wchar[KEY_E] += *L"e";
+	Key2Wchar[KEY_F] += *L"f";
+	Key2Wchar[KEY_G] += *L"g";
+	Key2Wchar[KEY_H] += *L"h";
+	Key2Wchar[KEY_I] += *L"i";
+	Key2Wchar[KEY_J] += *L"j";
+	Key2Wchar[KEY_K] += *L"k";
+	Key2Wchar[KEY_L] += *L"l";
+	Key2Wchar[KEY_M] += *L"m";
+	Key2Wchar[KEY_N] += *L"n";
+	Key2Wchar[KEY_O] += *L"o";
+	Key2Wchar[KEY_P] += *L"p";
+	Key2Wchar[KEY_Q] += *L"q";
+	Key2Wchar[KEY_R] += *L"r";
+	Key2Wchar[KEY_S] += *L"s";
+	Key2Wchar[KEY_T] += *L"t";
+	Key2Wchar[KEY_U] += *L"u";
+	Key2Wchar[KEY_V] += *L"v";
+	Key2Wchar[KEY_W] += *L"w";
+	Key2Wchar[KEY_X] += *L"x";
+	Key2Wchar[KEY_Y] += *L"y";
+	Key2Wchar[KEY_Z] += *L"z";
+
+	Key2Wchar[KEY_SPACE] += *L" ";
+	Key2Wchar[KEY_DOT] += *L".";
+	Key2Wchar[KEY_SLASH] += *L"/";
+	Key2Wchar[KEY_BACKSLASH] = *L"\\";
+	Key2Wchar[KEY_QUESTION]  = *L"?";
+
 	KeyMap.clear();
 	KeyMap.push_back(SKeyMap(KEY_0, KEY_KEY_0));
 	KeyMap.push_back(SKeyMap(KEY_1, KEY_KEY_1));
@@ -2932,7 +2989,7 @@ void CIrrDeviceLinux::createKeyMap()
 	KeyMap.push_back(SKeyMap(KEY_B, KEY_KEY_B));
 	KeyMap.push_back(SKeyMap(KEY_C, KEY_KEY_C));
 	KeyMap.push_back(SKeyMap(KEY_D, KEY_KEY_D));
-	KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_E));
+	KeyMap.push_back(SKeyMap(KEY_E, KEY_KEY_E));
 	KeyMap.push_back(SKeyMap(KEY_F, KEY_KEY_F));
 	KeyMap.push_back(SKeyMap(KEY_G, KEY_KEY_G));
 	KeyMap.push_back(SKeyMap(KEY_H, KEY_KEY_H));
@@ -2982,6 +3039,7 @@ void CIrrDeviceLinux::createKeyMap()
 	KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
 	KeyMap.push_back(SKeyMap(KEY_NUMLOCK, EKC_KEY_NUMLOCK));
 	KeyMap.push_back(SKeyMap(KEY_SPACE, EKC_KEY_SPACE));
+	KeyMap.push_back(SKeyMap(KEY_BACKSPACE, EKC_KEY_BACK));
 	KeyMap.sort();
 #endif
 }
