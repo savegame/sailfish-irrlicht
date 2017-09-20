@@ -114,7 +114,7 @@ public:
 			{
 				SEvent ne;
 				ne.EventType = EET_KEY_INPUT_EVENT;
-				ne.KeyInput.Key = EKC_KEY_UP;
+				ne.KeyInput.Key = KEY_UP;
 				ne.KeyInput.PressedDown = button->isPressed();
 				Device->postEventFromUser(ne);
 			}
@@ -205,10 +205,14 @@ int main(int argc, char* argv[])
 
 	// create device and exit if creation failed
 //	core::dimension2du videoDim(540,960);
-	core::dimension2du videoDim(720,1280);
-
+#ifdef SAILFISH
+    core::dimension2du videoDim(720,1280);
 	IrrlichtDevice *device = createDevice(irr::video::EDT_OGLES2, videoDim, 32, false );
-
+#else
+    core::dimension2du videoDim(1280,720);
+    IrrlichtDevice *device = createDevice(irr::video::EDT_OPENGL, videoDim, 32, false );
+#endif
+    
 	if (device == 0)
 		return 1; // could not create selected driver.
 	videoDim = device->getVideoDriver()->getScreenSize();

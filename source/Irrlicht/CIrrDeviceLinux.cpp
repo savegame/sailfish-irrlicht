@@ -491,7 +491,8 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 	}
 #endif
 	irr::CIrrDeviceLinux *dev = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
-	dev->setWindowSize( irr::core::dimension2du(width,height) );
+        dev->setWindowSize( irr::core::dimension2du(width,height) );
+//        dev->setWindowSize( irr::core::dimension2du(480,320) );
 }
 
 static void
@@ -1583,8 +1584,8 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 	}
 	nativeDisplay = wlDisplay;
-	Width = CreationParams.WindowSize.Width;//wlCompositor->width;
-	Height = CreationParams.WindowSize.Height;//wlCompositor->height;
+        Width = CreationParams.WindowSize.Width*0.5;//wlCompositor->width;
+        Height = CreationParams.WindowSize.Height*0.5;//wlCompositor->height;
 
 	// second
 	wlSurface = wl_compositor_create_surface(CIrrDeviceLinux::wlCompositor);
@@ -1602,7 +1603,8 @@ bool CIrrDeviceLinux::createWindow()
 		return false;
 	}
 	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
-
+        qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+//        qt_ex
 	// tranform window if needed
 	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
 //	wl_surface_set_buffer_transform(struct wl_client *client, struct wl_resource *resource, wl_output_transform:: WL_OUTPUT_TRANSFORM_90);
@@ -1615,21 +1617,28 @@ bool CIrrDeviceLinux::createWindow()
 		os::Printer::log("[Good] Created shell surface");
 	}
 
+//        wl_shell_surface_
+
+//        wl_surface_set_buffer_transform(wlSurface, WL_OUTPUT_TRANSFORM_180 );
+
+
 	wlWindow.shell_surface = wlShellSurface;
 	wlWindow.surface = wlSurface;
 	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
 //	wlWindow.egl_context =
 
 //	wl_shell_surface_set_toplevel(wlShellSurface);
-	wl_shell_surface_set_fullscreen(wlShellSurface, Width, Height, wlOutput);
+        wl_shell_surface_set_fullscreen(wlShellSurface, WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE, 5, wlOutput);
+
+//        wl_surface_set_buffer_transform(wlSurface, WL_OUTPUT_TRANSFORM_180 );
 
 	// creating window
 	wlRegion = wl_compositor_create_region(CIrrDeviceLinux::wlCompositor);
 	wl_region_add(wlRegion, 0, 0, Width, Height);
 	wl_surface_set_opaque_region(wlSurface, wlRegion);
-
+        wl_region_destroy(wlRegion);
 	wlEGLWindow = wl_egl_window_create(wlSurface, Width, Height);
-
+//        wl_surface_set_buffer_scale(wlSurface, 1 );
 	if (wlEGLWindow == EGL_NO_SURFACE) {
 		os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
 		return false;
