@@ -136,6 +136,7 @@
 #define NO_IRR_COMPILE_WITH_SOFTWARE_
 #define NO_IRR_COMPILE_WITH_BURNINGSVIDEO_
 #define _IRR_LINUX_PLATFORM_
+#define NO_IRR_COMPILE_WITH_X11_DEVICE_
 #endif
 
 #if defined(__SVR4) && defined(__sun)
@@ -146,11 +147,15 @@
 #endif
 
 #if !defined(_IRR_WINDOWS_API_) && !defined(_IRR_OSX_PLATFORM_) && !defined(_IRR_IOS_PLATFORM_) && !defined(_IRR_ANDROID_PLATFORM_) && !defined(_IRR_EMSCRIPTEN_PLATFORM_)
-#ifndef _IRR_SOLARIS_PLATFORM_
-#define _IRR_LINUX_PLATFORM_
-#endif
-#define _IRR_POSIX_API_
-#define _IRR_COMPILE_WITH_X11_DEVICE_
+# ifndef _IRR_SOLARIS_PLATFORM_
+#  define _IRR_LINUX_PLATFORM_
+# endif
+# define _IRR_POSIX_API_
+# ifndef NO_IRR_COMPILE_WITH_X11_DEVICE_
+#  define _IRR_COMPILE_WITH_X11_DEVICE_
+# else
+#  undef _IRR_COMPILE_WITH_X11_DEVICE_
+# endif
 #endif
 
 

@@ -22,6 +22,10 @@ static const char* const copyright = "Irrlicht Engine (c) 2002-2012 Nikolaus Geb
 #include "CIrrDeviceLinux.h"
 #endif
 
+#ifdef SAILFISH
+#include "CIrrDeviceSailfish.h"
+#endif
+
 #ifdef _IRR_COMPILE_WITH_OSX_DEVICE_
 #include "CIrrDeviceOSX.h"
 #endif
