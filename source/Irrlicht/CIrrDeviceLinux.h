@@ -38,6 +38,7 @@
 #	include <wayland-client.h>
 #	include <wayland-client-protocol.h>
 #	include <wayland-egl.h>
+#   include <map>
 #	include <EGL/egl.h>
 #   include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
 #endif
@@ -479,8 +480,9 @@ namespace irr
 //			s32 Y;
 //			s32 ID;
 //		};
-		irr::core::vector2di m_touchPos[15];
+//		irr::core::vector2di m_touchPos[15];
 //		irr::core::array< irr::core::vector2di > m_touchPos;
+		std::map<int, irr::core::vector2di> m_touchPos;
 	private:
 		struct wl_surface *wlSurface;
 		struct qt_extended_surface *qtExtendedSurface;

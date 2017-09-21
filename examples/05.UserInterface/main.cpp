@@ -85,7 +85,7 @@ public:
 
 			/*
 			If a scrollbar changed its scroll position, and it is
-			'our' scrollbar (the one with id GUI_ID_TRANSPARENCY_SCROLL_BAR), 
+			'our' scrollbar (the one with id GUI_ID_TRANSPARENCY_SCROLL_BAR),
 			then we change the transparency of all gui elements. This is an
 			easy task: There is a skin object, in which all color
 			settings are stored. We simply go through all colors
@@ -99,7 +99,7 @@ public:
 				}
 				break;
 
-			/*
+				/*
 			If a button was clicked, it could be one of 'our'
 			three buttons. If it is the first, we shut down the engine.
 			If it is the second, we create a little window with some
@@ -116,23 +116,23 @@ public:
 					return true;
 
 				case GUI_ID_NEW_WINDOW_BUTTON:
-					{
+				{
 					Context.listbox->addItem(L"Window created");
 					Context.counter += 30;
 					if (Context.counter > 200)
 						Context.counter = 0;
 
 					IGUIWindow* window = env->addWindow(
-						rect<s32>(100 + Context.counter, 100 + Context.counter, 300 + Context.counter, 200 + Context.counter),
-						false, // modal?
-						L"Test window");
+					            rect<s32>(100 + Context.counter, 100 + Context.counter, 300 + Context.counter, 200 + Context.counter),
+					            false, // modal?
+					            L"Test window");
 
 					env->addStaticText(L"Please close me",
-						rect<s32>(35,35,140,50),
-						true, // border?
-						false, // wordwrap?
-						window);
-					}
+					                   rect<s32>(35,35,140,50),
+					                   true, // border?
+					                   false, // wordwrap?
+					                   window);
+				}
 					return true;
 
 				case GUI_ID_FILE_OPEN_BUTTON:
@@ -150,12 +150,12 @@ public:
 				break;
 
 			case EGET_FILE_SELECTED:
-				{
-					// show the model filename, selected in the file dialog
-					IGUIFileOpenDialog* dialog =
-						(IGUIFileOpenDialog*)event.GUIEvent.Caller;
-					Context.listbox->addItem(dialog->getFileName());
-				}
+			{
+				// show the model filename, selected in the file dialog
+				IGUIFileOpenDialog* dialog =
+				        (IGUIFileOpenDialog*)event.GUIEvent.Caller;
+				Context.listbox->addItem(dialog->getFileName());
+			}
 				break;
 
 			default:
@@ -179,12 +179,16 @@ example.
 int main()
 {
 	// ask user for driver
-	video::E_DRIVER_TYPE driverType=driverChoiceConsole();
-	if (driverType==video::EDT_COUNT)
-		return 1;
+#ifdef _DESKTOP
+	video::E_DRIVER_TYPE driverType=EDT_OPENGL;
+#else
+	video::E_DRIVER_TYPE driverType=EDT_OGLES2;
+#endif
+	//	if (driverType==video::EDT_COUNT)
+	//		return 1;
 
 	// create device and exit if creation failed
-	IrrlichtDevice * device = createDevice(driverType, core::dimension2d<u32>(640, 480));
+	IrrlichtDevice * device = createDevice(driverType, core::dimension2du(800, 480));
 
 	if (device == 0)
 		return 1; // could not create selected driver.
@@ -222,11 +226,11 @@ int main()
 	*/
 
 	env->addButton(rect<s32>(10,240,110,240 + 32), 0, GUI_ID_QUIT_BUTTON,
-			L"Quit", L"Exits Program");
+	               L"Quit", L"Exits Program");
 	env->addButton(rect<s32>(10,280,110,280 + 32), 0, GUI_ID_NEW_WINDOW_BUTTON,
-			L"New Window", L"Launches a new Window");
+	               L"New Window", L"Launches a new Window");
 	env->addButton(rect<s32>(10,320,110,320 + 32), 0, GUI_ID_FILE_OPEN_BUTTON,
-			L"File Open", L"Opens a file");
+	               L"File Open", L"Opens a file");
 
 	/*
 	Now, we add a static text and a scrollbar, which modifies the
@@ -238,7 +242,7 @@ int main()
 
 	env->addStaticText(L"Transparent Control:", rect<s32>(150,20,350,40), true);
 	IGUIScrollBar* scrollbar = env->addScrollBar(true,
-			rect<s32>(150, 45, 350, 60), 0, GUI_ID_TRANSPARENCY_SCROLL_BAR);
+	                                             rect<s32>(150, 45, 350, 60), 0, GUI_ID_TRANSPARENCY_SCROLL_BAR);
 	scrollbar->setMax(255);
 	scrollbar->setPos(255);
 	setSkinTransparency( scrollbar->getPos(), env->getSkin());
@@ -267,7 +271,7 @@ int main()
 	And at last, we create a nice Irrlicht Engine logo in the top left corner.
 	*/
 	env->addImage(driver->getTexture(mediaPath + "irrlichtlogo2.png"),
-			position2d<int>(10,10));
+	              position2d<int>(10,10));
 
 
 	/*
@@ -275,14 +279,14 @@ int main()
 	*/
 
 	while(device->run() && driver)
-	if (device->isWindowActive())
-	{
-		driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, SColor(0,200,200,200));
+		if (device->isWindowActive())
+		{
+			driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, SColor(0,200,200,200));
 
-		env->drawAll();
+			env->drawAll();
 
-		driver->endScene();
-	}
+			driver->endScene();
+		}
 
 	device->drop();
 

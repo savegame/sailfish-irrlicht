@@ -32,6 +32,10 @@
 #include <Keycodes.h>
 #include <wayland-util.h>
 #include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-hardware-integration-client-protocol.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-touch-extension-client-protocol.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-windowmanager-client-protocol.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-touch-extension-client-protocol.h>
 #include <wayland-client-protocol.h>
 #endif
 
@@ -286,6 +290,113 @@ static const struct wl_touch_listener touch_listener = {
 	touch_handle_cancel,
 };
 
+//static void
+//hw_handle_client_backend(void *data,
+//               struct qt_hardware_integration *qt_hardware_integration,
+//               const char *name)
+//{
+//	irr::core::stringc m;
+//	m = "client_backen: ";
+//	m += name;
+//	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+//}
+
+//static void
+//hw_handle_server_backend(void *data,
+//               struct qt_hardware_integration *qt_hardware_integration,
+//               const char *name)
+//{
+//	irr::core::stringc m;
+//	m = "server_backen: ";
+//	m += name;
+//	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+//}
+
+//static struct qt_hardware_integration_listener hw_listener = {
+//	hw_handle_client_backend,
+//	hw_handle_server_backend,
+//};
+
+
+/**
+ * touch - (none)
+ * @time: (none)
+ * @id: (none)
+ * @state: (none)
+ * @x: (none)
+ * @y: (none)
+ * @normalized_x: (none)
+ * @normalized_y: (none)
+ * @width: (none)
+ * @height: (none)
+ * @pressure: (none)
+ * @velocity_x: (none)
+ * @velocity_y: (none)
+ * @flags: (none)
+ * @rawdata: (none)
+ */
+static void
+qt_touch_handle_touch(void *data,
+          struct qt_touch_extension *qt_touch_extension,
+          uint32_t time,
+          uint32_t id,
+          uint32_t state,
+          int32_t x,
+          int32_t y,
+          int32_t normalized_x,
+          int32_t normalized_y,
+          int32_t width,
+          int32_t height,
+          uint32_t pressure,
+          int32_t velocity_x,
+          int32_t velocity_y,
+          uint32_t flags,
+          struct wl_array *rawdata)
+{
+	irr::core::stringc m;
+	m = "client_backend: ";
+//	m += name;
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+
+//	if(data)
+//	{
+//		irr::CIrrDeviceLinux *device = reinterpret_cast<irr::CIrrDeviceLinux*>(data);
+//		irr::SEvent irrevent;
+//		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
+//		irrevent.TouchInput.ID = id;
+//		if(state == 1)
+//			irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
+//		else
+//			irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
+
+//		irrevent.TouchInput.X = wl_fixed_to_int(x);
+//		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+////		QT_TOUCH_EXTENSION_FLAGS_ENUM
+//		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
+//		device->postEventFromUser(irrevent);
+//	}
+}
+
+/**
+ * configure - (none)
+ * @flags: (none)
+ */
+static void
+qt_touch_handle_configure(void *data,
+          struct qt_touch_extension *qt_touch_extension,
+          uint32_t flags)
+{
+	irr::core::stringc m;
+	m = "client_backen: ";
+//	m += name;
+	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+}
+
+static struct qt_touch_extension_listener qt_touch_listener = {
+	qt_touch_handle_touch,
+	qt_touch_handle_configure
+};
+
 static void
 surface_handle_enter(void *data, struct wl_surface *wl_surface, struct wl_output *output)
 {
@@ -359,9 +470,20 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 		irr::CIrrDeviceLinux::qtSurfaceExtension
 		        = (struct qt_surface_extension*)wl_registry_bind(registry, id,
 		                &qt_surface_extension_interface, 1);
-//		qt_extended_surface_add_listener(irr::CIrrDeviceLinux::qtSurfaceExtension,
-//		                                 &extended_surface_listener, data)
 	}
+//	else if (strcmp(interface, "qt_touch_extension") == 0)
+//	{
+//		struct qt_touch_extension *qt_touch =
+//		        (struct qt_touch_extension *)wl_registry_bind(registry, id,
+//				                                              &qt_touch_extension_interface, 1);
+//		qt_touch_extension_add_listener(qt_touch, &qt_touch_listener,data);
+//	}
+//	else if(strcmp(interface, "qt_hardware_integration") == 0)
+//	{
+//		//
+//		struct qt_hardware_integration *hw_integration = (struct qt_hardware_integration*)wl_registry_bind(registry,id,&qt_hardware_integration_interface, 1);
+//		qt_hardware_integration_add_listener(hw_integration, &hw_listener, data);
+//	}
 	else
 	{
 		irr::core::stringc m = "Global registry handler interface \"";
@@ -464,14 +586,18 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		{
 		case  WL_OUTPUT_TRANSFORM_NORMAL:
 			m += "normal;";
+			qt_extended_surface_set_content_orientation(irr::CIrrDeviceLinux::qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION;
 			break;
 		case  WL_OUTPUT_TRANSFORM_90:
 			m += "90;";
+			qt_extended_surface_set_content_orientation(irr::CIrrDeviceLinux::qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
 			break;
 		case  WL_OUTPUT_TRANSFORM_180:
+			qt_extended_surface_set_content_orientation(irr::CIrrDeviceLinux::qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
 			m += "180;";
 			break;
 		case  WL_OUTPUT_TRANSFORM_270:
+			qt_extended_surface_set_content_orientation(irr::CIrrDeviceLinux::qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
 			m += "270;";
 			break;
 		case  WL_OUTPUT_TRANSFORM_FLIPPED:
@@ -965,15 +1091,17 @@ irr::EKEY_CODE irr::CIrrDeviceLinux::getKeyCode(uint32_t key)
 }
 
 void irr::CIrrDeviceLinux::setLastTouchPos(int touchID, irr::s32 X, irr::s32 Y) {
-	if( touchID < 10 && touchID >= 0 )
+//	if( touchID < 10 && touchID >= 0 )
 	{
 		m_touchPos[touchID] = core::vector2di(X,Y);
+//		m_touchPos.
+
 	}
 }
 
 irr::core::vector2di irr::CIrrDeviceLinux::getLastTouchPos(irr::s32 touchID)
 {
-	if( touchID < 10 && touchID >= 0 )
+//	if( touchID < 10 && touchID >= 0 )
 	{
 		return m_touchPos[touchID];
 	}
@@ -1603,7 +1731,6 @@ bool CIrrDeviceLinux::createWindow()
 		return false;
 	}
 	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
-        qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
 //        qt_ex
 	// tranform window if needed
 	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
