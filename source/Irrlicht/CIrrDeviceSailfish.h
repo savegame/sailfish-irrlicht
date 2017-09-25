@@ -2,12 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifndef __C_IRR_DEVICE_LINUX_H_INCLUDED__
-#define __C_IRR_DEVICE_LINUX_H_INCLUDED__
+#ifndef __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
+#define __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
+#ifdef SAILFISH
 
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
@@ -15,37 +15,19 @@
 #include "ICursorControl.h"
 #include "os.h"
 
-#ifdef _IRR_COMPILE_WITH_X11_
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/cursorfont.h>
-#ifdef _IRR_LINUX_X11_VIDMODE_
-#include <X11/extensions/xf86vmode.h>
-#endif
-#ifdef _IRR_LINUX_X11_RANDR_
-#include <X11/extensions/Xrandr.h>
-#endif
-#include <X11/keysym.h>
-
-#elif defined(SAILFISH)
 #define KeySym uint32_t
-#else
-#define KeySym s32
-#endif
 
-#ifdef SAILFISH
-#	include <wayland-client.h>
-#	include <wayland-client-protocol.h>
-#	include <wayland-egl.h>
-#   include <map>
-#	include <EGL/egl.h>
-#   include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
-#endif
+
+#include <wayland-client.h>
+#include <wayland-client-protocol.h>
+#include <wayland-egl.h>
+#include <map> /// TODO dont use stl map? use irr::array
+#include <EGL/egl.h>
+#include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
+
 
 namespace irr
 {
-
 	class CIrrDeviceLinux : public CIrrDeviceStub, public video::IImagePresenter
 	{
 	public:
@@ -135,15 +117,6 @@ namespace irr
 				return EIDT_X11;
 		}
 
-#ifdef _IRR_COMPILE_WITH_X11_
-		// convert an Irrlicht texture to a X11 cursor
-		Cursor TextureToCursor(irr::video::ITexture * tex, const core::rect<s32>& sourceRect, const core::position2d<s32> &hotspot);
-		Cursor TextureToMonochromeCursor(irr::video::ITexture * tex, const core::rect<s32>& sourceRect, const core::position2d<s32> &hotspot);
-#ifdef _IRR_LINUX_XCURSOR_
-		Cursor TextureToARGBCursor(irr::video::ITexture * tex, const core::rect<s32>& sourceRect, const core::position2d<s32> &hotspot);
-#endif
-#endif
-
 	private:
 
 		//! create the driver
@@ -158,12 +131,6 @@ namespace irr
 		void initXAtoms();
 
 		bool switchToFullscreen(bool reset=false);
-
-#ifdef _IRR_COMPILE_WITH_X11_
-		bool createInputContext();
-		void destroyInputContext();
-		EKEY_CODE getKeyCode(XEvent &event);
-#endif
 
 		//! Implementation of the linux cursor control
 		class CCursorControl : public gui::ICursorControl
@@ -180,15 +147,6 @@ namespace irr
 				if (visible==IsVisible)
 					return;
 				IsVisible = visible;
-#ifdef _IRR_COMPILE_WITH_X11_
-				if (!Null)
-				{
-					if ( !IsVisible )
-						XDefineCursor( Device->XDisplay, Device->XWindow, InvisCursor );
-					else
-						XUndefineCursor( Device->XDisplay, Device->XWindow );
-				}
-#endif
 			}
 
 			//! Returns if the cursor is currently visible.
@@ -218,32 +176,6 @@ namespace irr
 			//! Sets the new position of the cursor.
 			virtual void setPosition(s32 x, s32 y) _IRR_OVERRIDE_
 			{
-#ifdef _IRR_COMPILE_WITH_X11_
-
-				if (!Null)
-				{
-					if (UseReferenceRect)
-					{
-						XWarpPointer(Device->XDisplay,
-							None,
-							Device->XWindow, 0, 0,
-							Device->Width,
-							Device->Height,
-							ReferenceRect.UpperLeftCorner.X + x,
-							ReferenceRect.UpperLeftCorner.Y + y);
-
-					}
-					else
-					{
-						XWarpPointer(Device->XDisplay,
-							None,
-							Device->XWindow, 0, 0,
-							Device->Width,
-							Device->Height, x, y);
-					}
-					XFlush(Device->XDisplay);
-				}
-#endif
 				CursorPos.X = x;
 				CursorPos.Y = y;
 			}
@@ -307,82 +239,16 @@ namespace irr
 			//! Return a system-specific size which is supported for cursors. Larger icons will fail, smaller icons might work.
 			virtual core::dimension2di getSupportedIconSize() const _IRR_OVERRIDE_;
 
-#ifdef _IRR_COMPILE_WITH_X11_
-			//! Set platform specific behavior flags.
-			virtual void setPlatformBehavior(gui::ECURSOR_PLATFORM_BEHAVIOR behavior) _IRR_OVERRIDE_ {PlatformBehavior = behavior; }
-
-			//! Return platform specific behavior.
-			virtual gui::ECURSOR_PLATFORM_BEHAVIOR getPlatformBehavior() const _IRR_OVERRIDE_ { return PlatformBehavior; }
-
-			void update();
-			void clearCursors();
-#endif
 		private:
 
 			void updateCursorPos()
 			{
-#ifdef _IRR_COMPILE_WITH_X11_
-				if (Null)
-					return;
-
-				if ( PlatformBehavior&gui::ECPB_X11_CACHE_UPDATES && !os::Timer::isStopped() )
-				{
-					u32 now = os::Timer::getTime();
-					if (now <= LastQuery)
-						return;
-					LastQuery = now;
-				}
-
-				Window tmp;
-				int itmp1, itmp2;
-				unsigned  int maskreturn;
-				XQueryPointer(Device->XDisplay, Device->XWindow,
-					&tmp, &tmp,
-					&itmp1, &itmp2,
-					&CursorPos.X, &CursorPos.Y, &maskreturn);
-
-				if (CursorPos.X < 0)
-					CursorPos.X = 0;
-				if (CursorPos.X > (s32) Device->Width)
-					CursorPos.X = Device->Width;
-				if (CursorPos.Y < 0)
-					CursorPos.Y = 0;
-				if (CursorPos.Y > (s32) Device->Height)
-					CursorPos.Y = Device->Height;
-#endif
 			}
 
 			CIrrDeviceLinux* Device;
 			core::position2d<s32> CursorPos;
 			core::rect<s32> ReferenceRect;
-#ifdef _IRR_COMPILE_WITH_X11_
-			gui::ECURSOR_PLATFORM_BEHAVIOR PlatformBehavior;
-			u32 LastQuery;
-			Cursor InvisCursor;
 
-			struct CursorFrameX11
-			{
-				CursorFrameX11() : IconHW(0) {}
-				CursorFrameX11(Cursor icon) : IconHW(icon) {}
-
-				Cursor IconHW;	// hardware cursor
-			};
-
-			struct CursorX11
-			{
-				CursorX11() {}
-				explicit CursorX11(Cursor iconHw, u32 frameTime=0) : FrameTime(frameTime)
-				{
-					Frames.push_back( CursorFrameX11(iconHw) );
-				}
-				core::array<CursorFrameX11> Frames;
-				u32 FrameTime;
-			};
-
-			core::array<CursorX11> Cursors;
-
-			void initCursors();
-#endif
 			bool IsVisible;
 			bool Null;
 			bool UseReferenceRect;
@@ -391,29 +257,6 @@ namespace irr
 		};
 
 		friend class CCursorControl;
-
-#ifdef _IRR_COMPILE_WITH_X11_
-		friend class COpenGLDriver;
-
-		Display *XDisplay;
-		XVisualInfo* VisualInfo;
-		int Screennr;
-		Window XWindow;
-		XSetWindowAttributes WndAttributes;
-		XSizeHints* StdHints;
-		XImage* SoftwareImage;
-		XIM XInputMethod;
-		XIC XInputContext;
-		bool HasNetWM;
-		mutable core::stringc Clipboard;
-		#ifdef _IRR_LINUX_X11_VIDMODE_
-		XF86VidModeModeInfo OldVideoMode;
-		#endif
-		#ifdef _IRR_LINUX_X11_RANDR_
-		SizeID OldRandrMode;
-		Rotation OldRandrRotation;
-		#endif
-#elif defined(SAILFISH)
 	public:
 		const  struct wl_registry_listener wlListener;
 		static struct wl_compositor *wlCompositor;
@@ -475,24 +318,16 @@ namespace irr
 		void seatHandleCapabilities(void *data, struct wl_seat *seat,
 		                        uint32_t capabilities);
 
-//		struct TouchPos {
-//			s32 X;
-//			s32 Y;
-//			s32 ID;
-//		};
-//		irr::core::vector2di m_touchPos[15];
-//		irr::core::array< irr::core::vector2di > m_touchPos;
 		std::map<int, irr::core::vector2di> m_touchPos;
 	private:
-		struct wl_surface *wlSurface;
+		struct wl_surface          *wlSurface;
 		struct qt_extended_surface *qtExtendedSurface;
-		struct wl_egl_window *wlEGLWindow;
-		struct wl_region *wlRegion;
-		struct wl_shell_surface *wlShellSurface;
-		struct wl_display * wlDisplay;
-		struct wl_registry *wlRegistry;
-		struct wl_callback *wlCallback;
-//		struct qt_extended_surface *qtExt
+		struct wl_egl_window       *wlEGLWindow;
+		struct wl_region           *wlRegion;
+		struct wl_shell_surface    *wlShellSurface;
+		struct wl_display          *wlDisplay;
+		struct wl_registry         *wlRegistry;
+		struct wl_callback         *wlCallback;
 
 		/// Native System informations
 		NativeDisplayType nativeDisplay;
@@ -505,7 +340,6 @@ namespace irr
 		u32  dpi;
 
 		wchar_t Key2Wchar[255];
-//		char    Key2Char [255];
 	public:
 		void setPhysicalSize(s32  width, s32 height)
 		{
@@ -513,10 +347,8 @@ namespace irr
 			PhysicalHeight = height;
 		}
 
-//		char charFromKey(int key);
 		wchar_t Key2WChar(uint32_t key) const;
 	private:
-#endif
 		u32  Width, Height;
 		bool WindowHasFocus;
 		bool WindowMinimized;
@@ -528,30 +360,10 @@ namespace irr
 		struct SKeyMap
 		{
 			SKeyMap() {}
-#ifndef SAILFISH
-			SKeyMap(s32 x11, s32 win32)
-				: X11Key(x11), Win32Key(win32)
-			{
-			}
-
-			KeySym X11Key;
-			s32 Win32Key;
-
-			bool operator<(const SKeyMap& o) const
-			{
-				return X11Key<o.X11Key;
-			}
-#else
-//			SKeyMap(KeySym key, s32 irrKey, wchar_t sign)
-//			    : wlKey(key), IrrKey(irrKey), wcharKey(sign)
-//			{
-//			}
-
 			SKeyMap(KeySym key, s32 irrKey)
-			    : wlKey(key), IrrKey(irrKey)/*, wcharKey(L".")*/
+			    : wlKey(key), IrrKey(irrKey)
 			{
 			}
-
 
 			KeySym wlKey;
 			s32 IrrKey;
@@ -560,7 +372,6 @@ namespace irr
 			{
 				return wlKey<o.wlKey;
 			}
-#endif
 		};
 
 		core::array<SKeyMap> KeyMap;
@@ -583,6 +394,6 @@ namespace irr
 
 } // end namespace irr
 
-#endif // _IRR_COMPILE_WITH_X11_DEVICE_
-#endif // __C_IRR_DEVICE_LINUX_H_INCLUDED__
+#endif // SAILFISH
+#endif // __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
 

@@ -217,9 +217,11 @@ int main(int argc, char* argv[])
 		return 1; // could not create selected driver.
 	videoDim = device->getVideoDriver()->getScreenSize();
 	const char* mapname=0;
+#ifndef __APPLE__
 	if (argc>2)
 		mapname = argv[2];
 	else
+#endif
 		mapname = QUAKE3_MAP_NAME;
 
 	/*
@@ -243,9 +245,11 @@ int main(int argc, char* argv[])
 	we are able to read from the files in that archive as they would
 	directly be stored on disk.
 	*/
+#ifndef __APPLE__
 	if (argc>2)
 		device->getFileSystem()->QUAKE3_STORAGE_FORMAT(argv[1]);
 	else
+#endif
 		device->getFileSystem()->QUAKE3_STORAGE_FORMAT(QUAKE3_STORAGE_1);
 #ifdef QUAKE3_STORAGE_2
 	device->getFileSystem()->QUAKE3_STORAGE_FORMAT(QUAKE3_STORAGE_2);

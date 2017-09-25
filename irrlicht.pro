@@ -39,6 +39,7 @@ INCLUDEPATH += source/Irrlicht/libjpeg
 removespec.target = rpm/irrlicht.spec
 removespec.command = rm -f rpm/irrlicht.spec
 QMAKE_EXTRA_TARGETS += removespec
+#POST_TARGETDEPS += removespec.target
 
 media.files = media
 media.path = /usr/share/$$TARGET/

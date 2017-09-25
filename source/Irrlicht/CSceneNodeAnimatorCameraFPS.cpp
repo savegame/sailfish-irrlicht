@@ -94,6 +94,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
+#ifdef SAILFISH
 	case EET_TOUCH_INPUT_EVENT:
 //		break;
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)
@@ -135,6 +136,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
+#endif
 	default:
 		break;
 	}

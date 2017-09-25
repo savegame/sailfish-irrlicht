@@ -2,9 +2,9 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CIrrDeviceLinux.h"
+#include "CIrrDeviceSailfish.h"
 
-#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
+#ifdef SAILFISH
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,10 +24,6 @@
 #include "SExposedVideoData.h"
 #include "IGUISpriteBank.h"
 
-#ifndef SAILFISH
-#include <X11/XKBlib.h>
-#include <X11/Xatom.h>
-#else
 #include <linux/input.h>
 #include <Keycodes.h>
 #include <wayland-util.h>
@@ -37,27 +33,14 @@
 #include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-windowmanager-client-protocol.h>
 #include <QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-touch-extension-client-protocol.h>
 #include <wayland-client-protocol.h>
-#endif
 
 #if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
 #include "CEGLManager.h"
 #endif
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
-#include "CGLXManager.h"
-#endif
-
-#ifdef _IRR_LINUX_XCURSOR_
-#include <X11/Xcursor/Xcursor.h>
-#endif
-
 #if defined _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
 #include <fcntl.h>
 #include <unistd.h>
-
-#ifdef __FreeBSD__
-#include <sys/joystick.h>
-#else
 
 // linux/joystick.h includes linux/input.h, which #defines values for various KEY_FOO keys.
 // These override the irr::KEY_FOO equivalents, which stops key handling from working.
@@ -3827,5 +3810,5 @@ irr::core::dimension2di CIrrDeviceLinux::CCursorControl::getSupportedIconSize() 
 
 } // end namespace
 
-#endif // _IRR_COMPILE_WITH_X11_DEVICE_
+#endif // SAILFISH
 

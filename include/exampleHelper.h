@@ -14,7 +14,11 @@ namespace irr
 static io::path getExampleMediaPath()
 {
 #if defined (_IRR_IOS_PLATFORM_) || defined (_IRR_ANDROID_PLATFORM_) || defined (_IRR_OSX_PLATFORM_) || defined (_IRR_EMSCRIPTEN_PLATFORM_)
+# ifndef _IRR_OSX_PLATFORM_
 	return io::path("media/");
+# else
+    return io::path("../Resources/media/");
+# endif
 #elif defined(SAILFISH)
 //	return io::path("/opt/sdk/irrlicht-sailfish/usr/share/media/");
 	return io::path("/usr/share/irrlicht/media/");
