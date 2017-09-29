@@ -807,8 +807,10 @@ void CDemo::startSound()
 	if (stream)
 		Mix_PlayMusic(stream, -1);
 
-	ballSound = Mix_LoadWAV(mediaPath + "ball.wav");
-	impactSound = Mix_LoadWAV(mediaPath + "impact.wav");
+	core::stringc resPath = mediaPath + core::stringc("ball.wav");
+	ballSound = Mix_LoadWAV(resPath.c_str());
+	resPath = mediaPath + core::stringc("impact.wav");
+	impactSound = Mix_LoadWAV(resPath.c_str());
 }
 
 void CDemo::playSound(Mix_Chunk *sample)

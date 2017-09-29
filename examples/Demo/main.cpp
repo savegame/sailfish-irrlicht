@@ -21,6 +21,7 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 int main(int argc, char* argv[])
 #endif
 {
+#ifndef SAILFISH
 	CMainMenu menu;
 
 	if (menu.run())
@@ -34,7 +35,17 @@ int main(int argc, char* argv[])
 					menu.getDriverType());
 		demo.run();
 	}
+#else
 
+	CDemo demo( true,
+	            true,
+	            true,
+	            false,
+	            false,
+	            false,
+	            irr::video::EDT_OGLES2);
+	demo.run();
+#endif
 	return 0;
 }
 

@@ -13,7 +13,7 @@ sailfish: INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 TARGET = irrlicht
 INCLUDEPATH += third_party/wayland
 
-sailfish: PKGCONFIG += wayland-client wayland-egl
+sailfish: PKGCONFIG += wayland-client wayland-egl sdl2 SDL2_mixer
 PKGCONFIG += zlib libpng egl
 !sailfish: PKGCONFIG += bzip2
 x11: PKGCONFIG += x11 xrandr gl glesv2 xxf86vm sdl
@@ -54,7 +54,10 @@ include(irrlicht.pri)
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
 #SOURCES =  examples/05.UserInterface/main.cpp
-SOURCES += examples/16.Quake3MapShader/main.cpp
+#SOURCES += examples/16.Quake3MapShader/main.cpp
+HEADERS += examples/Demo/CDemo.h
+SOURCES += examples/Demo/CDemo.cpp \
+            examples/Demo/main.cpp
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp

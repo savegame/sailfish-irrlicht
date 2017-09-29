@@ -12,6 +12,9 @@
 #ifdef _IRR_WINDOWS_
 #include <windows.h>
 #endif
+#ifdef SAILFISH
+#define USE_SDL_MIXER
+#endif
 
 using namespace irr;
 
@@ -26,8 +29,13 @@ using namespace irr;
 	#endif
 #endif
 #ifdef USE_SDL_MIXER
-	# include <SDL/SDL.h>
-	# include <SDL/SDL_mixer.h>
+# ifdef SAILFISH
+#  include <SDL.h>
+#  include <SDL_mixer.h>
+# else
+#  include <SDL/SDL.h>
+#  include <SDL/SDL_mixer.h>
+# endif
 #endif
 
 const int CAMERA_COUNT = 7;
