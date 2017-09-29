@@ -354,33 +354,8 @@ int main(int argc, char* argv[])
 	*/
 
 	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
-//	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNode();
-//	scene::ICameraSceneNode* displayCamera = smgr->addCameraSceneNode();
 
-
-//	scene::ICameraSceneNode* camera = smgr->addCameraSceneNode();
-	/*
-		so we need a good starting Position in the level.
-		we can ask the Quake3 Loader for all entities with class_name
-		"info_player_deathmatch"
-		we choose a random launch
-	*/
-//	core::matrix4 m2;
-
-//	f32 wd = (f32)(videoDim.Width*3.651*0.0001);
-//	f32 hg = (f32)(videoDim.Height*3.651*0.0001);
-////	m2.bui
-////	m2.buildProjectionMatrixPerspectiveLH(wd,hg,camera->getNearValue(),camera->getFarValue());
-////	m2.setRotationAxisRadians(core::PI*0.5f, core::vector3df(0,0,1.0f));
-//	m2.setRotationDegrees(core::vector3df(0,0,90.f));
-//	camera->setViewMatrixAffector(m2);
-////	camera->setProjectionMatrix(m2);
-//	camera->setAspectRatio( wd/hg );
-
-//	ISceneNodeAnimator *rotateAnimator = smgr->createRotationAnimator(core::vector3df(10.0f, 11.0f, 12.0f));
-//	//camera->setRotation( core::vector3df(0,0,core::PI*0.5));
-//	camera->addAnimator(rotateAnimator);
-//	rotateAnimator->drop();
+	viewCamera->setUpVector( core::vector3df(-1,0,0) );
 
 	if ( mesh )
 	{

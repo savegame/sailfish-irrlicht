@@ -28,15 +28,15 @@
 
 namespace irr
 {
-	class CIrrDeviceLinux : public CIrrDeviceStub, public video::IImagePresenter
+    class CIrrDeviceSailfish : public CIrrDeviceStub, public video::IImagePresenter
 	{
 	public:
 
 		//! constructor
-		CIrrDeviceLinux(const SIrrlichtCreationParameters& param);
+		CIrrDeviceSailfish(const SIrrlichtCreationParameters& param);
 
 		//! destructor
-		virtual ~CIrrDeviceLinux();
+		virtual ~CIrrDeviceSailfish();
 
 		//! runs the device. Returns false if device wants to be deleted
 		virtual bool run() _IRR_OVERRIDE_;
@@ -128,8 +128,6 @@ namespace irr
 
 		void pollJoysticks();
 
-		void initXAtoms();
-
 		bool switchToFullscreen(bool reset=false);
 
 		//! Implementation of the linux cursor control
@@ -137,7 +135,7 @@ namespace irr
 		{
 		public:
 
-			CCursorControl(CIrrDeviceLinux* dev, bool null);
+			CCursorControl(CIrrDeviceSailfish* dev, bool null);
 
 			~CCursorControl();
 
@@ -245,7 +243,7 @@ namespace irr
 			{
 			}
 
-			CIrrDeviceLinux* Device;
+			CIrrDeviceSailfish* Device;
 			core::position2d<s32> CursorPos;
 			core::rect<s32> ReferenceRect;
 
@@ -268,6 +266,7 @@ namespace irr
 		static struct wl_pointer *wlPointer;
 		static struct wl_output *wlOutput;
 		static struct qt_surface_extension *qtSurfaceExtension;
+		struct qt_extended_surface *qtExtendedSurface;
 
 		static void
 		keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
@@ -321,7 +320,6 @@ namespace irr
 		std::map<int, irr::core::vector2di> m_touchPos;
 	private:
 		struct wl_surface          *wlSurface;
-		struct qt_extended_surface *qtExtendedSurface;
 		struct wl_egl_window       *wlEGLWindow;
 		struct wl_region           *wlRegion;
 		struct wl_shell_surface    *wlShellSurface;

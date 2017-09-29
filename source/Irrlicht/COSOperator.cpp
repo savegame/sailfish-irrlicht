@@ -23,6 +23,11 @@
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 #include "CIrrDeviceLinux.h"
 #endif
+
+#ifdef SAILFISH
+#include "CIrrDeviceSailfish.h"
+#endif
+
 #if defined(_IRR_COMPILE_WITH_OSX_DEVICE_)
 #import <Cocoa/Cocoa.h>
 #ifdef __OBJC__
@@ -44,8 +49,14 @@ namespace irr
 }
 #endif
 
-// constructor
-COSOperator::COSOperator(const core::stringc& osVersion) : OperatingSystem(osVersion)
+	// constructor
+	COSOperator::COSOperator(const core::stringc& osVersion, CIrrDeviceSailfish* device)
+: OperatingSystem(osVersion), IrrDeviceSailfish(device)
+{
+
+}
+
+	COSOperator::COSOperator(const core::stringc& osVersion) : OperatingSystem(osVersion)
 {
 	#ifdef _DEBUG
 	setDebugName("COSOperator");
@@ -101,6 +112,9 @@ void COSOperator::copyToClipboard(const c8* text) const
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
     if ( IrrDeviceLinux )
         IrrDeviceLinux->copyToClipboard(text);
+#elif defined(SAILFISH)
+	if ( IrrDeviceSailfish )
+		IrrDeviceSailfish->copyToClipboard(text);
 #else
 
 #endif
@@ -141,8 +155,11 @@ const c8* COSOperator::getTextFromClipboard() const
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
     if ( IrrDeviceLinux )
         return IrrDeviceLinux->getTextFromClipboard();
-    return 0;
-
+	return 0;
+#elif defined(SAILFISH)
+	if ( IrrDeviceSailfish )
+		return IrrDeviceSailfish->getTextFromClipboard();
+	return 0;
 #else
 
 	return 0;

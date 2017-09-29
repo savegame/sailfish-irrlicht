@@ -11,6 +11,7 @@ namespace irr
 {
 
 class CIrrDeviceLinux;
+class CIrrDeviceSailfish;
 
 //! The Operating system operator provides operation system specific methods and information.
 class COSOperator : public IOSOperator
@@ -20,6 +21,8 @@ public:
 	// constructor
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	COSOperator(const core::stringc& osversion, CIrrDeviceLinux* device);
+#elif defined(SAILFISH)
+	COSOperator(const core::stringc& osversion, CIrrDeviceSailfish* device);
 #endif
 	COSOperator(const core::stringc& osversion);
 
@@ -50,6 +53,8 @@ private:
 
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	CIrrDeviceLinux * IrrDeviceLinux;
+#elif defined(SAILFISH)
+	CIrrDeviceSailfish * IrrDeviceSailfish;
 #endif
 
 };

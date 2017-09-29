@@ -13,6 +13,7 @@
 		5E8570B81B7F9A3200B267D2 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8570B21B7F99FE00B267D2 /* OpenGL.framework */; };
 		5E8570BF1B7F9D3A00B267D2 /* media in Resources */ = {isa = PBXBuildFile; fileRef = 5E8570BE1B7F9D3A00B267D2 /* media */; };
 		5E8571181B7FBE8D00B267D2 /* libIrrlicht.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E34CC781B7F90A000F212E8 /* libIrrlicht.a */; };
+		A9C0B6551F7B7D3400A22DFF /* gameapp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9C0B6531F7B7D3400A22DFF /* gameapp.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,8 @@
 		5E8570B21B7F99FE00B267D2 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		5E8570B41B7F9A0700B267D2 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		5E8570BE1B7F9D3A00B267D2 /* media */ = {isa = PBXFileReference; lastKnownFileType = folder; name = media; path = ../../media; sourceTree = "<group>"; };
+		A9C0B6531F7B7D3400A22DFF /* gameapp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gameapp.cpp; sourceTree = "<group>"; };
+		A9C0B6541F7B7D3400A22DFF /* gameapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gameapp.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +46,7 @@
 		5E34C6D81B7F4A0C00F212E8 = {
 			isa = PBXGroup;
 			children = (
+				A9C0B6511F7B7CB600A22DFF /* source */,
 				5E34CC741B7F8EEF00F212E8 /* main.cpp */,
 				5E34CC761B7F905600F212E8 /* Libraries */,
 				5E34CC521B7F8E6E00F212E8 /* Products */,
@@ -75,6 +79,23 @@
 				5E8570BE1B7F9D3A00B267D2 /* media */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		A9C0B6511F7B7CB600A22DFF /* source */ = {
+			isa = PBXGroup;
+			children = (
+				A9C0B6521F7B7CC500A22DFF /* app */,
+			);
+			path = source;
+			sourceTree = "<group>";
+		};
+		A9C0B6521F7B7CC500A22DFF /* app */ = {
+			isa = PBXGroup;
+			children = (
+				A9C0B6531F7B7D3400A22DFF /* gameapp.cpp */,
+				A9C0B6541F7B7D3400A22DFF /* gameapp.h */,
+			);
+			path = app;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -145,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E34CC751B7F8EEF00F212E8 /* main.cpp in Sources */,
+				A9C0B6551F7B7D3400A22DFF /* gameapp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

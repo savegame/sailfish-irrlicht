@@ -442,7 +442,7 @@ HEADERS += \
     source/Irrlicht/SoftwareDriver2_compile_config.h \
     source/Irrlicht/SoftwareDriver2_helper.h \
     source/Irrlicht/wglext.h \
-    $$PWD/source/Irrlicht/CIrrDeviceSailfish.h
+    source/Irrlicht/CIrrDeviceSailfish.h
 
 SOURCES += \
     source/Irrlicht/aesGladman/aescrypt.cpp \
@@ -688,7 +688,7 @@ SOURCES += \
     source/Irrlicht/utf8.cpp \
     source/Irrlicht/lzma/LzmaDec.c \
     source/Irrlicht/CGLXManager.cpp \
-    $$PWD/source/Irrlicht/CIrrDeviceSailfish.cpp
+    source/Irrlicht/CIrrDeviceSailfish.cpp
 
 sailfish {
     SOURCES += \

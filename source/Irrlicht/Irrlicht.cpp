@@ -110,6 +110,11 @@ namespace irr
 			dev = new CIrrDeviceFB(params);
 #endif
 
+#ifdef SAILFISH
+                if(params.DeviceType == EIDT_SAILFISH || (!dev && params.DeviceType == EIDT_BEST) )
+                        dev = new CIrrDeviceSailfish(params);
+#endif
+
 #ifdef _IRR_COMPILE_WITH_CONSOLE_DEVICE_
 		if (params.DeviceType == EIDT_CONSOLE || (!dev && params.DeviceType == EIDT_BEST))
 			dev = new CIrrDeviceConsole(params);

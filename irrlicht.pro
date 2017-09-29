@@ -53,9 +53,8 @@ include(irrlicht.pri)
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
-SOURCES +=  \
-    examples/05.UserInterface/main.cpp
-#        examples/16.Quake3MapShader/main.cpp \
+#SOURCES =  examples/05.UserInterface/main.cpp
+SOURCES += examples/16.Quake3MapShader/main.cpp
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp
