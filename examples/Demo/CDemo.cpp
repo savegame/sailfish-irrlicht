@@ -323,8 +323,11 @@ void CDemo::switchToNextScene()
 			keyMap.push_back( SKeyMap(EKA_ROTATE_LEFT, KEY_KEY_Q) );
 
 			keyMap.push_back( SKeyMap(EKA_ROTATE_RIGHT, KEY_KEY_E) );
-
+#ifdef SAILFISH
+			camera = sm->addCameraSceneNodeFPS(0, 1.0f, .4f, -1, keyMap.pointer(), keyMap.size(), false, 300.f);
+#else
 			camera = sm->addCameraSceneNodeFPS(0, 100.0f, .4f, -1, keyMap.pointer(), keyMap.size(), false, 300.f);
+#endif
 			camera->setPosition(core::vector3df(108,140,-140));
 			camera->setFarValue(5000.0f);
 
