@@ -355,7 +355,7 @@ int main(int argc, char* argv[])
 
 	scene::ICameraSceneNode* viewCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
 
-	viewCamera->setUpVector( core::vector3df(-1,0,0) );
+	viewCamera->setUpVector( core::vector3df(1,0,0) );
 
 	if ( mesh )
 	{
@@ -431,14 +431,6 @@ int main(int argc, char* argv[])
 	after task switching when other program are active.
 	*/
 	int lastFPS = -1;
-
-	core::matrix4 projection = viewCamera->getProjectionMatrix();
-	core::matrix4 view = viewCamera->getViewMatrix();
-
-	core::matrix4 affector;
-	affector.makeIdentity();
-//	affector.setRotationDegrees(core::vector3df(0,0,-90));
-//	camera->setViewMatrixAffector(affector);
 
 	while(device->run())
 	if (device->isWindowActive())
