@@ -55,17 +55,16 @@ include(irrlicht.pri)
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
 #SOURCES =  examples/05.UserInterface/main.cpp
 #SOURCES += examples/16.Quake3MapShader/main.cpp
-HEADERS += examples/Demo/CDemo.h
-SOURCES += examples/Demo/CDemo.cpp \
-            examples/Demo/main.cpp
+#HEADERS += examples/Demo/CDemo.h
+#SOURCES += examples/Demo/CDemo.cpp \
+#           examples/Demo/main.cpp
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp
-#    examples/13.RenderToTexture/main.cpp
+SOURCES += examples/13.RenderToTexture/main.cpp
 
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \
     irrlicht.png \
-    irrlicht.desktop \
-    rpm/irrlicht.spec
+    irrlicht.desktop
 

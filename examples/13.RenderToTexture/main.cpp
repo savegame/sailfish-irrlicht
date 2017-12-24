@@ -18,10 +18,85 @@ using namespace irr;
 #pragma comment(lib, "Irrlicht.lib")
 #endif
 
-//class ScreenNode
+class ScreenNode : public scene::ISceneNode
+{
+	core::aabbox3d<f32> Box;
+	video::S3DVertex Vertices[4];
+	video::SMaterial Material;
+
+public:
+	ScreenNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id)
+	    : scene::ISceneNode(parent, mgr, id)
+	{
+		Material.Wireframe = false;
+		Material.Lighting = false;
+		Material.Thickness=0.f;
+
+		Vertices[0] = video::S3DVertex(-1,-1,0, 5,1,0,
+		        video::SColor(255,0,255,255), 0, 1);
+		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
+		        video::SColor(255,255,0,255), 1, 1);
+		Vertices[2] = video::S3DVertex(1,1,0, 20,1,1,
+		        video::SColor(255,255,255,0), 1, 0);
+		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
+		        video::SColor(255,0,255,0), 0, 0);
+		Box.reset(Vertices[0].Pos);
+		for (s32 i=1; i<4; ++i)
+			Box.addInternalPoint(Vertices[i].Pos);
+	}
+
+	virtual void OnRegisterSceneNode()
+	{
+		if (IsVisible)
+			SceneManager->registerNodeForRendering(this);
+
+		ISceneNode::OnRegisterSceneNode();
+	}
+
+	virtual void render()
+	{
+		/* Indices into the 'Vertices' array. A triangle needs 3 vertices
+		so you have to pass the 3 corresponding indices for each triangle to
+		tell which of the vertices should be used for it.	*/
+		u16 indices[] = {	0,1,2, 0,2,3, 1,0,3, 2,0,1	};
+		video::IVideoDriver* driver = SceneManager->getVideoDriver();
+
+		driver->setMaterial(Material);
+		driver->setTransform(video::ETS_VIEW, AbsoluteTransformation);
+		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
+	}
+
+	/*
+	And finally we create three small additional methods.
+	irr::scene::ISceneNode::getBoundingBox() returns the bounding box of
+	this scene node, irr::scene::ISceneNode::getMaterialCount() returns the
+	amount of materials in this scene node (our tetrahedron only has one
+	material), and irr::scene::ISceneNode::getMaterial() returns the
+	material at an index. Because we have only one material, we can
+	return that and assume that no one ever calls getMaterial() with an index
+	greater than 0.
+	*/
+	virtual const core::aabbox3d<f32>& getBoundingBox() const
+	{
+		return Box;
+	}
+
+	virtual u32 getMaterialCount() const
+	{
+		return 1;
+	}
+
+	virtual video::SMaterial& getMaterial(u32 i)
+	{
+		return Material;
+	}
+};
+
+
 
 int main()
 {
+
 	// ask user for driver
 	video::E_DRIVER_TYPE driverType=video::EDT_OGLES2;
 	if (driverType==video::EDT_COUNT)
@@ -150,7 +225,7 @@ int main()
 	}
 	
 	// add fps camera
-	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNodeFPS();
+	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
 	fpsCamera->setPosition(core::vector3df(-50,50,-150));
 
 	// disable mouse cursor
