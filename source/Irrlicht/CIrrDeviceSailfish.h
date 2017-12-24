@@ -350,8 +350,6 @@ namespace irr
 		u32  Width, Height;
 		bool WindowHasFocus;
 		bool WindowMinimized;
-		bool UseXVidMode;
-		bool UseXRandR;
 		bool ExternalWindow;
 		int  AutorepeatSupport;
 

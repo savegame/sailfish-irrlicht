@@ -1118,7 +1118,6 @@ CIrrDeviceSailfish::CIrrDeviceSailfish(const SIrrlichtCreationParameters& param)
     : CIrrDeviceStub(param),
       Width(param.WindowSize.Width), Height(param.WindowSize.Height),
       WindowHasFocus(true), WindowMinimized(false),
-      UseXVidMode(false), UseXRandR(false),
       ExternalWindow(false), AutorepeatSupport(0),
       wlListener ({
                  global_registry_handler,
@@ -1304,11 +1303,7 @@ bool CIrrDeviceSailfish::createWindow()
 		return false;
 	}
 	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
-	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-//        qt_ex
-	// tranform window if needed
-	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
-//	wl_surface_set_buffer_transform(struct wl_client *client, struct wl_resource *resource, wl_output_transform:: WL_OUTPUT_TRANSFORM_90);
+//	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
 
 	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceSailfish::wlShell, wlSurface);
 	if (wlShellSurface == NULL) {
