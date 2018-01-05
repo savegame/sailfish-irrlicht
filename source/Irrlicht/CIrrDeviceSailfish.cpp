@@ -480,6 +480,9 @@ output_handle_done(void *data, struct wl_output* wl_output)
 #endif
 }
 
+/**
+ * that function request every time when sailfish change screen orientation
+*/
 static void
 output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
                        int32_t physical_width, int32_t physical_height, int32_t subpixel,
