@@ -535,6 +535,10 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 	if(device)
 	{
 		device->setPhysicalSize((irr::s32)physical_width, (irr::s32)physical_height);
+
+		irr::SEvent event;
+		event.EventType = irr::EET_GYROSCOPE_EVENT;
+//		event.GyroscopeEvent.
 	}
 }
 

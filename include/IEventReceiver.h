@@ -184,6 +184,21 @@ namespace irr
 		ETIE_COUNT
 	};
 
+#ifdef SAILFISH
+	//! Enumeration of all orientation events
+	enum EORIENTATION_EVENT_TYPE
+	{
+		EOET_TRANSFORM_NORMAL = 0,
+		EOET_TRANSFORM_90,
+		EOET_TRANSFORM_180,
+		EOET_TRANSFORM_270,
+		EOET_TRANSFORM_FLIPPED,
+		EOET_TRANSFORM_FLIPPED_90,
+		EOET_TRANSFORM_FLIPPED_180,
+		EOET_TRANSFORM_FLIPPED_270,
+	};
+#endif
+
 	enum ESYSTEM_EVENT_TYPE
 	{
 		//! From Android command handler for native activity messages
@@ -568,6 +583,12 @@ struct SEvent
 			struct SAndroidCmd AndroidCmd;
 		};
 	};
+
+#ifdef SAILFISH
+	struct SOrientationEvent {
+		EORIENTATION_EVENT_TYPE EventType;
+	};
+#endif
 
 	// Application state event
 	struct SApplicationEvent
