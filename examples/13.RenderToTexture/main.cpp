@@ -18,16 +18,122 @@ using namespace irr;
 #pragma comment(lib, "Irrlicht.lib")
 #endif
 
+class ScreenShaderCB : public video::IShaderConstantSetCallBack
+{
+public:
+	ScreenShaderCB() : WorldViewProjID(-1), TransWorldID(-1), InvWorldID(-1), PositionID(-1),
+	                    ColorID(-1), TextureID(-1), FirstUpdate(true)
+	{
+	}
+
+	virtual void OnSetConstants(video::IMaterialRendererServices* services,
+	        s32 userData)
+	{
+		bool UseHighLevelShaders = true;
+		video::IVideoDriver* driver = services->getVideoDriver();
+
+		// get shader constants id.
+
+		if (FirstUpdate)
+		{
+			WorldViewProjID = services->getVertexShaderConstantID("mWorldViewProj");
+			TransWorldID = services->getVertexShaderConstantID("mTransWorld");
+			InvWorldID = services->getVertexShaderConstantID("mInvWorld");
+//			PositionID = services->getVertexShaderConstantID("mLightPos");
+			ColorID = services->getVertexShaderConstantID("mLightColor");
+
+			// Textures ID are important only for OpenGL interface.
+
+			if(driver->getDriverType() == video::EDT_OPENGL)
+				TextureID = services->getVertexShaderConstantID("Texture0");
+
+			FirstUpdate = false;
+		}
+
+		// set inverted world matrix
+		// if we are using highlevel shaders (the user can select this when
+		// starting the program), we must set the constants by name.
+
+		core::matrix4 invWorld = driver->getTransform(video::ETS_WORLD);
+		invWorld.makeInverse();
+
+		if (UseHighLevelShaders)
+			services->setVertexShaderConstant(InvWorldID, invWorld.pointer(), 16);
+		else
+			services->setVertexShaderConstant(invWorld.pointer(), 0, 4);
+
+		// set clip matrix
+
+		core::matrix4 worldViewProj;
+		worldViewProj = driver->getTransform(video::ETS_PROJECTION);
+		worldViewProj *= driver->getTransform(video::ETS_VIEW);
+		worldViewProj *= driver->getTransform(video::ETS_WORLD);
+
+		if (UseHighLevelShaders)
+			services->setVertexShaderConstant(WorldViewProjID, worldViewProj.pointer(), 16);
+		else
+			services->setVertexShaderConstant(worldViewProj.pointer(), 4, 4);
+
+		// set camera position
+
+//		core::vector3df pos = device->getSceneManager()->
+//		    getActiveCamera()->getAbsolutePosition();
+
+//		if (UseHighLevelShaders)
+//			services->setVertexShaderConstant(PositionID, reinterpret_cast<f32*>(&pos), 3);
+//		else
+//			services->setVertexShaderConstant(reinterpret_cast<f32*>(&pos), 8, 1);
+
+		// set light color
+
+		video::SColorf col(0.0f,1.0f,1.0f,0.0f);
+
+		if (UseHighLevelShaders)
+			services->setVertexShaderConstant(ColorID,
+			        reinterpret_cast<f32*>(&col), 4);
+		else
+			services->setVertexShaderConstant(reinterpret_cast<f32*>(&col), 9, 1);
+
+		// set transposed world matrix
+
+		core::matrix4 world = driver->getTransform(video::ETS_WORLD);
+		world = world.getTransposed();
+
+		if (true)
+		{
+			services->setVertexShaderConstant(TransWorldID, world.pointer(), 16);
+
+			// set texture, for textures you can use both an int and a float setPixelShaderConstant interfaces (You need it only for an OpenGL driver).
+			s32 TextureLayerID = 0;
+			services->setPixelShaderConstant(TextureID, &TextureLayerID, 1);
+		}
+		else
+			services->setVertexShaderConstant(world.pointer(), 10, 4);
+	}
+
+private:
+	s32 WorldViewProjID;
+	s32 TransWorldID;
+	s32 InvWorldID;
+	s32 PositionID;
+	s32 ColorID;
+	s32 TextureID;
+
+	bool FirstUpdate;
+};
+
 class ScreenNode : public scene::ISceneNode
 {
 	core::aabbox3d<f32> Box;
 	video::S3DVertex Vertices[4];
 	video::SMaterial Material;
+	s32 ShaderMaterial;
 
 public:
 	ScreenNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id)
 	    : scene::ISceneNode(parent, mgr, id)
 	{
+		bool UseHighLevelShaders= true;
 		Material.Wireframe = false;
 		Material.Lighting = false;
 		Material.Thickness=0.f;
@@ -43,6 +149,38 @@ public:
 		Box.reset(Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
+		//shaders
+		io::path mediaPath = getExampleMediaPath();
+		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
+		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
+
+		video::IGPUProgrammingServices* gpu = mgr->getVideoDriver()->getGPUProgrammingServices();
+		ShaderMaterial = 0;
+
+		if (gpu)
+		{
+			ScreenShaderCB* mcSolid = new ScreenShaderCB();
+
+			if (UseHighLevelShaders)
+			{
+				// Choose the desired shader type. Default is the native
+				// shader type for the driver
+				const video::E_GPU_SHADING_LANGUAGE shadingLanguage = video::EGSL_DEFAULT;
+
+				// create material from high level shaders (hlsl, glsl)
+
+				ShaderMaterial = gpu->addHighLevelShaderMaterialFromFiles(
+				    vsFileName, "main", video::EVST_VS_1_1,
+				    psFileName, "main", video::EPST_PS_1_1,
+				    mcSolid, video::EMT_SOLID, 0, shadingLanguage);
+
+				Material.MaterialType = ((video::E_MATERIAL_TYPE)ShaderMaterial);
+			}
+
+
+			mcSolid->drop();
+		}
+
 	}
 
 	virtual void OnRegisterSceneNode()
@@ -58,24 +196,27 @@ public:
 		/* Indices into the 'Vertices' array. A triangle needs 3 vertices
 		so you have to pass the 3 corresponding indices for each triangle to
 		tell which of the vertices should be used for it.	*/
-		u16 indices[] = {	0,1,2, 0,2,3, 1,0,3, 2,0,1	};
+		u16 indices[] = {	0,1,2, 0,2,3, 2,1,0, 3,2,0	};
 		video::IVideoDriver* driver = SceneManager->getVideoDriver();
 
 		driver->setMaterial(Material);
-		driver->setTransform(video::ETS_VIEW, AbsoluteTransformation);
+		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 	}
 
-	/*
-	And finally we create three small additional methods.
-	irr::scene::ISceneNode::getBoundingBox() returns the bounding box of
-	this scene node, irr::scene::ISceneNode::getMaterialCount() returns the
-	amount of materials in this scene node (our tetrahedron only has one
-	material), and irr::scene::ISceneNode::getMaterial() returns the
-	material at an index. Because we have only one material, we can
-	return that and assume that no one ever calls getMaterial() with an index
-	greater than 0.
-	*/
+	void draw(video::IVideoDriver* driver)
+	{
+		driver->setMaterial(video::SMaterial());
+		driver->setTransform ( video::ETS_PROJECTION, core::IdentityMatrix );
+		driver->setTransform ( video::ETS_VIEW, core::IdentityMatrix );
+		driver->setTransform ( video::ETS_WORLD, core::IdentityMatrix );
+
+		u16 indices[] = {	0,1,2, 0,2,3, 2,1,0, 3,2,0	};
+		driver->setMaterial(Material);
+		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
+		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 4, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
+	}
+
 	virtual const core::aabbox3d<f32>& getBoundingBox() const
 	{
 		return Box;
@@ -161,16 +302,16 @@ int main()
 	*/
 
 	// create test cube
-	scene::ISceneNode* test = smgr->addCubeSceneNode(60);
+	//scene::ISceneNode* test = smgr->addCubeSceneNode(60);
 
 	// let the cube rotate and set some light settings
-	scene::ISceneNodeAnimator* anim = smgr->createRotationAnimator(
-		core::vector3df(0.3f, 0.3f,0));
+	//scene::ISceneNodeAnimator* anim = smgr->createRotationAnimator(
+	//	core::vector3df(0.3f, 0.3f,0));
 
-	test->setPosition(core::vector3df(-100,0,-100));
-	test->setMaterialFlag(video::EMF_LIGHTING, false); // disable dynamic lighting
-	test->addAnimator(anim);
-	anim->drop();
+	//test->setPosition(core::vector3df(-100,0,-100));
+	//test->setMaterialFlag(video::EMF_LIGHTING, false); // disable dynamic lighting
+	//test->addAnimator(anim);
+	//anim->drop();
 
 	// set window caption
 	device->setWindowCaption(L"Irrlicht Engine - Render to Texture and Specular Highlights example");
@@ -190,20 +331,22 @@ int main()
 
 	// create render target
 	video::IRenderTarget* renderTarget = 0;
+	video::ITexture* renderTargetDepth = 0;
 	video::ITexture* renderTargetTex = 0;
 	scene::ICameraSceneNode* fixedCam = 0;
+	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	
 
 	if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
 	{
-		renderTargetTex = driver->addRenderTargetTexture(core::dimension2d<u32>(256, 256), "RTT1", video::ECF_A8R8G8B8);
-		video::ITexture* renderTargetDepth = driver->addRenderTargetTexture(core::dimension2d<u32>(256, 256), "DepthStencil", video::ECF_D16);
+		renderTargetTex = driver->addRenderTargetTexture(core::dimension2d<u32>(800, 480), "RTT1", video::ECF_A8R8G8B8);
+		renderTargetDepth = driver->addRenderTargetTexture(core::dimension2d<u32>(800, 480), "DepthStencil", video::ECF_D16);
 
 		renderTarget = driver->addRenderTarget();
 		renderTarget->setTexture(renderTargetTex, renderTargetDepth);
 
-		test->setMaterialTexture(0, renderTargetTex); // set material of cube to render target
-
+		//test->setMaterialTexture(0, renderTargetTex); // set material of cube to render target
+		screenNode->setMaterialTexture(0, renderTargetTex);
 		// add fixed camera
 		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(10,10,-80),
 			core::vector3df(-10,10,-100));
@@ -225,8 +368,10 @@ int main()
 	}
 	
 	// add fps camera
-	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
-	fpsCamera->setPosition(core::vector3df(-50,50,-150));
+//	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
+	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNode(0, core::vector3df(0,0,-1) );
+//	fpsCamera->setPosition(core::vector3df(-50,50,-150));
+	fpsCamera->setTarget(screenNode->getPosition());
 
 	// disable mouse cursor
 	device->getCursorControl()->setVisible(false);
@@ -255,7 +400,7 @@ int main()
 			driver->setRenderTargetEx(renderTarget, video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(0,0,0,255));
 
 			// make cube invisible and set fixed camera as active camera
-			test->setVisible(false);
+			//test->setVisible(false);
 			smgr->setActiveCamera(fixedCam);
 
 			// draw whole scene into render buffer
@@ -266,12 +411,14 @@ int main()
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
 
 			// make the cube visible and set the user controlled camera as active one
-			test->setVisible(true);
+			//test->setVisible(true);
 			smgr->setActiveCamera(fpsCamera);
 		}
 		
-		// draw scene normally
-		smgr->drawAll();
+		screenNode->draw(driver);
+
+//		smgr->drawAll();
+//		driver->drawMeshBuffer();
 		env->drawAll();
 
 		driver->endScene();

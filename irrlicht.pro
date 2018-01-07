@@ -66,5 +66,7 @@ SOURCES += examples/13.RenderToTexture/main.cpp
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \
     irrlicht.png \
-    irrlicht.desktop
+    irrlicht.desktop \
+    media/Shaders/DFGLES2Screen.vsh \
+    media/Shaders/DFGLES2Screen.fsh
 
