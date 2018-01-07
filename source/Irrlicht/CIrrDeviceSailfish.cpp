@@ -488,7 +488,6 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
                        int32_t physical_width, int32_t physical_height, int32_t subpixel,
                        const char *make, const char *model, int32_t transform)
 {
-
 	{/// TODO Here we need set Up vector for Camera, if it created...
 		irr::core::stringc m = "wlOutput::geometry (x:";
 		m+= x;
@@ -537,8 +536,38 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 		device->setPhysicalSize((irr::s32)physical_width, (irr::s32)physical_height);
 
 		irr::SEvent event;
-		event.EventType = irr::EET_GYROSCOPE_EVENT;
-//		event.GyroscopeEvent.
+		event.EventType = irr::EET_ORITENTATION_EVENT;
+		// by default in wayland 1.6 oritnations transform enum is 0 - 7, as in irrlicht
+		event.OrientationEvent.EventType = (irr::EORIENTATION_EVENT_TYPE)transform;
+//		switch(transform)
+//		{
+//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_NORMAL;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_90:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_90;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_180:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_180;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_270:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_270;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED;
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_90;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_180;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_270;
+//			break;
+//		}
+
+		device->postEventFromUser(event);
 	}
 }
 

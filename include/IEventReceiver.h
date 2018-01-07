@@ -9,6 +9,7 @@
 #include "Keycodes.h"
 #include "irrString.h"
 
+
 namespace irr
 {
 	//! Enumeration for all event types there are.
@@ -82,6 +83,10 @@ namespace irr
 		//! Application state events like a resume, pause etc.
 		EET_APPLICATION_EVENT,
 
+#ifdef SAILFISH
+		//! Orientation state events
+		EET_ORITENTATION_EVENT,
+#endif
 		//! This enum is never used, it only forces the compiler to
 		//! compile these enumeration values to 32 bit.
 		EGUIET_FORCE_32_BIT = 0x7fffffff
@@ -196,6 +201,7 @@ namespace irr
 		EOET_TRANSFORM_FLIPPED_90,
 		EOET_TRANSFORM_FLIPPED_180,
 		EOET_TRANSFORM_FLIPPED_270,
+		EOET_COUNT,
 	};
 #endif
 
@@ -611,6 +617,9 @@ struct SEvent
 		struct SUserEvent UserEvent;
 		struct SSystemEvent SystemEvent;
 		struct SApplicationEvent ApplicationEvent;
+#ifdef SAILFISH
+		struct SOrientationEvent OrientationEvent;
+#endif
 	};
 
 };
