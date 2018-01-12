@@ -296,6 +296,14 @@ namespace irr
         //! Is device motion available.
         virtual bool isDeviceMotionAvailable() = 0;
 
+#ifdef SAILFISH
+		//! Is device can fix orientation for the application
+		virtual bool isDeviceOrientationAvaliable() {return false;}
+
+		//! set allowed orientations for the app
+		virtual void setDeviceAllowedOrientation(int orientation) { } //TODO
+#endif
+
 		//! Set the current Gamma Value for the Display
 		virtual bool setGammaRamp(f32 red, f32 green, f32 blue,
 					f32 relativebrightness, f32 relativecontrast) =0;

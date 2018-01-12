@@ -345,6 +345,11 @@ namespace irr
 			PhysicalHeight = height;
 		}
 
+		core::dimension2du getScreenResolution() const
+		{
+			return CreationParams.WindowSize;
+		}
+
 		wchar_t Key2WChar(uint32_t key) const;
 	private:
 		u32  Width, Height;

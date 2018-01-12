@@ -9,8 +9,13 @@ for the rendering driver, create the Irrlicht Device:
 */
 
 #include <irrlicht.h>
+#include <os.h>
 #include "driverChoice.h"
 #include "exampleHelper.h"
+
+#ifdef SAILFISH
+#include <source/Irrlicht/CIrrDeviceSailfish.h>
+#endif
 
 using namespace irr;
 
@@ -22,7 +27,7 @@ class ScreenShaderCB : public video::IShaderConstantSetCallBack
 {
 public:
 	ScreenShaderCB() : WorldViewProjID(-1), TransWorldID(-1), InvWorldID(-1), PositionID(-1),
-	                    ColorID(-1), TextureID(-1), FirstUpdate(true)
+	                    ColorID(-1), TextureID0(-1), TextureID1(-1), FirstUpdate(true)
 	{
 	}
 
@@ -45,7 +50,10 @@ public:
 			// Textures ID are important only for OpenGL interface.
 
 			if(driver->getDriverType() == video::EDT_OPENGL)
-				TextureID = services->getVertexShaderConstantID("Texture0");
+			{
+				TextureID0 = services->getVertexShaderConstantID("Texture0");
+				TextureID1 = services->getVertexShaderConstantID("Texture1");
+			}
 
 			FirstUpdate = false;
 		}
@@ -99,13 +107,15 @@ public:
 		core::matrix4 world = driver->getTransform(video::ETS_WORLD);
 		world = world.getTransposed();
 
-		if (true)
+		if (UseHighLevelShaders)
 		{
 			services->setVertexShaderConstant(TransWorldID, world.pointer(), 16);
 
 			// set texture, for textures you can use both an int and a float setPixelShaderConstant interfaces (You need it only for an OpenGL driver).
 			s32 TextureLayerID = 0;
-			services->setPixelShaderConstant(TextureID, &TextureLayerID, 1);
+			services->setPixelShaderConstant(TextureID0, &TextureLayerID, 1);
+			s32 TextureLayerID1 = 1;
+			services->setPixelShaderConstant(TextureID1, &TextureLayerID1, 1);
 		}
 		else
 			services->setVertexShaderConstant(world.pointer(), 10, 4);
@@ -117,7 +127,8 @@ private:
 	s32 InvWorldID;
 	s32 PositionID;
 	s32 ColorID;
-	s32 TextureID;
+	s32 TextureID0;
+	s32 TextureID1;
 
 	bool FirstUpdate;
 };
@@ -150,7 +161,11 @@ public:
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
 		//shaders
+#ifndef _DEBUG
 		io::path mediaPath = getExampleMediaPath();
+#else
+		io::path mediaPath = "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
+#endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
 
@@ -168,6 +183,10 @@ public:
 				const video::E_GPU_SHADING_LANGUAGE shadingLanguage = video::EGSL_DEFAULT;
 
 				// create material from high level shaders (hlsl, glsl)
+				irr::os::Printer::log( "Loading shaders: ", irr::ELL_DEBUG );
+				core::stringc m = "  ";
+				m += mediaPath;
+				irr::os::Printer::log( m.c_str(), irr::ELL_DEBUG );
 
 				ShaderMaterial = gpu->addHighLevelShaderMaterialFromFiles(
 				    vsFileName, "main", video::EVST_VS_1_1,
@@ -336,20 +355,40 @@ int main()
 	scene::ICameraSceneNode* fixedCam = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	
-
+	core::dimension2du dim = core::dimension2d<u32>(400, 240);
+#ifdef SAILFISH
+	dim = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
+	dim = core::dimension2du(dim.Height, dim.Width);
+#endif
 	if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
 	{
-		renderTargetTex = driver->addRenderTargetTexture(core::dimension2d<u32>(800, 480), "RTT1", video::ECF_A8R8G8B8);
-		renderTargetDepth = driver->addRenderTargetTexture(core::dimension2d<u32>(800, 480), "DepthStencil", video::ECF_D16);
+
+		renderTargetTex = driver->addRenderTargetTexture(dim, "RTT1", video::ECF_A8R8G8B8);
+		renderTargetDepth = driver->addRenderTargetTexture(dim, "DepthStencil", video::ECF_D16);
 
 		renderTarget = driver->addRenderTarget();
 		renderTarget->setTexture(renderTargetTex, renderTargetDepth);
 
 		//test->setMaterialTexture(0, renderTargetTex); // set material of cube to render target
 		screenNode->setMaterialTexture(0, renderTargetTex);
+		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(10,10,-80),
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(10,10,-100),
 			core::vector3df(-10,10,-100));
+		fixedCam->setFarValue(180.0f);
+		//fixedCam->setNearValue(20.0f);
+
+		{
+			f32 width = (f32)dim.Width;
+			f32 height = (f32)dim.Height;
+			scene::ICameraSceneNode *cam = fixedCam;
+			core::matrix4 m2;
+			f32 wd = (f32)(width*0.003651);
+			f32 hg = (f32)(height*0.003651);
+			m2.buildProjectionMatrixPerspectiveLH(wd,hg,cam->getNearValue(),cam->getFarValue());
+			cam->setProjectionMatrix(m2);
+		}
+		//fixedCam->set
 	}
 	else
 	{
@@ -372,6 +411,16 @@ int main()
 	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNode(0, core::vector3df(0,0,-1) );
 //	fpsCamera->setPosition(core::vector3df(-50,50,-150));
 	fpsCamera->setTarget(screenNode->getPosition());
+	{
+		f32 width = (f32)dim.Width;
+		f32 height = (f32)dim.Height;
+		scene::ICameraSceneNode *cam = fpsCamera;
+		core::matrix4 m,m2;
+		f32 wd = (f32)(width*4);
+		f32 hg = (f32)(height*3);
+		m2.buildProjectionMatrixOrthoLH(wd,hg,cam->getNearValue(),cam->getFarValue());
+		cam->setProjectionMatrix(m2);
+	}
 
 	// disable mouse cursor
 	device->getCursorControl()->setVisible(false);
@@ -388,7 +437,7 @@ int main()
 	int lastFPS = -1;
 
 	while(device->run())
-//	if (device->isWindowActive())
+	if (device->isWindowActive())
 	{
 		driver->beginScene(video::ECBF_COLOR | video::ECBF_DEPTH, video::SColor(0));
 
