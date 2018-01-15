@@ -1,6 +1,6 @@
 attribute vec3 inVertexPosition;
-attribute vec3 inVertexNormal;
-attribute vec4 inVertexColor;
+//attribute vec3 inVertexNormal;
+//attribute vec4 inVertexColor;
 attribute vec2 inTexCoord0;
 //attribute vec3 gl_MultiTexCoord0;
 uniform highp mat4 mWorldViewProj;

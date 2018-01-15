@@ -350,6 +350,8 @@ namespace irr
 			return CreationParams.WindowSize;
 		}
 
+		void setQESOrientation(int orientation);
+
 		wchar_t Key2WChar(uint32_t key) const;
 	private:
 		u32  Width, Height;

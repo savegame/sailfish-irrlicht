@@ -541,6 +541,7 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 			m += "flipped 270;";
 			break;
 		}
+
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 
@@ -580,7 +581,6 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 //			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_270;
 //			break;
 //		}
-
 		device->postEventFromUser(event);
 	}
 }
@@ -604,38 +604,38 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		m+= flags;
 		m+= " - ";
 
-		if(dev && dev->qtExtendedSurface)
-		switch(flags)
-		{
-		case  WL_OUTPUT_TRANSFORM_NORMAL:
-			m += "normal;";
-			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
-			        break;
-		case  WL_OUTPUT_TRANSFORM_90:
-			m += "90;";
-			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-			break;
-		case  WL_OUTPUT_TRANSFORM_180:
-			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
-			m += "180;";
-			break;
-		case  WL_OUTPUT_TRANSFORM_270:
-			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
-			m += "270;";
-			break;
-		case  WL_OUTPUT_TRANSFORM_FLIPPED:
-			m += "flipped;";
-			break;
-		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-			m += "flipped 90;";
-			break;
-		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
-			m += "flipped 180;";
-			break;
-		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
-			m += "flipped 270;";
-			break;
-		}
+//		if(dev && dev->qtExtendedSurface)
+//		switch(flags)
+//		{
+//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+//			m += "normal;";
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+//			        break;
+//		case  WL_OUTPUT_TRANSFORM_90:
+//			m += "90;";
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_180:
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+//			m += "180;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_270:
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+//			m += "270;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			m += "flipped;";
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			m += "flipped 90;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			m += "flipped 180;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			m += "flipped 270;";
+//			break;
+//		}
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 	if(dev)
@@ -1157,6 +1157,34 @@ void irr::CIrrDeviceSailfish::seatHandleCapabilities(void *data, wl_seat *seat, 
 
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
 		irr::os::Printer::log("Display has a touch screen");
+	}
+}
+
+void irr::CIrrDeviceSailfish::setQESOrientation(int orientation)
+{
+	if(qtExtendedSurface)
+	switch(orientation)
+	{
+	case  irr::EOET_TRANSFORM_NORMAL:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_90:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_180:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_270:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+		break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			break;
 	}
 }
 

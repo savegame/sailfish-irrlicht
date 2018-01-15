@@ -27,7 +27,8 @@ class ScreenShaderCB : public video::IShaderConstantSetCallBack
 {
 public:
 	ScreenShaderCB() : WorldViewProjID(-1), TransWorldID(-1), InvWorldID(-1), PositionID(-1),
-	                    ColorID(-1), TextureID0(-1), TextureID1(-1), FirstUpdate(true)
+	                    ColorID(-1), TextureID0(-1), TextureID1(-1), FirstUpdate(true),isFlipped(true),
+	                    isFlippedID(-1)
 	{
 	}
 
@@ -42,17 +43,21 @@ public:
 		if (FirstUpdate)
 		{
 			WorldViewProjID = services->getVertexShaderConstantID("mWorldViewProj");
-			TransWorldID = services->getVertexShaderConstantID("mTransWorld");
-			InvWorldID = services->getVertexShaderConstantID("mInvWorld");
+//			TransWorldID = services->getVertexShaderConstantID("mTransWorld");
+//			InvWorldID = services->getVertexShaderConstantID("mInvWorld");
 //			PositionID = services->getVertexShaderConstantID("mLightPos");
-			ColorID = services->getVertexShaderConstantID("mLightColor");
+//			ColorID = services->getVertexShaderConstantID("mLightColor");
 
 			// Textures ID are important only for OpenGL interface.
-
+#ifdef SAILFISH
+			//if(driver->getDriverType() == video::EDT_OGLES2)
+#else
 			if(driver->getDriverType() == video::EDT_OPENGL)
+#endif
 			{
-				TextureID0 = services->getVertexShaderConstantID("Texture0");
-				TextureID1 = services->getVertexShaderConstantID("Texture1");
+				TextureID0 = services->getPixelShaderConstantID("Texture0");
+				TextureID1 = services->getPixelShaderConstantID("Texture1");
+				isFlippedID = services->getPixelShaderConstantID("isFlipped");
 			}
 
 			FirstUpdate = false;
@@ -65,10 +70,10 @@ public:
 		core::matrix4 invWorld = driver->getTransform(video::ETS_WORLD);
 		invWorld.makeInverse();
 
-		if (UseHighLevelShaders)
-			services->setVertexShaderConstant(InvWorldID, invWorld.pointer(), 16);
-		else
-			services->setVertexShaderConstant(invWorld.pointer(), 0, 4);
+//		if (UseHighLevelShaders)
+//			services->setVertexShaderConstant(InvWorldID, invWorld.pointer(), 16);
+//		else
+//			services->setVertexShaderConstant(invWorld.pointer(), 0, 4);
 
 		// set clip matrix
 
@@ -77,10 +82,10 @@ public:
 		worldViewProj *= driver->getTransform(video::ETS_VIEW);
 		worldViewProj *= driver->getTransform(video::ETS_WORLD);
 
-		if (UseHighLevelShaders)
+//		if (UseHighLevelShaders)
 			services->setVertexShaderConstant(WorldViewProjID, worldViewProj.pointer(), 16);
-		else
-			services->setVertexShaderConstant(worldViewProj.pointer(), 4, 4);
+//		else
+//			services->setVertexShaderConstant(worldViewProj.pointer(), 4, 4);
 
 		// set camera position
 
@@ -96,29 +101,36 @@ public:
 
 		video::SColorf col(0.0f,1.0f,1.0f,0.0f);
 
-		if (UseHighLevelShaders)
-			services->setVertexShaderConstant(ColorID,
-			        reinterpret_cast<f32*>(&col), 4);
-		else
-			services->setVertexShaderConstant(reinterpret_cast<f32*>(&col), 9, 1);
+//		if (UseHighLevelShaders)
+//			services->setVertexShaderConstant(ColorID,
+//			        reinterpret_cast<f32*>(&col), 4);
+//		else
+//			services->setVertexShaderConstant(reinterpret_cast<f32*>(&col), 9, 1);
 
 		// set transposed world matrix
 
 		core::matrix4 world = driver->getTransform(video::ETS_WORLD);
 		world = world.getTransposed();
 
-		if (UseHighLevelShaders)
+//		if (UseHighLevelShaders)
 		{
-			services->setVertexShaderConstant(TransWorldID, world.pointer(), 16);
+//			services->setVertexShaderConstant(TransWorldID, world.pointer(), 16);
 
 			// set texture, for textures you can use both an int and a float setPixelShaderConstant interfaces (You need it only for an OpenGL driver).
 			s32 TextureLayerID = 0;
 			services->setPixelShaderConstant(TextureID0, &TextureLayerID, 1);
 			s32 TextureLayerID1 = 1;
 			services->setPixelShaderConstant(TextureID1, &TextureLayerID1, 1);
+			s32 isFlippedValue = (isFlipped)?1:0;
+			services->setPixelShaderConstant(isFlippedID,&isFlippedValue, 1);
 		}
-		else
-			services->setVertexShaderConstant(world.pointer(), 10, 4);
+//		else
+//			services->setVertexShaderConstant(world.pointer(), 10, 4);
+	}
+
+	void setIsFlipped(bool val)
+	{
+		isFlipped = val;
 	}
 
 private:
@@ -129,8 +141,84 @@ private:
 	s32 ColorID;
 	s32 TextureID0;
 	s32 TextureID1;
+	s32 isFlippedID;
 
 	bool FirstUpdate;
+	bool isFlipped;
+};
+
+
+class EventReseiver : public irr::IEventReceiver
+{
+public:
+
+	EventReseiver()
+	    : IEventReceiver()
+	{
+		m_device = NULL;
+		m_shader = NULL;
+		m_isFlipLandscape = false;
+	}
+
+	//! Destructor
+//	virtual ~EventReceiver() {}
+
+	//! Called if an event happened.
+	/** Please take care that you should only return 'true' when you want to _prevent_ Irrlicht
+	* from processing the event any further. So 'true' does mean that an event is completely done.
+	* Therefore your return value for all unprocessed events should be 'false'.
+	\return True if the event was processed.
+	*/
+	virtual bool OnEvent(const SEvent& event)
+	{
+		switch( event.EventType )
+		{
+		case irr::EET_ORITENTATION_EVENT:
+			eventOrientation(event);
+			break;
+		}
+	}
+
+
+	void setSailfishDevice(irr::CIrrDeviceSailfish *device)
+	{
+		m_device = device;
+		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
+		m_isFlipLandscape = true;
+	}
+
+	void setScreenShader(ScreenShaderCB *shader)
+	{
+		m_shader = shader;
+	}
+
+	bool isFlipLandscape() const
+	{
+		return m_isFlipLandscape;
+	}
+
+protected:
+	void eventOrientation(const SEvent &event)
+	{
+		if(!m_device || !m_shader)
+			return;
+		switch (event.OrientationEvent.EventType) {
+		case irr::EOET_TRANSFORM_90:
+			m_device->setQESOrientation(irr::EOET_TRANSFORM_90);
+			m_shader->setIsFlipped(true);
+			break;
+		case irr::EOET_TRANSFORM_270:
+			m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
+			m_shader->setIsFlipped(false);
+			break;
+		}
+	}
+
+private:
+
+	irr::CIrrDeviceSailfish *m_device;
+	ScreenShaderCB *m_shader;
+	bool m_isFlipLandscape;
 };
 
 class ScreenNode : public scene::ISceneNode
@@ -174,7 +262,7 @@ public:
 
 		if (gpu)
 		{
-			ScreenShaderCB* mcSolid = new ScreenShaderCB();
+			m_shader = new ScreenShaderCB();
 
 			if (UseHighLevelShaders)
 			{
@@ -191,16 +279,23 @@ public:
 				ShaderMaterial = gpu->addHighLevelShaderMaterialFromFiles(
 				    vsFileName, "main", video::EVST_VS_1_1,
 				    psFileName, "main", video::EPST_PS_1_1,
-				    mcSolid, video::EMT_SOLID, 0, shadingLanguage);
+				    m_shader, video::EMT_SOLID, 0, shadingLanguage);
 
 				Material.MaterialType = ((video::E_MATERIAL_TYPE)ShaderMaterial);
 			}
 
 
-			mcSolid->drop();
+
 		}
 
 	}
+
+	~ScreenNode()
+	{
+		m_shader->drop();
+	}
+
+	ScreenShaderCB* getShader() const { return m_shader; }
 
 	virtual void OnRegisterSceneNode()
 	{
@@ -233,7 +328,7 @@ public:
 		u16 indices[] = {	0,1,2, 0,2,3, 2,1,0, 3,2,0	};
 		driver->setMaterial(Material);
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 4, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
+		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 	}
 
 	virtual const core::aabbox3d<f32>& getBoundingBox() const
@@ -250,6 +345,9 @@ public:
 	{
 		return Material;
 	}
+
+protected:
+	ScreenShaderCB*  m_shader;
 };
 
 
@@ -274,6 +372,15 @@ int main()
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
 	gui::IGUIEnvironment* env = device->getGUIEnvironment();
+	ILogger *logger = device->getLogger();
+
+	logger->setLogLevel(irr::ELL_DEBUG);
+
+	EventReseiver *receiver = new EventReseiver();
+#ifdef SAILFISH
+	receiver->setSailfishDevice( reinterpret_cast<irr::CIrrDeviceSailfish*>(device) );
+#endif
+	device->setEventReceiver(receiver);
 
 	const io::path mediaPath = getExampleMediaPath();
 	
@@ -299,13 +406,6 @@ int main()
 		fairy->setPosition(core::vector3df(-10,0,-100));
 		fairy->setMD2Animation ( scene::EMAT_STAND );
 	}
-	
-	/*
-	To make specular highlights appear on the model, we need a dynamic
-	light in the scene. We add one directly in vicinity of the model. In
-	addition, to make the model not that dark, we set the ambient light to
-	gray.
-	*/
 
 	// add white light
 	smgr->addLightSceneNode(0, core::vector3df(-15,5,-105),
@@ -313,40 +413,10 @@ int main()
 
 	// set ambient light
 	smgr->setAmbientLight(video::SColor(0,60,60,60));
-	
-	/*
-	The next is just some standard stuff: Add a test cube and let it rotate
-	to make the scene more interesting. The user defined camera and cursor
-	setup is made later on, right before the render loop.
-	*/
-
-	// create test cube
-	//scene::ISceneNode* test = smgr->addCubeSceneNode(60);
-
-	// let the cube rotate and set some light settings
-	//scene::ISceneNodeAnimator* anim = smgr->createRotationAnimator(
-	//	core::vector3df(0.3f, 0.3f,0));
-
-	//test->setPosition(core::vector3df(-100,0,-100));
-	//test->setMaterialFlag(video::EMF_LIGHTING, false); // disable dynamic lighting
-	//test->addAnimator(anim);
-	//anim->drop();
 
 	// set window caption
 	device->setWindowCaption(L"Irrlicht Engine - Render to Texture and Specular Highlights example");
-	
-	/*
-	To test out the render to texture feature, we need a render target
-	texture. These are not like standard textures, but need to be created
-	first. To create one, we call IVideoDriver::addRenderTargetTexture()
-	and specify the size of the texture. Please don't use sizes bigger than
-	the frame buffer for this, because the render target shares the zbuffer
-	with the frame buffer.
-	Because we want to render the scene not from the user camera into the
-	texture, we add another fixed camera to the scene. But before we do all
-	this, we check if the current running driver is able to render to
-	textures. If it is not, we simply display a warning text.
-	*/
+
 
 	// create render target
 	video::IRenderTarget* renderTarget = 0;
@@ -354,7 +424,7 @@ int main()
 	video::ITexture* renderTargetTex = 0;
 	scene::ICameraSceneNode* fixedCam = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
-	
+	receiver->setScreenShader(screenNode->getShader());
 	core::dimension2du dim = core::dimension2d<u32>(400, 240);
 #ifdef SAILFISH
 	dim = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
