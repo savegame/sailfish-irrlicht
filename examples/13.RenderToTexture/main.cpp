@@ -404,19 +404,26 @@ int main()
 	*/
 
 	// load and display animated fairy mesh
-
 	scene::IAnimatedMeshSceneNode* fairy = smgr->addAnimatedMeshSceneNode(
-	    smgr->getMesh(mediaPath + "dwarf.x"/*"faerie.md2"*/));
-
+	            smgr->getMesh(mediaPath + "dwarf.x"/*"faerie.md2"*/));
 	if (fairy)
 	{
-//		fairy->setMaterialTexture(0,
-//				driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
+		//		fairy->setMaterialTexture(0,
+		//				driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
 		fairy->setMaterialFlag(video::EMF_LIGHTING, true); // enable dynamic lighting
 		fairy->getMaterial(0).Shininess = 20.0f; // set size of specular highlights
-		fairy->setPosition(core::vector3df(0,0,0));
+		fairy->setPosition(core::vector3df(0 ,0,60));
 		//fairy->setMD2Animation ( scene::EMAT_STAND );
+		f32 size = 35.0f;
+		f32 size5 = size * 2.5f;
+		for(int i = 0; i < 5; i ++)
+			for(int j = 0; j < 5; j ++)
+		{
+			fairy->clone(smgr->getRootSceneNode(),smgr)->setPosition(core::vector3df(i*size - size5 ,0,j*size));
+		}
 	}
+
+
 
 	// add white light
 	smgr->addLightSceneNode(0, core::vector3df(-15,5,-105),
@@ -439,7 +446,7 @@ int main()
 	core::dimension2du dim = core::dimension2d<u32>(400, 240);
 #ifdef SAILFISH
 	dim = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
-	dim = core::dimension2du(dim.Height, dim.Width);
+	dim = core::dimension2du(dim.Height*0.5, dim.Width*0.5);
 #endif
 	if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
 	{
@@ -454,9 +461,9 @@ int main()
 		screenNode->setMaterialTexture(0, renderTargetTex);
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,50,-60));
-		//fixedCam->setFarValue(180.0f);
-		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,40,0) );
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,50,-80));
+		fixedCam->setFarValue(300.0f);
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,60,0) );
 		//fixedCam->setNearValue(20.0f);
 
 		{
@@ -509,7 +516,7 @@ int main()
 	//gui::IGUISkin* skin = env->getSkin();
 	gui::IGUIFont *font = env->getFont(fontPath);
 	env->getSkin()->setFont(font);
-	env->addStaticText( L"HelloWorld", core::recti(5,5,dim.Width,60));
+	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,dim.Width,60));
 	/*
 	Nearly finished. Now we need to draw everything. Every frame, we draw
 	the scene twice. Once from the fixed camera into the render target
@@ -562,11 +569,11 @@ int main()
 		int fps = driver->getFPS();
 		if (lastFPS != fps)
 		{
-			core::stringw str = L"Irrlicht Engine - Render to Texture and Specular Highlights example";
-			str += " FPS:";
+			core::stringw str = L"FPS:";
 			str += fps;
+			text->setText(str.c_str());
 
-			device->setWindowCaption(str.c_str());
+			//device->setWindowCaption(str.c_str());
 			lastFPS = fps;
 		}
 		showPause = true;
