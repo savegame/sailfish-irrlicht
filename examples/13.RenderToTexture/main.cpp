@@ -12,6 +12,7 @@ for the rendering driver, create the Irrlicht Device:
 #include <os.h>
 #include "driverChoice.h"
 #include "exampleHelper.h"
+#include <map>
 
 #ifdef SAILFISH
 #include <source/Irrlicht/CIrrDeviceSailfish.h>
@@ -174,7 +175,10 @@ public:
 		switch( event.EventType )
 		{
 		case irr::EET_ORITENTATION_EVENT:
-			eventOrientation(event);
+			eventOrientation(event.OrientationEvent);
+			break;
+		case irr::EET_TOUCH_INPUT_EVENT:
+			eventTouch(event.TouchInput);
 			break;
 		}
 	}
@@ -184,12 +188,13 @@ public:
 	{
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-		m_isFlipLandscape = true;
+		m_isFlipLandscape = false;
 	}
 
 	void setScreenShader(ScreenShaderCB *shader)
 	{
 		m_shader = shader;
+		m_shader->setIsFlipped(m_isFlipLandscape);
 	}
 
 	bool isFlipLandscape() const
@@ -198,20 +203,27 @@ public:
 	}
 
 protected:
-	void eventOrientation(const SEvent &event)
+	void eventOrientation(const SEvent::SOrientationEvent &event)
 	{
 		if(!m_device || !m_shader)
 			return;
-		switch (event.OrientationEvent.EventType) {
+		switch (event.EventType) {
 		case irr::EOET_TRANSFORM_90:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_90);
-			m_shader->setIsFlipped(true);
+			m_isFlipLandscape = true;
+			m_shader->setIsFlipped(m_isFlipLandscape);
 			break;
 		case irr::EOET_TRANSFORM_270:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-			m_shader->setIsFlipped(false);
+			m_isFlipLandscape = false;
+			m_shader->setIsFlipped(m_isFlipLandscape);
 			break;
 		}
+	}
+
+	void eventTouch(const SEvent::STouchInput &event)
+	{
+
 	}
 
 private:
@@ -219,15 +231,11 @@ private:
 	irr::CIrrDeviceSailfish *m_device;
 	ScreenShaderCB *m_shader;
 	bool m_isFlipLandscape;
+	//std::map<int> m_touch;
 };
 
 class ScreenNode : public scene::ISceneNode
 {
-	core::aabbox3d<f32> Box;
-	video::S3DVertex Vertices[4];
-	video::SMaterial Material;
-	s32 ShaderMaterial;
-
 public:
 	ScreenNode(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id)
 	    : scene::ISceneNode(parent, mgr, id)
@@ -237,14 +245,14 @@ public:
 		Material.Lighting = false;
 		Material.Thickness=0.f;
 
-		Vertices[0] = video::S3DVertex(-1,-1,0, 5,1,0,
+		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
 		        video::SColor(255,0,255,255), 0, 1);
 		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
-		        video::SColor(255,255,0,255), 1, 1);
+		        video::SColor(255,255,0,255), 0, 0);
 		Vertices[2] = video::S3DVertex(1,1,0, 20,1,1,
 		        video::SColor(255,255,255,0), 1, 0);
 		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
-		        video::SColor(255,0,255,0), 0, 0);
+		        video::SColor(255,0,255,0), 1, 1);
 		Box.reset(Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
@@ -264,7 +272,7 @@ public:
 		{
 			m_shader = new ScreenShaderCB();
 
-			if (UseHighLevelShaders)
+			if (true)
 			{
 				// Choose the desired shader type. Default is the native
 				// shader type for the driver
@@ -283,11 +291,9 @@ public:
 
 				Material.MaterialType = ((video::E_MATERIAL_TYPE)ShaderMaterial);
 			}
-
-
-
 		}
-
+		u16 indices[] = {0,1,2, 0,2,3, };
+		memcpy(m_indices,indices, 6*sizeof(u16));
 	}
 
 	~ScreenNode()
@@ -325,10 +331,10 @@ public:
 		driver->setTransform ( video::ETS_VIEW, core::IdentityMatrix );
 		driver->setTransform ( video::ETS_WORLD, core::IdentityMatrix );
 
-		u16 indices[] = {	0,1,2, 0,2,3, 2,1,0, 3,2,0	};
+		u16 indices[] = {	0,1,2, 0,2,3 };
 		driver->setMaterial(Material);
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-		driver->drawVertexPrimitiveList(&Vertices[0], 4, &indices[0], 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
+		driver->drawVertexPrimitiveList(Vertices, 4, m_indices, 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 	}
 
 	virtual const core::aabbox3d<f32>& getBoundingBox() const
@@ -348,6 +354,11 @@ public:
 
 protected:
 	ScreenShaderCB*  m_shader;
+	core::aabbox3d<f32> Box;
+	video::S3DVertex Vertices[4];
+	video::SMaterial Material;
+	s32 ShaderMaterial;
+	u16 m_indices[6];
 };
 
 
@@ -395,16 +406,16 @@ int main()
 	// load and display animated fairy mesh
 
 	scene::IAnimatedMeshSceneNode* fairy = smgr->addAnimatedMeshSceneNode(
-		smgr->getMesh(mediaPath + "faerie.md2"));
+	    smgr->getMesh(mediaPath + "dwarf.x"/*"faerie.md2"*/));
 
 	if (fairy)
 	{
-		fairy->setMaterialTexture(0,
-				driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
+//		fairy->setMaterialTexture(0,
+//				driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
 		fairy->setMaterialFlag(video::EMF_LIGHTING, true); // enable dynamic lighting
 		fairy->getMaterial(0).Shininess = 20.0f; // set size of specular highlights
-		fairy->setPosition(core::vector3df(-10,0,-100));
-		fairy->setMD2Animation ( scene::EMAT_STAND );
+		fairy->setPosition(core::vector3df(0,0,0));
+		//fairy->setMD2Animation ( scene::EMAT_STAND );
 	}
 
 	// add white light
@@ -415,7 +426,7 @@ int main()
 	smgr->setAmbientLight(video::SColor(0,60,60,60));
 
 	// set window caption
-	device->setWindowCaption(L"Irrlicht Engine - Render to Texture and Specular Highlights example");
+	device->setWindowCaption(L"Irrlicht Engine 1.9 GLES2");
 
 
 	// create render target
@@ -443,9 +454,9 @@ int main()
 		screenNode->setMaterialTexture(0, renderTargetTex);
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(10,10,-100),
-			core::vector3df(-10,10,-100));
-		fixedCam->setFarValue(180.0f);
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,50,-60));
+		//fixedCam->setFarValue(180.0f);
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,40,0) );
 		//fixedCam->setNearValue(20.0f);
 
 		{
@@ -494,7 +505,11 @@ int main()
 
 	// disable mouse cursor
 	device->getCursorControl()->setVisible(false);
-
+	io::path fontPath = mediaPath + "bigfont.png";
+	//gui::IGUISkin* skin = env->getSkin();
+	gui::IGUIFont *font = env->getFont(fontPath);
+	env->getSkin()->setFont(font);
+	env->addStaticText( L"HelloWorld", core::recti(5,5,dim.Width,60));
 	/*
 	Nearly finished. Now we need to draw everything. Every frame, we draw
 	the scene twice. Once from the fixed camera into the render target
@@ -505,6 +520,7 @@ int main()
 	*/
 
 	int lastFPS = -1;
+	bool showPause = true;
 
 	while(device->run())
 	if (device->isWindowActive())
@@ -524,7 +540,7 @@ int main()
 
 			// draw whole scene into render buffer
 			smgr->drawAll();
-
+			env->drawAll();
 			// set back old render target
 			// The buffer might have been distorted, so clear it
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
@@ -538,7 +554,7 @@ int main()
 
 //		smgr->drawAll();
 //		driver->drawMeshBuffer();
-		env->drawAll();
+
 
 		driver->endScene();
 
@@ -553,6 +569,11 @@ int main()
 			device->setWindowCaption(str.c_str());
 			lastFPS = fps;
 		}
+		showPause = true;
+	}
+	else if(showPause)
+	{
+
 	}
 
 	device->drop(); // drop device
