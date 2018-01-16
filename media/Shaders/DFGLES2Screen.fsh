@@ -13,19 +13,19 @@ precision lowp    float;
 
 // Irrationals with precision shifting
 //
-float PHI = 1.61803398874989484820459 * 00000.1; // Golden Ratio
-float PI  = 3.14159265358979323846264 * 00000.1; // PI
-float SRT = 1.41421356237309504880169 * 10000.0; // Square Root of Two
+//float PHI = 1.61803398874989484820459 * 00000.1; // Golden Ratio
+//float PI  = 3.14159265358979323846264 * 00000.1; // PI
+//float SRT = 1.41421356237309504880169 * 10000.0; // Square Root of Two
 
 
 // Gold Noise function
 //
-float gold_noise(in vec2 coordinate, in float seed)
-{
- return fract(sin(dot(coordinate*seed, vec2(PHI, PI)))*SRT);
-}
+//float gold_noise(in vec2 coordinate, in float seed)
+//{
+// return fract(sin(dot(coordinate*seed, vec2(PHI, PI)))*SRT);
+//}
 
-vec4 gaussianBlur(sampler2D texture, vec2 uv, float radius, vec2 resolution, vec2 direction) {
+vec4 gaussianBlur(in sampler2D texture, in vec2 uv, in float radius, in vec2 resolution, in vec2 direction) {
   vec4 color = vec4(0.0);
   vec2 step = radius / resolution * direction;
   color += texture2D(texture, uv - 4.0 * step) * 0.02699548325659403;
@@ -42,29 +42,21 @@ vec4 gaussianBlur(sampler2D texture, vec2 uv, float radius, vec2 resolution, vec
 
 void main(void)
 {
-    //highp vec2 nTexCoord = vec2(ScreenPos.y*0.5, ScreenPos.x);
-    //if(isFlipped == 1)
-    //    nTexCoord = vec2(ScreenPos.y*0.5, rand(ScreenPos)-ScreenPos.x);
-    //gl_FragColor = texture2D(Texture0, nTexCoord);
-
-    //gl_FragColor =  texture2D(Texture0, ScreenPos.st );
-
     highp vec2 nTexCoord = vec2(-ScreenPos.y, ScreenPos.x);
     if( isFlipped == 1 )
         nTexCoord = vec2(ScreenPos.y, -ScreenPos.x);
 
-    if( TexCoord0.y < 0.5 )
-    {
-        gl_FragColor = texture2D(Texture0, nTexCoord);
-    }
-    else
-    {
-        //lowp float r1 = gold_noise(nTexCoord, 5.0f);
-        //lowp float r2 = gold_noise(nTexCoord.yx, 5.0f);
-       // nTexCoord = vec2(/*nTexCoord.x + */r1,/*nTexCoord.y - */r2);
-
-        //gl_FragColor = vec4(r1,1,r2,1);//texture2D(Texture0, nTexCoord);
-        gl_FragColor = gaussianBlur(Texture0, nTexCoord, 4, vec2(800,480), vec2(1,0.7) );
-    }
-        //gl_FragColor = vec4(TexCoord0.xy, 1, 1);
+//    if( TexCoord0.y < 0.5 )
+//    {
+//        gl_FragColor = texture2D(Texture0, nTexCoord);
+//    }
+//    else
+//    {
+        lowp float depth = texture2D(Texture1,nTexCoord).r;
+        //depth = (depth > 0.5 )?depth * 4.0f:depth;
+        if( depth >= 0.995 /*&& depth < 1.0*/)
+            gl_FragColor = gaussianBlur(Texture0, nTexCoord, (1.0 - depth) * 1000.0f, vec2(960,540), (nTexCoord - 0.5)*2.0 );
+        else
+            gl_FragColor = texture2D(Texture0, nTexCoord);
+//    }
 }

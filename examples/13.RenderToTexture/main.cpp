@@ -405,15 +405,15 @@ int main()
 
 	// load and display animated fairy mesh
 	scene::IAnimatedMeshSceneNode* fairy = smgr->addAnimatedMeshSceneNode(
-	            smgr->getMesh(mediaPath + "dwarf.x"/*"faerie.md2"*/));
+	            smgr->getMesh(mediaPath + /*"dwarf.x"*/"faerie.md2"));
 	if (fairy)
 	{
-		//		fairy->setMaterialTexture(0,
-		//				driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
+		        fairy->setMaterialTexture(0,
+				        driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
 		fairy->setMaterialFlag(video::EMF_LIGHTING, true); // enable dynamic lighting
-		fairy->getMaterial(0).Shininess = 20.0f; // set size of specular highlights
+		fairy->getMaterial(0).Shininess = 40.0f; // set size of specular highlights
 		fairy->setPosition(core::vector3df(0 ,0,60));
-		//fairy->setMD2Animation ( scene::EMAT_STAND );
+		fairy->setMD2Animation ( scene::EMAT_STAND );
 		f32 size = 35.0f;
 		f32 size5 = size * 2.5f;
 		for(int i = 0; i < 5; i ++)
@@ -461,9 +461,9 @@ int main()
 		screenNode->setMaterialTexture(0, renderTargetTex);
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,50,-80));
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,35,15));
 		fixedCam->setFarValue(300.0f);
-		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,60,0) );
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
 		//fixedCam->setNearValue(20.0f);
 
 		{
