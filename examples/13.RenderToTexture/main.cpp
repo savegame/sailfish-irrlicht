@@ -184,6 +184,8 @@ public:
 		case irr::EET_TOUCH_INPUT_EVENT:
 			eventTouch(event.TouchInput);
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -413,15 +415,23 @@ int main()
 
 	// load and display animated fairy mesh
 	scene::IAnimatedMeshSceneNode* fairy = smgr->addAnimatedMeshSceneNode(
-	            smgr->getMesh(mediaPath + /*"dwarf.x"*/"faerie.md2"));
+	            smgr->getMesh(mediaPath + 
+#ifdef fairy
+	"faerie.md2"));
+#else
+	"dwarf.x"));
+#endif
 	if (fairy)
 	{
-		        fairy->setMaterialTexture(0,
-				        driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
+		        
 		fairy->setMaterialFlag(video::EMF_LIGHTING, true); // enable dynamic lighting
 		fairy->getMaterial(0).Shininess = 40.0f; // set size of specular highlights
 		fairy->setPosition(core::vector3df(0 ,0,60));
+#ifdef fairy
 		fairy->setMD2Animation ( scene::EMAT_STAND );
+		fairy->setMaterialTexture(0,
+		        driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
+#endif
 		f32 size = 35.0f;
 		f32 size5 = size * 2.5f;
 		for(int i = 0; i < 5; i ++)

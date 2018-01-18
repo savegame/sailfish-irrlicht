@@ -57,7 +57,11 @@ namespace irr
 //		    OGLES2ShaderPath("/opt/sdk/irrlicht-sailfish/usr/share/media/Shaders/")
 		    OGLES2ShaderPath("/usr/share/irrlicht/media/Shaders/")
 #else
+    #ifdef _DEBUG
+			OGLES2ShaderPath("media/Shaders/")
+    #else
 			OGLES2ShaderPath("../../media/Shaders/")
+	#endif
 #endif
 		{
 		}
