@@ -16,7 +16,7 @@ INCLUDEPATH += third_party/wayland
 sailfish: PKGCONFIG += wayland-client wayland-egl sdl2 SDL2_mixer
 PKGCONFIG += zlib libpng egl
 !sailfish: PKGCONFIG += bzip2
-x11: PKGCONFIG += x11 xrandr gl glesv2 xxf86vm sdl
+x11: PKGCONFIG += x11 xrandr xxf86vm sdl gl glesv2
 sailfish: LIBS += -lbz2
 #x11: LIBS += -lIrrlicht -lIrrXML
 sailfish: DEFINES += SAILFISH
@@ -43,6 +43,13 @@ QMAKE_EXTRA_TARGETS += removespec
 
 media.files = media
 media.path = /usr/share/$$TARGET/
+
+x11 {
+	link.target=$$OUT_PWD/media
+	link.commands=[ ! -f $$OUT_PWD/media ] && ln -s $$PWD/media $$OUT_PWD/media
+	QMAKE_EXTRA_TARGETS += link
+	PRE_TARGETDEPS += $$link.target
+}
 
 INSTALLS += media
 

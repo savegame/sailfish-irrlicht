@@ -156,7 +156,9 @@ public:
 	EventReseiver()
 	    : IEventReceiver()
 	{
+#ifdef SAILFISH
 		m_device = NULL;
+#endif
 		m_shader = NULL;
 		m_isFlipLandscape = false;
 	}
@@ -174,22 +176,25 @@ public:
 	{
 		switch( event.EventType )
 		{
+#ifdef SAILFISH
 		case irr::EET_ORITENTATION_EVENT:
 			eventOrientation(event.OrientationEvent);
 			break;
+#endif
 		case irr::EET_TOUCH_INPUT_EVENT:
 			eventTouch(event.TouchInput);
 			break;
 		}
 	}
 
-
+#ifdef SAILFISH
 	void setSailfishDevice(irr::CIrrDeviceSailfish *device)
 	{
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
 		m_isFlipLandscape = false;
 	}
+#endif
 
 	void setScreenShader(ScreenShaderCB *shader)
 	{
@@ -203,7 +208,8 @@ public:
 	}
 
 protected:
-	void eventOrientation(const SEvent::SOrientationEvent &event)
+#ifdef SAILFISH
+	void eventOrientation(const SEvent &event)
 	{
 		if(!m_device || !m_shader)
 			return;
@@ -220,15 +226,15 @@ protected:
 			break;
 		}
 	}
-
+#endif
 	void eventTouch(const SEvent::STouchInput &event)
 	{
 
 	}
-
 private:
-
+#ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
+#endif
 	ScreenShaderCB *m_shader;
 	bool m_isFlipLandscape;
 	//std::map<int> m_touch;
@@ -257,10 +263,12 @@ public:
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
 		//shaders
-#ifndef _DEBUG
+#if !defined(_DEBUG) || defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 		io::path mediaPath = getExampleMediaPath();
-#else
+#elif defined(SAILFISH)
 		io::path mediaPath = "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
+#else
+		io::path mediaPath = getExampleMediaPath();
 #endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";

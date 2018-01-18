@@ -23,7 +23,11 @@ static io::path getExampleMediaPath()
 //	return io::path("/opt/sdk/irrlicht-sailfish/usr/share/media/");
 	return io::path("/usr/share/irrlicht/media/");
 #else
+# ifdef _DEBUG
+	return io::path("media/");
+# else
 	return io::path("../../../irrlicht/media/");
+# endif
 #endif
 }
 
