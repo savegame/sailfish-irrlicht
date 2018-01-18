@@ -155,7 +155,9 @@ public:
 	EventReseiver()
 	    : IEventReceiver()
 	{
+#ifdef SAILFISH
 		m_device = NULL;
+#endif
 		m_shader = NULL;
 		m_isFlipLandscape = false;
 	}
@@ -173,19 +175,22 @@ public:
 	{
 		switch( event.EventType )
 		{
+#ifdef SAILFISH
 		case irr::EET_ORITENTATION_EVENT:
 			eventOrientation(event);
 			break;
+#endif
 		}
 	}
 
-
+#ifdef SAILFISH
 	void setSailfishDevice(irr::CIrrDeviceSailfish *device)
 	{
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
 		m_isFlipLandscape = true;
 	}
+#endif
 
 	void setScreenShader(ScreenShaderCB *shader)
 	{
@@ -198,6 +203,7 @@ public:
 	}
 
 protected:
+#ifdef SAILFISH
 	void eventOrientation(const SEvent &event)
 	{
 		if(!m_device || !m_shader)
@@ -213,10 +219,11 @@ protected:
 			break;
 		}
 	}
-
+#endif
 private:
-
+#ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
+#endif
 	ScreenShaderCB *m_shader;
 	bool m_isFlipLandscape;
 };
@@ -252,7 +259,11 @@ public:
 #ifndef _DEBUG
 		io::path mediaPath = getExampleMediaPath();
 #else
+# ifdef _IRR_COMPILE_WITH_X11_DEVICE_
+		io::path mediaPath = getExampleMediaPath();
+# else
 		io::path mediaPath = "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
+# endif
 #endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";

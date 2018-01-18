@@ -49,13 +49,15 @@ namespace irr
 }
 #endif
 
+#ifdef SAILFISH
 	// constructor
 	COSOperator::COSOperator(const core::stringc& osVersion, CIrrDeviceSailfish* device)
 : OperatingSystem(osVersion), IrrDeviceSailfish(device)
 {
 
 }
-
+#endif
+	
 	COSOperator::COSOperator(const core::stringc& osVersion) : OperatingSystem(osVersion)
 {
 	#ifdef _DEBUG
