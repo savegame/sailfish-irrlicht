@@ -209,7 +209,7 @@ public:
 
 protected:
 #ifdef SAILFISH
-	void eventOrientation(const SEvent &event)
+	void eventOrientation(const SEvent::OrientationEvent &event)
 	{
 		if(!m_device || !m_shader)
 			return;
