@@ -184,6 +184,8 @@ public:
 		case irr::EET_TOUCH_INPUT_EVENT:
 			eventTouch(event.TouchInput);
 			break;
+		case irr::EET_LOG_TEXT_EVENT:
+			eventLog(event.LogEvent);
 		default:
 			break;
 		}
@@ -233,6 +235,11 @@ protected:
 	{
 
 	}
+	
+	void eventLog(const SEvent::SLogEvent &event)
+	{
+		printf("%s\n", event.Text);
+	}
 private:
 #ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
@@ -252,7 +259,7 @@ public:
 		Material.Wireframe = false;
 		Material.Lighting = false;
 		Material.Thickness=0.f;
-
+#ifdef SAILFISH
 		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
 		        video::SColor(255,0,255,255), 0, 1);
 		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
@@ -261,6 +268,16 @@ public:
 		        video::SColor(255,255,255,0), 1, 0);
 		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
 		        video::SColor(255,0,255,0), 1, 1);
+#else
+		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
+		        video::SColor(255,0,255,255), 0, 1);
+		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
+		        video::SColor(255,255,0,255), 1, 1);
+		Vertices[2] = video::S3DVertex(1,1,0, 20,1,1,
+		        video::SColor(255,255,255,0), 1, 0);
+		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
+		        video::SColor(255,0,255,0), 0, 0);
+#endif 
 		Box.reset(Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
@@ -274,7 +291,10 @@ public:
 #endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
-
+#ifdef _OUT_PWD_PATH
+		psFileName = io::path(_OUT_PWD_PATH) + io::path("/") + psFileName;
+		vsFileName = io::path(_OUT_PWD_PATH) + io::path("/") + vsFileName;
+#endif
 		video::IGPUProgrammingServices* gpu = mgr->getVideoDriver()->getGPUProgrammingServices();
 		ShaderMaterial = 0;
 
@@ -382,9 +402,15 @@ int main()
 		return 1;
 
 	// create device and exit if creation failed
-
+	core::dimension2du resolution =
+#ifdef SAILFISH
+	        core::dimension2d<u32>(400, 240);
+#else
+	        core::dimension2d<u32>(800, 480);
+#endif
+			
 	IrrlichtDevice *device =
-	    createDevice(driverType, core::dimension2d<u32>(540, 960),
+	    createDevice(driverType, resolution,
 		16, false, false);
 
 	if (device == 0)
@@ -394,7 +420,6 @@ int main()
 	scene::ISceneManager* smgr = device->getSceneManager();
 	gui::IGUIEnvironment* env = device->getGUIEnvironment();
 	ILogger *logger = device->getLogger();
-
 	logger->setLogLevel(irr::ELL_DEBUG);
 
 	EventReseiver *receiver = new EventReseiver();
@@ -461,7 +486,7 @@ int main()
 	scene::ICameraSceneNode* fixedCam = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	receiver->setScreenShader(screenNode->getShader());
-	core::dimension2du dim = core::dimension2d<u32>(400, 240);
+
 #ifdef SAILFISH
 	dim = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
 	dim = core::dimension2du(dim.Height*0.5, dim.Width*0.5);
@@ -469,8 +494,8 @@ int main()
 	if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
 	{
 
-		renderTargetTex = driver->addRenderTargetTexture(dim, "RTT1", video::ECF_A8R8G8B8);
-		renderTargetDepth = driver->addRenderTargetTexture(dim, "DepthStencil", video::ECF_D16);
+		renderTargetTex = driver->addRenderTargetTexture(resolution, "RTT1", video::ECF_A8R8G8B8);
+		renderTargetDepth = driver->addRenderTargetTexture(resolution, "DepthStencil", video::ECF_D16);
 
 		renderTarget = driver->addRenderTarget();
 		renderTarget->setTexture(renderTargetTex, renderTargetDepth);
@@ -479,14 +504,20 @@ int main()
 		screenNode->setMaterialTexture(0, renderTargetTex);
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
+#ifdef fairy
 		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,35,15));
 		fixedCam->setFarValue(300.0f);
 		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
+#else
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,60,25));
+		fixedCam->setFarValue(300.0f);
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
+#endif
 		//fixedCam->setNearValue(20.0f);
 
 		{
-			f32 width = (f32)dim.Width;
-			f32 height = (f32)dim.Height;
+			f32 width = (f32)resolution.Width;
+			f32 height = (f32)resolution.Height;
 			scene::ICameraSceneNode *cam = fixedCam;
 			core::matrix4 m2;
 			f32 wd = (f32)(width*0.003651);
@@ -518,8 +549,8 @@ int main()
 //	fpsCamera->setPosition(core::vector3df(-50,50,-150));
 	fpsCamera->setTarget(screenNode->getPosition());
 	{
-		f32 width = (f32)dim.Width;
-		f32 height = (f32)dim.Height;
+		f32 width = (f32)resolution.Width;
+		f32 height = (f32)resolution.Height;
 		scene::ICameraSceneNode *cam = fpsCamera;
 		core::matrix4 m,m2;
 		f32 wd = (f32)(width*4);
@@ -534,7 +565,7 @@ int main()
 	//gui::IGUISkin* skin = env->getSkin();
 	gui::IGUIFont *font = env->getFont(fontPath);
 	env->getSkin()->setFont(font);
-	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,dim.Width,60));
+	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,resolution.Width,60));
 	/*
 	Nearly finished. Now we need to draw everything. Every frame, we draw
 	the scene twice. Once from the fixed camera into the render target
