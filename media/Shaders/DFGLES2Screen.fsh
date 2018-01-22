@@ -43,6 +43,11 @@ vec4 gaussianBlur(in sampler2D texture, in vec2 uv, in float radius, in vec2 res
 void main(void)
 {
     highp vec2 nTexCoord = vec2(-ScreenPos.y, ScreenPos.x);
+    lowp float blur = 1.0;
+    lowp float near_depth, far_depth;
+    near_depth = 0.15;
+    far_depth = 0.995;
+
     if( isFlipped == 1 )
         nTexCoord = vec2(ScreenPos.y, -ScreenPos.x);
 
@@ -54,8 +59,14 @@ void main(void)
 //    {
         lowp float depth = texture2D(Texture1,nTexCoord).r;
         //depth = (depth > 0.5 )?depth * 4.0f:depth;
-        if( depth >= 0.995 /*&& depth < 1.0*/)
+        if( depth > far_depth /*&& depth < 1.0*/)
+        {
             gl_FragColor = gaussianBlur(Texture0, nTexCoord, (1.0 - depth) * 1000.0f, vec2(960,540), (nTexCoord - 0.5)*2.0 );
+        }
+        else if (depth < near_depth )
+        {
+            gl_FragColor = gaussianBlur(Texture0, nTexCoord, (1.0 - depth) * 1000.0f, vec2(960,540), (nTexCoord - 0.5)*2.0 );
+        }
         else
             gl_FragColor = texture2D(Texture0, nTexCoord);
 //    }
