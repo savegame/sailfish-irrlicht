@@ -8,6 +8,8 @@ In the beginning, everything as usual. Include the needed headers, ask the user
 for the rendering driver, create the Irrlicht Device:
 */
 
+//#define /*NO_XREADER_DEBUG*/
+
 #include <irrlicht.h>
 #include <os.h>
 #include "driverChoice.h"
@@ -27,10 +29,22 @@ using namespace irr;
 class ScreenShaderCB : public video::IShaderConstantSetCallBack
 {
 public:
-	ScreenShaderCB() : WorldViewProjID(-1), TransWorldID(-1), InvWorldID(-1), PositionID(-1),
-	                    ColorID(-1), TextureID0(-1), TextureID1(-1), FirstUpdate(true),isFlipped(true),
-	                    isFlippedID(-1)
+	ScreenShaderCB() : WorldViewProjID(-1), 
+//	    TransWorldID(-1), 
+//	    InvWorldID(-1),
+//	    PositionID(-1),
+//	    ColorID(-1), 
+	    TextureID0(-1), TextureID1(-1), FirstUpdate(true),
+#ifdef SAILFISH
+	                    isFlipped(1),
+#else
+	                    isFlipped(2),
+#endif
+	                    isFlippedID(-1),
+	                    ResolutionID(-1)
 	{
+		m_resolution = core::dimension2df(640.0,480.0);
+		m_depth = 0.995f;
 	}
 
 	virtual void OnSetConstants(video::IMaterialRendererServices* services,
@@ -50,15 +64,17 @@ public:
 //			ColorID = services->getVertexShaderConstantID("mLightColor");
 
 			// Textures ID are important only for OpenGL interface.
-#ifdef SAILFISH
-			//if(driver->getDriverType() == video::EDT_OGLES2)
-#else
-			if(driver->getDriverType() == video::EDT_OPENGL)
-#endif
+//#ifdef SAILFISH
+//			if(driver->getDriverType() == video::EDT_OGLES2)
+//#else
+//			if(driver->getDriverType() == video::EDT_OPENGL)
+//#endif
 			{
 				TextureID0 = services->getPixelShaderConstantID("Texture0");
 				TextureID1 = services->getPixelShaderConstantID("Texture1");
-				isFlippedID = services->getPixelShaderConstantID("isFlipped");
+				isFlippedID = services->getPixelShaderConstantID("inIsFlipped");
+				ResolutionID = services->getPixelShaderConstantID("inResolution");
+				DepthID = services->getPixelShaderConstantID("inDepth");
 			}
 
 			FirstUpdate = false;
@@ -122,30 +138,37 @@ public:
 			services->setPixelShaderConstant(TextureID0, &TextureLayerID, 1);
 			s32 TextureLayerID1 = 1;
 			services->setPixelShaderConstant(TextureID1, &TextureLayerID1, 1);
-			s32 isFlippedValue = (isFlipped)?1:0;
-			services->setPixelShaderConstant(isFlippedID,&isFlippedValue, 1);
+//			s32 isFlippedValue = (isFlipped)?1:0;
+			services->setPixelShaderConstant(isFlippedID,&isFlipped, 1);
+			services->setPixelShaderConstant(ResolutionID,(f32*)&m_resolution, 2);
+			services->setPixelShaderConstant(DepthID,(f32*)&m_depth, 1);
 		}
 //		else
 //			services->setVertexShaderConstant(world.pointer(), 10, 4);
 	}
 
-	void setIsFlipped(bool val)
+	void setIsFlipped(s32 val)
 	{
 		isFlipped = val;
 	}
 
 private:
 	s32 WorldViewProjID;
-	s32 TransWorldID;
-	s32 InvWorldID;
-	s32 PositionID;
-	s32 ColorID;
+//	s32 TransWorldID;
+//	s32 InvWorldID;
+//	s32 PositionID;
+//	s32 ColorID;
 	s32 TextureID0;
 	s32 TextureID1;
 	s32 isFlippedID;
-
+	s32 ResolutionID;
+	s32 DepthID;
+	
+public:	
+	s32  isFlipped;
+	f32  m_depth;
+	core::dimension2df m_resolution;
 	bool FirstUpdate;
-	bool isFlipped;
 };
 
 
@@ -160,7 +183,11 @@ public:
 		m_device = NULL;
 #endif
 		m_shader = NULL;
-		m_isFlipLandscape = false;
+#ifdef SAILFISH
+		m_isFlipLandscape = 0;
+#else
+		m_isFlipLandscape = 2;
+#endif
 	}
 
 	//! Destructor
@@ -184,6 +211,8 @@ public:
 		case irr::EET_TOUCH_INPUT_EVENT:
 			eventTouch(event.TouchInput);
 			break;
+		case irr::EET_LOG_TEXT_EVENT:
+			eventLog(event.LogEvent);
 		default:
 			break;
 		}
@@ -204,7 +233,7 @@ public:
 		m_shader->setIsFlipped(m_isFlipLandscape);
 	}
 
-	bool isFlipLandscape() const
+	s32 isFlipLandscape() const
 	{
 		return m_isFlipLandscape;
 	}
@@ -233,12 +262,17 @@ protected:
 	{
 
 	}
+	
+	void eventLog(const SEvent::SLogEvent &event)
+	{
+		printf("%s\n", event.Text);
+	}
 private:
 #ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
 #endif
 	ScreenShaderCB *m_shader;
-	bool m_isFlipLandscape;
+	s32 m_isFlipLandscape;
 	//std::map<int> m_touch;
 };
 
@@ -252,7 +286,7 @@ public:
 		Material.Wireframe = false;
 		Material.Lighting = false;
 		Material.Thickness=0.f;
-
+//#ifdef SAILFISH
 		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
 		        video::SColor(255,0,255,255), 0, 1);
 		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
@@ -261,6 +295,16 @@ public:
 		        video::SColor(255,255,255,0), 1, 0);
 		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
 		        video::SColor(255,0,255,0), 1, 1);
+//#else
+//		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
+//		        video::SColor(255,0,255,255), 0, 1);
+//		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
+//		        video::SColor(255,255,0,255), 1, 1);
+//		Vertices[2] = video::S3DVertex(1,1,0, 20,1,1,
+//		        video::SColor(255,255,255,0), 1, 0);
+//		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
+//		        video::SColor(255,0,255,0), 0, 0);
+//#endif 
 		Box.reset(Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
@@ -274,7 +318,10 @@ public:
 #endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
-
+#if defined(_OUT_PWD_PATH) && !defined(SAILFISH)
+		psFileName = io::path(_OUT_PWD_PATH) + io::path("/") + psFileName;
+		vsFileName = io::path(_OUT_PWD_PATH) + io::path("/") + vsFileName;
+#endif
 		video::IGPUProgrammingServices* gpu = mgr->getVideoDriver()->getGPUProgrammingServices();
 		ShaderMaterial = 0;
 
@@ -382,9 +429,15 @@ int main()
 		return 1;
 
 	// create device and exit if creation failed
-
+	core::dimension2du resolution =
+#ifdef SAILFISH
+	        core::dimension2d<u32>(400, 240);
+#else
+	        core::dimension2d<u32>(800, 480);
+#endif
+			
 	IrrlichtDevice *device =
-	    createDevice(driverType, core::dimension2d<u32>(540, 960),
+	    createDevice(driverType, resolution,
 		16, false, false);
 
 	if (device == 0)
@@ -394,7 +447,6 @@ int main()
 	scene::ISceneManager* smgr = device->getSceneManager();
 	gui::IGUIEnvironment* env = device->getGUIEnvironment();
 	ILogger *logger = device->getLogger();
-
 	logger->setLogLevel(irr::ELL_DEBUG);
 
 	EventReseiver *receiver = new EventReseiver();
@@ -427,6 +479,7 @@ int main()
 		fairy->setMaterialFlag(video::EMF_LIGHTING, true); // enable dynamic lighting
 		fairy->getMaterial(0).Shininess = 40.0f; // set size of specular highlights
 		fairy->setPosition(core::vector3df(0 ,0,60));
+		fairy->setAnimationSpeed(1);
 #ifdef fairy
 		fairy->setMD2Animation ( scene::EMAT_STAND );
 		fairy->setMaterialTexture(0,
@@ -461,16 +514,18 @@ int main()
 	scene::ICameraSceneNode* fixedCam = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	receiver->setScreenShader(screenNode->getShader());
-	core::dimension2du dim = core::dimension2d<u32>(400, 240);
 #ifdef SAILFISH
-	dim = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
-	dim = core::dimension2du(dim.Height*0.5, dim.Width*0.5);
+	resolution = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
+	resolution = core::dimension2du(resolution.Height*0.5, resolution.Width*0.5);
 #endif
+	
+	screenNode->getShader()->m_resolution = core::dimension2df((f32)resolution.Width, (f32)resolution.Height);
+	
 	if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
 	{
 
-		renderTargetTex = driver->addRenderTargetTexture(dim, "RTT1", video::ECF_A8R8G8B8);
-		renderTargetDepth = driver->addRenderTargetTexture(dim, "DepthStencil", video::ECF_D16);
+		renderTargetTex = driver->addRenderTargetTexture(resolution, "RTT1", video::ECF_A8R8G8B8);
+		renderTargetDepth = driver->addRenderTargetTexture(resolution, "DepthStencil", video::ECF_D16);
 
 		renderTarget = driver->addRenderTarget();
 		renderTarget->setTexture(renderTargetTex, renderTargetDepth);
@@ -479,14 +534,20 @@ int main()
 		screenNode->setMaterialTexture(0, renderTargetTex);
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
+#ifdef fairy
 		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,35,15));
 		fixedCam->setFarValue(300.0f);
 		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
+#else
+		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,80,-35));
+		fixedCam->setFarValue(300.0f);
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,40,-60) );
+#endif
 		//fixedCam->setNearValue(20.0f);
 
 		{
-			f32 width = (f32)dim.Width;
-			f32 height = (f32)dim.Height;
+			f32 width = (f32)resolution.Width;
+			f32 height = (f32)resolution.Height;
 			scene::ICameraSceneNode *cam = fixedCam;
 			core::matrix4 m2;
 			f32 wd = (f32)(width*0.003651);
@@ -518,8 +579,8 @@ int main()
 //	fpsCamera->setPosition(core::vector3df(-50,50,-150));
 	fpsCamera->setTarget(screenNode->getPosition());
 	{
-		f32 width = (f32)dim.Width;
-		f32 height = (f32)dim.Height;
+		f32 width = (f32)resolution.Width;
+		f32 height = (f32)resolution.Height;
 		scene::ICameraSceneNode *cam = fpsCamera;
 		core::matrix4 m,m2;
 		f32 wd = (f32)(width*4);
@@ -534,7 +595,7 @@ int main()
 	//gui::IGUISkin* skin = env->getSkin();
 	gui::IGUIFont *font = env->getFont(fontPath);
 	env->getSkin()->setFont(font);
-	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,dim.Width,60));
+	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,resolution.Width,60));
 	/*
 	Nearly finished. Now we need to draw everything. Every frame, we draw
 	the scene twice. Once from the fixed camera into the render target

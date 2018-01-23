@@ -17,7 +17,7 @@
 #include "IFileSystem.h"
 #include "IReadFile.h"
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(NO_XREADER_DEBUG)
 #define _XREADER_DEBUG
 #endif
 //#define BETTER_MESHBUFFER_SPLITTING_FOR_X

@@ -5,6 +5,7 @@ macx: TEMPLATE = app #lib
 
 !macx: CONFIG += link_pkgconfig
 CONFIG += warn_off
+CONFIG += console
 sailfish: CONFIG += sailfishapp wayland-compositor
 macx|x11: CONFIG-=qt
 macx|x11: DEFINES += _DESKTOP
@@ -53,7 +54,10 @@ x11 {
 
 INSTALLS += media
 
+DEFINES += NO_XREADER_DEBUG
+
 debug: DEFINES += _DEBUG
+debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
 
 include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
