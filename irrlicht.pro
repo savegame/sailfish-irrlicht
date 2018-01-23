@@ -54,6 +54,8 @@ x11 {
 
 INSTALLS += media
 
+DEFINES += NO_XREADER_DEBUG
+
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
 
