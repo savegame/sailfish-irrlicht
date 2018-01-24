@@ -11,6 +11,7 @@ for the rendering driver, create the Irrlicht Device:
 //#define /*NO_XREADER_DEBUG*/
 
 #include <irrlicht.h>
+#include <source/Irrlicht/CGUIButton.h>
 #include <os.h>
 #include "driverChoice.h"
 #include "exampleHelper.h"
@@ -29,6 +30,12 @@ using namespace irr;
 class ScreenShaderCB : public video::IShaderConstantSetCallBack
 {
 public:
+	enum ScreenOrientation : int {
+		Normal    = 0,
+		Rotate90  = 1,
+		Rotate270 = 2
+	};
+public:
 	ScreenShaderCB() : WorldViewProjID(-1), 
 //	    TransWorldID(-1), 
 //	    InvWorldID(-1),
@@ -36,21 +43,21 @@ public:
 //	    ColorID(-1), 
 	    TextureID0(-1), TextureID1(-1), FirstUpdate(true),
 #ifdef SAILFISH
-	                    isFlipped(1),
+	                    isFlipped(Rotate270),
 #else
-	                    isFlipped(2),
+	                    m_screenOrientation(Normal),
 #endif
-	                    isFlippedID(-1),
+	                    OrientationID(-1),
 	                    ResolutionID(-1)
 	{
 		m_resolution = core::dimension2df(640.0,480.0);
-		m_depth = 0.995f;
+		m_depth_near = core::vector2df(0.995f,0.995f);
+		m_depth_far = core::vector2df(0.995f,0.995f);
 	}
 
 	virtual void OnSetConstants(video::IMaterialRendererServices* services,
-	        s32 userData)
+	        s32 userData) _IRR_OVERRIDE_
 	{
-		bool UseHighLevelShaders = true;
 		video::IVideoDriver* driver = services->getVideoDriver();
 
 		// get shader constants id.
@@ -62,94 +69,42 @@ public:
 //			InvWorldID = services->getVertexShaderConstantID("mInvWorld");
 //			PositionID = services->getVertexShaderConstantID("mLightPos");
 //			ColorID = services->getVertexShaderConstantID("mLightColor");
-
-			// Textures ID are important only for OpenGL interface.
-//#ifdef SAILFISH
-//			if(driver->getDriverType() == video::EDT_OGLES2)
-//#else
-//			if(driver->getDriverType() == video::EDT_OPENGL)
-//#endif
-			{
-				TextureID0 = services->getPixelShaderConstantID("Texture0");
-				TextureID1 = services->getPixelShaderConstantID("Texture1");
-				isFlippedID = services->getPixelShaderConstantID("inIsFlipped");
-				ResolutionID = services->getPixelShaderConstantID("inResolution");
-				DepthID = services->getPixelShaderConstantID("inDepth");
-			}
-
+			TextureID0 = services->getPixelShaderConstantID("Texture0");
+			TextureID1 = services->getPixelShaderConstantID("Texture1");
+			OrientationID = services->getPixelShaderConstantID("inScreenOrientation");
+			ResolutionID = services->getPixelShaderConstantID("inResolution");
+			DepthNearID = services->getPixelShaderConstantID("inDepthNear");
+			DepthFarID = services->getPixelShaderConstantID("inDepthFar");
 			FirstUpdate = false;
 		}
 
-		// set inverted world matrix
-		// if we are using highlevel shaders (the user can select this when
-		// starting the program), we must set the constants by name.
-
 		core::matrix4 invWorld = driver->getTransform(video::ETS_WORLD);
 		invWorld.makeInverse();
-
-//		if (UseHighLevelShaders)
-//			services->setVertexShaderConstant(InvWorldID, invWorld.pointer(), 16);
-//		else
-//			services->setVertexShaderConstant(invWorld.pointer(), 0, 4);
-
-		// set clip matrix
 
 		core::matrix4 worldViewProj;
 		worldViewProj = driver->getTransform(video::ETS_PROJECTION);
 		worldViewProj *= driver->getTransform(video::ETS_VIEW);
 		worldViewProj *= driver->getTransform(video::ETS_WORLD);
 
-//		if (UseHighLevelShaders)
-			services->setVertexShaderConstant(WorldViewProjID, worldViewProj.pointer(), 16);
-//		else
-//			services->setVertexShaderConstant(worldViewProj.pointer(), 4, 4);
-
-		// set camera position
-
-//		core::vector3df pos = device->getSceneManager()->
-//		    getActiveCamera()->getAbsolutePosition();
-
-//		if (UseHighLevelShaders)
-//			services->setVertexShaderConstant(PositionID, reinterpret_cast<f32*>(&pos), 3);
-//		else
-//			services->setVertexShaderConstant(reinterpret_cast<f32*>(&pos), 8, 1);
-
-		// set light color
-
+		services->setVertexShaderConstant(WorldViewProjID, worldViewProj.pointer(), 16);
+		
 		video::SColorf col(0.0f,1.0f,1.0f,0.0f);
-
-//		if (UseHighLevelShaders)
-//			services->setVertexShaderConstant(ColorID,
-//			        reinterpret_cast<f32*>(&col), 4);
-//		else
-//			services->setVertexShaderConstant(reinterpret_cast<f32*>(&col), 9, 1);
-
-		// set transposed world matrix
-
 		core::matrix4 world = driver->getTransform(video::ETS_WORLD);
 		world = world.getTransposed();
 
-//		if (UseHighLevelShaders)
-		{
-//			services->setVertexShaderConstant(TransWorldID, world.pointer(), 16);
-
-			// set texture, for textures you can use both an int and a float setPixelShaderConstant interfaces (You need it only for an OpenGL driver).
-			s32 TextureLayerID = 0;
-			services->setPixelShaderConstant(TextureID0, &TextureLayerID, 1);
-			s32 TextureLayerID1 = 1;
-			services->setPixelShaderConstant(TextureID1, &TextureLayerID1, 1);
-//			s32 isFlippedValue = (isFlipped)?1:0;
-			services->setPixelShaderConstant(isFlippedID,&isFlipped, 1);
-			services->setPixelShaderConstant(ResolutionID,(f32*)&m_resolution, 2);
-			services->setPixelShaderConstant(DepthID,(f32*)&m_depth, 1);
-		}
-//		else
-//			services->setVertexShaderConstant(world.pointer(), 10, 4);
+		s32 TextureLayerID = 0;
+		services->setPixelShaderConstant(TextureID0, &TextureLayerID, 1);
+		s32 TextureLayerID1 = 1;
+		services->setPixelShaderConstant(TextureID1, &TextureLayerID1, 1);
+		services->setPixelShaderConstant(OrientationID,&m_screenOrientation, 1);
+		services->setPixelShaderConstant(ResolutionID,reinterpret_cast<f32*>(&m_resolution), 2);
+		services->setPixelShaderConstant(DepthNearID,reinterpret_cast<f32*>(&m_depth_near), 2);
+		services->setPixelShaderConstant(DepthFarID,reinterpret_cast<f32*>(&m_depth_far), 2);
 	}
 
 	void setIsFlipped(s32 val)
 	{
-		isFlipped = val;
+		m_screenOrientation = val;
 	}
 
 private:
@@ -160,13 +115,15 @@ private:
 //	s32 ColorID;
 	s32 TextureID0;
 	s32 TextureID1;
-	s32 isFlippedID;
+	s32 OrientationID;
 	s32 ResolutionID;
-	s32 DepthID;
+	s32 DepthNearID;
+	s32 DepthFarID;
 	
 public:	
-	s32  isFlipped;
-	f32  m_depth;
+	s32  m_screenOrientation;
+	core::vector2df  m_depth_near;
+	core::vector2df  m_depth_far;
 	core::dimension2df m_resolution;
 	bool FirstUpdate;
 };
@@ -184,9 +141,9 @@ public:
 #endif
 		m_shader = NULL;
 #ifdef SAILFISH
-		m_isFlipLandscape = 0;
+		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
 #else
-		m_isFlipLandscape = 2;
+		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Normal;
 #endif
 	}
 
@@ -199,7 +156,7 @@ public:
 	* Therefore your return value for all unprocessed events should be 'false'.
 	\return True if the event was processed.
 	*/
-	virtual bool OnEvent(const SEvent& event)
+	virtual bool OnEvent(const SEvent& event) _IRR_OVERRIDE_
 	{
 		switch( event.EventType )
 		{
@@ -223,7 +180,7 @@ public:
 	{
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-		m_isFlipLandscape = false;
+		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
 	}
 #endif
 
@@ -247,12 +204,12 @@ protected:
 		switch (event.EventType) {
 		case irr::EOET_TRANSFORM_90:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_90);
-			m_isFlipLandscape = true;
+			m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate90;
 			m_shader->setIsFlipped(m_isFlipLandscape);
 			break;
 		case irr::EOET_TRANSFORM_270:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-			m_isFlipLandscape = false;
+			m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
 			m_shader->setIsFlipped(m_isFlipLandscape);
 			break;
 		}
@@ -360,7 +317,7 @@ public:
 
 	ScreenShaderCB* getShader() const { return m_shader; }
 
-	virtual void OnRegisterSceneNode()
+	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_
 	{
 		if (IsVisible)
 			SceneManager->registerNodeForRendering(this);
@@ -368,7 +325,7 @@ public:
 		ISceneNode::OnRegisterSceneNode();
 	}
 
-	virtual void render()
+	virtual void render() _IRR_OVERRIDE_
 	{
 		/* Indices into the 'Vertices' array. A triangle needs 3 vertices
 		so you have to pass the 3 corresponding indices for each triangle to
@@ -394,17 +351,17 @@ public:
 		driver->drawVertexPrimitiveList(Vertices, 4, m_indices, 2, video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 	}
 
-	virtual const core::aabbox3d<f32>& getBoundingBox() const
+	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_
 	{
 		return Box;
 	}
 
-	virtual u32 getMaterialCount() const
+	virtual u32 getMaterialCount() const _IRR_OVERRIDE_
 	{
 		return 1;
 	}
 
-	virtual video::SMaterial& getMaterial(u32 i)
+	virtual video::SMaterial& getMaterial(u32 i) _IRR_OVERRIDE_
 	{
 		return Material;
 	}
@@ -419,6 +376,29 @@ protected:
 };
 
 
+class Button : public gui::CGUIButton
+{
+public:
+	Button(gui::IGUIEnvironment* environment, gui::IGUIElement* parent, s32 id, core::rect<s32> rectangle)
+	    : gui::CGUIButton(environment, parent, id, rectangle)
+	{
+		
+	}
+	
+protected:
+	
+};
+
+enum GUI_ID : s32
+{
+	id_Button0 = 100,
+	
+};
+
+void create_ui(gui::IGUIEnvironment* env)
+{
+	env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
+}
 
 int main()
 {
@@ -452,9 +432,13 @@ int main()
 	EventReseiver *receiver = new EventReseiver();
 #ifdef SAILFISH
 	receiver->setSailfishDevice( reinterpret_cast<irr::CIrrDeviceSailfish*>(device) );
+#else
+	device->getCursorControl()->setVisible(true);
 #endif
 	device->setEventReceiver(receiver);
 
+	create_ui(env);
+	
 	const io::path mediaPath = getExampleMediaPath();
 	
 	/*
@@ -480,15 +464,17 @@ int main()
 		fairy->getMaterial(0).Shininess = 40.0f; // set size of specular highlights
 		fairy->setPosition(core::vector3df(0 ,0,60));
 		fairy->setAnimationSpeed(1);
+		fairy->setFrameLoop(0, 10);
+//		fairy->setA
 #ifdef fairy
 		fairy->setMD2Animation ( scene::EMAT_STAND );
 		fairy->setMaterialTexture(0,
 		        driver->getTexture(mediaPath + "faerie2.bmp")); // set diffuse texture
 #endif
-		f32 size = 35.0f;
+		f32 size = 55.0f;
 		f32 size5 = size * 2.5f;
-		for(int i = 0; i < 5; i ++)
-			for(int j = 0; j < 5; j ++)
+		for(int i = 0; i < 2; i ++)
+			for(int j = 0; j < 6; j ++)
 		{
 			fairy->clone(smgr->getRootSceneNode(),smgr)->setPosition(core::vector3df(i*size - size5 ,0,j*size));
 		}
@@ -541,7 +527,7 @@ int main()
 #else
 		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,80,-35));
 		fixedCam->setFarValue(300.0f);
-		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,40,-60) );
+		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,70,-60) );
 #endif
 		//fixedCam->setNearValue(20.0f);
 
@@ -626,7 +612,7 @@ int main()
 
 			// draw whole scene into render buffer
 			smgr->drawAll();
-			env->drawAll();
+//			env->drawAll();
 			// set back old render target
 			// The buffer might have been distorted, so clear it
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
@@ -637,7 +623,7 @@ int main()
 		}
 		
 		screenNode->draw(driver);
-
+		env->drawAll();
 //		smgr->drawAll();
 //		driver->drawMeshBuffer();
 
