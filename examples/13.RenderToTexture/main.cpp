@@ -171,6 +171,7 @@ public:
 		case irr::EET_LOG_TEXT_EVENT:
 			eventLog(event.LogEvent);
 		default:
+//			IEventReceiver::OnEvent(event);
 			break;
 		}
 	}
@@ -432,6 +433,7 @@ int main()
 	EventReseiver *receiver = new EventReseiver();
 #ifdef SAILFISH
 	receiver->setSailfishDevice( reinterpret_cast<irr::CIrrDeviceSailfish*>(device) );
+	device->getCursorControl()->setVisible(false);
 #else
 	device->getCursorControl()->setVisible(true);
 #endif
@@ -575,8 +577,6 @@ int main()
 		cam->setProjectionMatrix(m2);
 	}
 
-	// disable mouse cursor
-	device->getCursorControl()->setVisible(false);
 	io::path fontPath = mediaPath + "bigfont.png";
 	//gui::IGUISkin* skin = env->getSkin();
 	gui::IGUIFont *font = env->getFont(fontPath);
