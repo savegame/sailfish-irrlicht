@@ -43,7 +43,7 @@ public:
 //	    ColorID(-1), 
 	    TextureID0(-1), TextureID1(-1), FirstUpdate(true),
 #ifdef SAILFISH
-	                    isFlipped(Rotate270),
+	                    m_screenOrientation(Rotate270),
 #else
 	                    m_screenOrientation(Normal),
 #endif
@@ -51,8 +51,8 @@ public:
 	                    ResolutionID(-1)
 	{
 		m_resolution = core::dimension2df(640.0,480.0);
-		m_depth_near = core::vector2df(0.995f,0.995f);
-		m_depth_far = core::vector2df(0.995f,0.995f);
+		m_depth_far = core::vector2df(0.999f,0.0005f);
+		m_depth_near = core::vector2df(0.005f,0.01f);
 	}
 
 	virtual void OnSetConstants(video::IMaterialRendererServices* services,
@@ -244,7 +244,6 @@ public:
 		Material.Wireframe = false;
 		Material.Lighting = false;
 		Material.Thickness=0.f;
-//#ifdef SAILFISH
 		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
 		        video::SColor(255,0,255,255), 0, 1);
 		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
@@ -253,16 +252,6 @@ public:
 		        video::SColor(255,255,255,0), 1, 0);
 		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
 		        video::SColor(255,0,255,0), 1, 1);
-//#else
-//		Vertices[0] = video::S3DVertex(-1,-1.0,0, 5,1,0,
-//		        video::SColor(255,0,255,255), 0, 1);
-//		Vertices[1] = video::S3DVertex(-1,1,0, 10,0,0,
-//		        video::SColor(255,255,0,255), 1, 1);
-//		Vertices[2] = video::S3DVertex(1,1,0, 20,1,1,
-//		        video::SColor(255,255,255,0), 1, 0);
-//		Vertices[3] = video::S3DVertex(1,-1,0, 40,0,1,
-//		        video::SColor(255,0,255,0), 0, 0);
-//#endif 
 		Box.reset(Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
 			Box.addInternalPoint(Vertices[i].Pos);
@@ -393,12 +382,15 @@ protected:
 enum GUI_ID : s32
 {
 	id_Button0 = 100,
-	
+	id_scrollFar1,
 };
 
-void create_ui(gui::IGUIEnvironment* env)
+void create_ui(gui::IGUIEnvironment* env, const core::dimension2du &resolution)
 {
 	env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
+
+	gui::IGUIScrollBar *scroll = env->addScrollBar(false, core::recti(10,10, (resolution.Width < resolution.Height)?resolution.Width:resolution.Height, 20 ), 0, id_scrollFar1 );
+
 }
 
 int main()
