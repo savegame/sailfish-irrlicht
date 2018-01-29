@@ -400,8 +400,10 @@ void create_ui(gui::IGUIEnvironment* env, const core::dimension2du &resolution)
 {
 	env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
 
-	gui::IGUIScrollBar *scroll = env->addScrollBar(false, core::recti(10,10, (resolution.Width < resolution.Height)?resolution.Width:resolution.Height, 20 ), 0, id_scrollFar1 );
-
+	gui::IGUIScrollBar *scroll = env->addScrollBar(true, core::recti(10, resolution.Height - 30, (resolution.Width < resolution.Height)?resolution.Width:resolution.Height, resolution.Height - 20 ), 0, id_scrollFar1 );
+	scroll->setMin(0);
+	scroll->setMin(100);
+	
 }
 
 int main()
@@ -442,7 +444,7 @@ int main()
 #endif
 	device->setEventReceiver(receiver);
 
-	create_ui(env);
+	create_ui(env, resolution);
 	
 	const io::path mediaPath = getExampleMediaPath();
 	
