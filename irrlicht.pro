@@ -64,7 +64,9 @@ include(irrlicht.pri)
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
-#SOURCES =  examples/05.UserInterface/main.cpp
+SOURCES +=   examples/05.UserInterface/main.cpp \
+             examples/05.UserInterface/source/app/gameapp.cpp
+HEADERS +=   examples/05.UserInterface/source/app/gameapp.h
 #SOURCES += examples/16.Quake3MapShader/main.cpp
 #HEADERS += examples/Demo/CDemo.h
 #SOURCES += examples/Demo/CDemo.cpp \
@@ -72,7 +74,7 @@ include(irrlicht.pri)
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp
-SOURCES += examples/13.RenderToTexture/main.cpp
+#SOURCES += examples/13.RenderToTexture/main.cpp
 
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \

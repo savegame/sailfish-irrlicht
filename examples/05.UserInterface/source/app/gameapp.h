@@ -8,7 +8,7 @@
 #ifndef gameapp_h
 #define gameapp_h
 
-#ifdef SAILFIH
+#ifdef SAILFISH
 #  define IRR_DRIVER_TYPE irr::video::EDT_OGLES2
 #else
 #  define IRR_DRIVER_TYPE irr::video::EDT_OPENGL

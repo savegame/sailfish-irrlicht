@@ -2,6 +2,6 @@
 
 int main(int argc, char **argv)
 {
-    GameApp app(argc,argv);
+	GameApp app(argc,argv);
     return app.run();
 }

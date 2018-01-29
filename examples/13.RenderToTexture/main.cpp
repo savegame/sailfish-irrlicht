@@ -138,6 +138,7 @@ public:
 	{
 #ifdef SAILFISH
 		m_device = NULL;
+		m_touchCount = 0;
 #endif
 		m_shader = NULL;
 #ifdef SAILFISH
@@ -223,10 +224,30 @@ protected:
 		case irr::ETIE_MOVED:
 			break;
 		case irr::ETIE_PRESSED_DOWN:
-
-
+			for( int i = 0; i < 10; i++)
+			{
+				if( m_touches[i].id == -1 )
+				{
+					m_touches[i].id = event.ID;
+					m_touches[i].pos.X = event.X;
+					m_touches[i].pos.Y = event.Y;
+					m_touches[i].pressed = true;
+					break;
+				}
+			}
 			break;
 		case irr::ETIE_LEFT_UP:
+			for( int i = 0; i < 10; i++)
+			{
+				if( m_touches[i].id == event.ID )
+				{
+					m_touches[i].id = -1;
+					m_touches[i].pos.X = event.X;
+					m_touches[i].pos.Y = event.Y;
+					m_touches[i].pressed = false;
+					break;
+				}
+			}
 			break;
 		}
 	}
@@ -238,7 +259,22 @@ protected:
 private:
 #ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
-	std::map<int,int> m_touch;
+	//std::map<int,int> m_touch;
+
+	struct touch {
+		size_t id;
+		bool pressed;
+		core::vector2di pos;
+
+		touch()
+		{
+			id = -1;
+			pressed = false;
+		}
+	};
+
+	touch m_touches[10];
+	int m_touchCount;
 #endif
 	ScreenShaderCB *m_shader;
 	s32 m_isFlipLandscape;
