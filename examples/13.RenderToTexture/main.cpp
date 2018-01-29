@@ -218,7 +218,17 @@ protected:
 #endif
 	void eventTouch(const SEvent::STouchInput &event)
 	{
+		switch(event.Event)
+		{
+		case irr::ETIE_MOVED:
+			break;
+		case irr::ETIE_PRESSED_DOWN:
 
+
+			break;
+		case irr::ETIE_LEFT_UP:
+			break;
+		}
 	}
 	
 	void eventLog(const SEvent::SLogEvent &event)
@@ -228,6 +238,7 @@ protected:
 private:
 #ifdef SAILFISH
 	irr::CIrrDeviceSailfish *m_device;
+	std::map<int,int> m_touch;
 #endif
 	ScreenShaderCB *m_shader;
 	s32 m_isFlipLandscape;
