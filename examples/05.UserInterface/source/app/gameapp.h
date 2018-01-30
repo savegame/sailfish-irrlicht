@@ -19,6 +19,9 @@ namespace irr {
     namespace video {
         class IVideoDriver;
     }
+	namespace gui {
+	    class IGUIEnvironment;
+	}
 }
 
 class GameApp
@@ -34,5 +37,6 @@ public:
 protected:
     irr::IrrlichtDevice *m_device;
     irr::video::IVideoDriver *m_driver;
+	irr::gui::IGUIEnvironment *m_gui;
 };
 #endif /* gameapp_h */
