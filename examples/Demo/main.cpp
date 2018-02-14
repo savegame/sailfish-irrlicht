@@ -21,7 +21,7 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 int main(int argc, char* argv[])
 #endif
 {
-#ifndef SAILFISH
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	CMainMenu menu;
 
 	if (menu.run())

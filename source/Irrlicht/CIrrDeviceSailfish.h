@@ -2,12 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifndef __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
-#define __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
+#ifndef __C_IRR_DEVICE__IRR_COMPILE_WITH_SAILFISH_DEVICE__H_INCLUDED__
+#define __C_IRR_DEVICE__IRR_COMPILE_WITH_SAILFISH_DEVICE__H_INCLUDED__
 
 #include "IrrCompileConfig.h"
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
@@ -397,6 +397,6 @@ namespace irr
 
 } // end namespace irr
 
-#endif // SAILFISH
-#endif // __C_IRR_DEVICE_SAILFISH_H_INCLUDED__
+#endif // _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+#endif // __C_IRR_DEVICE__IRR_COMPILE_WITH_SAILFISH_DEVICE__H_INCLUDED__
 

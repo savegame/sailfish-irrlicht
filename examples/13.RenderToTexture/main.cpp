@@ -17,7 +17,7 @@ for the rendering driver, create the Irrlicht Device:
 #include "exampleHelper.h"
 #include <map>
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #include <source/Irrlicht/CIrrDeviceSailfish.h>
 #endif
 
@@ -42,7 +42,7 @@ public:
 //	    PositionID(-1),
 //	    ColorID(-1), 
 	    TextureID0(-1), TextureID1(-1), FirstUpdate(true),
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	                    m_screenOrientation(Rotate270),
 #else
 	                    m_screenOrientation(Normal),
@@ -136,12 +136,12 @@ public:
 	EventReseiver()
 	    : IEventReceiver()
 	{
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		m_device = NULL;
 		m_touchCount = 0;
 #endif
 		m_shader = NULL;
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
 #else
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Normal;
@@ -161,7 +161,7 @@ public:
 	{
 		switch( event.EventType )
 		{
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		case irr::EET_ORITENTATION_EVENT:
 			eventOrientation(event.OrientationEvent);
 			break;
@@ -177,7 +177,7 @@ public:
 		}
 	}
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	void setSailfishDevice(irr::CIrrDeviceSailfish *device)
 	{
 		m_device = device;
@@ -198,7 +198,7 @@ public:
 	}
 
 protected:
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	void eventOrientation(const SEvent::SOrientationEvent &event)
 	{
 		if(!m_device || !m_shader)
@@ -257,7 +257,7 @@ protected:
 		printf("%s\n", event.Text);
 	}
 private:
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	irr::CIrrDeviceSailfish *m_device;
 	//std::map<int,int> m_touch;
 
@@ -452,7 +452,7 @@ int main()
 
 	// create device and exit if creation failed
 	core::dimension2du resolution =
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	        core::dimension2d<u32>(400, 240);
 #else
 	        core::dimension2d<u32>(800, 480);
@@ -472,7 +472,7 @@ int main()
 	logger->setLogLevel(irr::ELL_DEBUG);
 
 	EventReseiver *receiver = new EventReseiver();
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	receiver->setSailfishDevice( reinterpret_cast<irr::CIrrDeviceSailfish*>(device) );
 	device->getCursorControl()->setVisible(false);
 #else
@@ -543,7 +543,7 @@ int main()
 	scene::ICameraSceneNode* fixedCam = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	receiver->setScreenShader(screenNode->getShader());
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	resolution = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
 	resolution = core::dimension2du(resolution.Height*0.5, resolution.Width*0.5);
 #endif

@@ -3,6 +3,8 @@ INCLUDEPATH += src/irrlicht/source/Irrlicht
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/source/Irrlicht
 
+DEFINES += _IRR_COMPILE_WITH_QML_RENDER
+
 HEADERS += \
     $$PWD/include/aabbox3d.h \
     $$PWD/include/CDynamicMeshBuffer.h \

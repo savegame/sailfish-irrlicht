@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 
 	// create device and exit if creation failed
 //	core::dimension2du videoDim(540,960);
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
     core::dimension2du videoDim(720,1280);
 	IrrlichtDevice *device = createDevice(irr::video::EDT_OGLES2, videoDim, 32, false );
 #else

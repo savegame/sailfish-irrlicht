@@ -28,13 +28,13 @@
 #endif
 #include <X11/keysym.h>
 
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 #define KeySym uint32_t
 #else
 #define KeySym s32
 #endif
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #	include <wayland-client.h>
 #	include <wayland-client-protocol.h>
 #	include <wayland-egl.h>
@@ -413,7 +413,7 @@ namespace irr
 		SizeID OldRandrMode;
 		Rotation OldRandrRotation;
 		#endif
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 	public:
 		const  struct wl_registry_listener wlListener;
 		static struct wl_compositor *wlCompositor;
@@ -528,7 +528,7 @@ namespace irr
 		struct SKeyMap
 		{
 			SKeyMap() {}
-#ifndef SAILFISH
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			SKeyMap(s32 x11, s32 win32)
 				: X11Key(x11), Win32Key(win32)
 			{

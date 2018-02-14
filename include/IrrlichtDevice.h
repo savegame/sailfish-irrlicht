@@ -296,7 +296,7 @@ namespace irr
         //! Is device motion available.
         virtual bool isDeviceMotionAvailable() = 0;
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		//! Is device can fix orientation for the application
 		virtual bool isDeviceOrientationAvaliable() {return false;}
 

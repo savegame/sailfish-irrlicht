@@ -83,7 +83,7 @@ namespace irr
 		//! Application state events like a resume, pause etc.
 		EET_APPLICATION_EVENT,
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		//! Orientation state events
 		EET_ORITENTATION_EVENT,
 #endif
@@ -189,7 +189,7 @@ namespace irr
 		ETIE_COUNT
 	};
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	//! Enumeration of all orientation events
 	enum EORIENTATION_EVENT_TYPE
 	{
@@ -590,7 +590,7 @@ struct SEvent
 		};
 	};
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	struct SOrientationEvent {
 		EORIENTATION_EVENT_TYPE EventType;
 	};
@@ -617,7 +617,7 @@ struct SEvent
 		struct SUserEvent UserEvent;
 		struct SSystemEvent SystemEvent;
 		struct SApplicationEvent ApplicationEvent;
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		struct SOrientationEvent OrientationEvent;
 #endif
 	};
