@@ -8,7 +8,7 @@ CONFIG += warn_off
 sailfish: CONFIG += sailfishapp wayland-compositor
 macx|x11: CONFIG-=qt
 macx|x11: DEFINES += _DESKTOP
-sailfish:QT += compositor widgets core
+sailfish:QT += compositor widgets core quick
 sailfish: INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 TARGET = irrlicht
 INCLUDEPATH += third_party/wayland
@@ -44,10 +44,14 @@ QMAKE_EXTRA_TARGETS += removespec
 media.files = media
 media.path = /usr/share/$$TARGET/
 
-INSTALLS += media
+irrquick.files = qml/*.qml
+irrquick.path = /usr/share/$$TARGET/qml/
+
+INSTALLS += media irrquick
 
 debug: DEFINES += _DEBUG
 
+include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
 
@@ -55,13 +59,14 @@ include(irrlicht.pri)
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
 #SOURCES =  examples/05.UserInterface/main.cpp
 #SOURCES += examples/16.Quake3MapShader/main.cpp
-HEADERS += examples/Demo/CDemo.h
-SOURCES += examples/Demo/CDemo.cpp \
-            examples/Demo/main.cpp
+#HEADERS += examples/Demo/CDemo.h
+#SOURCES += examples/Demo/CDemo.cpp \
+#            examples/Demo/main.cpp
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp
 #    examples/13.RenderToTexture/main.cpp
+
 
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \

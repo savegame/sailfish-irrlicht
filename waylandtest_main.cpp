@@ -12,7 +12,10 @@
 #include <qt5/QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-hardware-integration-client-protocol.h>
 #include <qt5/QtWaylandClient/5.4.0/QtWaylandClient/private/qwayland-hardware-integration.h>
 
-struct wl_display *display = NULL;
+
+#include "source/Irrlicht/wlcpp/wlcpp.h"
+
+
 struct wl_compositor *compositor = NULL;
 struct wl_surface *surface;
 struct wl_egl_window *egl_window;
