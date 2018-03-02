@@ -30,7 +30,7 @@ If you want build Irrlciht as shared library *libIrrlicht.so*, you need change *
 ### For programmers
 Most changes for Wayland proting situated in source/Irrlicht/CIrrDeviceSailfish.cpp (\*.h), and CEGLManager.cpp (\*.h) under macros 
 ```cpp
-#ifdef _IRR_COMPILE_WITH_OGLES2_
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 .....
 #endif
 ```
