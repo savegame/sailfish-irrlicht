@@ -52,6 +52,8 @@
 # undef _INPUT_H
 #endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
 
+#define check_logger_debug if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
+
 namespace irr
 {
 	namespace video
@@ -322,11 +324,13 @@ qt_touch_handle_touch(void *data,
           uint32_t flags,
           struct wl_array *rawdata)
 {
-	irr::core::stringc m;
-	m = "client_backend: ";
-//	m += name;
-	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
-
+	check_logger_debug
+	{
+		irr::core::stringc m;
+		m = "client_backend: ";
+//		m += name;
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
 //	if(data)
 //	{
 //		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -355,10 +359,13 @@ qt_touch_handle_configure(void *data,
           struct qt_touch_extension *qt_touch_extension,
           uint32_t flags)
 {
-	irr::core::stringc m;
-	m = "client_backen: ";
+	check_logger_debug
+	{
+		irr::core::stringc m;
+		m = "client_backen: ";
 //	m += name;
-	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
 }
 
 static struct qt_touch_extension_listener qt_touch_listener = {
@@ -385,14 +392,17 @@ display_handle_error(void *data,
                   uint32_t code,
                   const char *message)
 {
-	irr::core::stringc m = "display_handle_error() object_id: ";
-	m+= (uint32_t)object_id;
-	m+= "; code: ";
-	m+= code;
-	m+= "; message: \"";
-	m+= message;
-	m+= "\";";
-	irr::os::Printer::log(m.c_str(), irr::ELL_ERROR);
+	check_logger_debug
+	{
+		irr::core::stringc m = "display_handle_error() object_id: ";
+		m+= (uint32_t)object_id;
+		m+= "; code: ";
+		m+= code;
+		m+= "; message: \"";
+		m+= message;
+		m+= "\";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_ERROR);
+	}
 }
 
 static void
@@ -400,10 +410,13 @@ display_handle_delete_id(void *data,
                       struct wl_display *wl_display,
                       uint32_t id)
 {
-	irr::core::stringc m = "display_handle_delete_id() id:";
-	m+= id;
-	m+= ";";
-	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	check_logger_debug
+	{
+		irr::core::stringc m = "display_handle_delete_id() id:";
+		m+= id;
+		m+= ";";
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
 }
 
 // https://jan.newmarch.name/Wayland/Input/
@@ -473,20 +486,23 @@ global_registry_remover(void *data, struct wl_registry *registry, uint32_t id)
 static void
 output_handle_done(void *data, struct wl_output* wl_output)
 {
-#ifdef _DEBUG
+	check_logger_debug
 	{
 		irr::os::Printer::log("wlOutput done;", irr::ELL_DEBUG);
 	}
-#endif
+
 }
 
+/**
+ * that function request every time when sailfish change screen orientation
+*/
 static void
 output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
                        int32_t physical_width, int32_t physical_height, int32_t subpixel,
                        const char *make, const char *model, int32_t transform)
 {
-
-	{/// TODO Here we need set Up vector for Camera, if it created...
+	check_logger_debug
+	{
 		irr::core::stringc m = "wlOutput::geometry (x:";
 		m+= x;
 		m+="; y:";
@@ -525,6 +541,7 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 			m += "flipped 270;";
 			break;
 		}
+
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 
@@ -532,6 +549,39 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 	if(device)
 	{
 		device->setPhysicalSize((irr::s32)physical_width, (irr::s32)physical_height);
+
+		irr::SEvent event;
+		event.EventType = irr::EET_ORITENTATION_EVENT;
+		// by default in wayland 1.6 oritnations transform enum is 0 - 7, as in irrlicht
+		event.OrientationEvent.EventType = (irr::EORIENTATION_EVENT_TYPE)transform;
+//		switch(transform)
+//		{
+//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_NORMAL;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_90:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_90;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_180:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_180;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_270:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_270;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED;
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_90;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_180;
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_270;
+//			break;
+//		}
+		device->postEventFromUser(event);
 	}
 }
 
@@ -539,55 +589,57 @@ static void
 output_handle_mode(void *data, struct wl_output *wl_output,
                    uint32_t flags, int32_t width, int32_t height, int32_t refresh)
 {
-
-	irr::core::stringc m = "wlOutput::mode (";
-	m+= " w:";
-	m+= width;
-	m+= "; h:";
-	m+= height;
-	m+= "; refresh:";
-	m+= refresh;
-	m+= "; flags:";
-	m+= flags;
-	m+= " - ";
-
 	irr::CIrrDeviceSailfish *dev = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
-	/// TODO Here we need set Up vector for activeCamera !!!
-	if(dev->qtExtendedSurface)
-	switch(flags)
-	{
-	case  WL_OUTPUT_TRANSFORM_NORMAL:
-		m += "normal;";
-		qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
-		        break;
-	case  WL_OUTPUT_TRANSFORM_90:
-		m += "90;";
-		qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-		break;
-	case  WL_OUTPUT_TRANSFORM_180:
-		qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
-		m += "180;";
-		break;
-	case  WL_OUTPUT_TRANSFORM_270:
-		qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
-		m += "270;";
-		break;
-	case  WL_OUTPUT_TRANSFORM_FLIPPED:
-		m += "flipped;";
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		m += "flipped 90;";
-		break;
-	case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		m += "flipped 180;";
-		break;
-	case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		m += "flipped 270;";
-		break;
-	}
-	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 
-	dev->setWindowSize( irr::core::dimension2du(width,height) );
+	//check_logger_debug
+	{
+		irr::core::stringc m = "wlOutput::mode (";
+		m+= " w:";
+		m+= width;
+		m+= "; h:";
+		m+= height;
+		m+= "; refresh:";
+		m+= refresh;
+		m+= "; flags:";
+		m+= flags;
+		m+= " - ";
+
+//		if(dev && dev->qtExtendedSurface)
+//		switch(flags)
+//		{
+//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+//			m += "normal;";
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+//			        break;
+//		case  WL_OUTPUT_TRANSFORM_90:
+//			m += "90;";
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_180:
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+//			m += "180;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_270:
+//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+//			m += "270;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			m += "flipped;";
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			m += "flipped 90;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			m += "flipped 180;";
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			m += "flipped 270;";
+//			break;
+//		}
+		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+	}
+	if(dev)
+		dev->setWindowSize( irr::core::dimension2du(width,height) );
 	//irr::SEvent event;
 	//event.EventType = irr::EET_GYROSCOPE_EVENT;
 	//event.GyroscopeEvent
@@ -597,14 +649,13 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 static void
 output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor)
 {
-#ifdef _DEBUG
+	check_logger_debug
 	{
 		irr::core::stringc m = "wlOutput::scale (";
 		m+= wl_fixed_to_double(factor);
 		m+= "; )";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-#endif
 }
 
 static void
@@ -699,6 +750,10 @@ irr::CIrrDeviceSailfish::qt_extended_surface_handle_onscreen_visibility(
 		device->WindowHasFocus = false;
 		device->WindowMinimized = true;
 		break;
+	default: // what
+		m = "Visibility is ";
+		m += visible;
+		m += ";";
 	}
 	irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG );
 }
@@ -918,7 +973,8 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
                   uint32_t time, struct wl_surface *surface,
                   int32_t id, wl_fixed_t x, wl_fixed_t y)
 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
+	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
 		m+= time;
@@ -935,7 +991,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		m+= ";";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-#endif
+//#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -954,7 +1010,8 @@ static void
 touch_handle_up(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, int32_t id)
 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
+	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
 		m+= time;
@@ -965,7 +1022,7 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 		m+= ");";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-#endif
+//#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -1103,6 +1160,34 @@ void irr::CIrrDeviceSailfish::seatHandleCapabilities(void *data, wl_seat *seat, 
 	}
 }
 
+void irr::CIrrDeviceSailfish::setQESOrientation(int orientation)
+{
+	if(qtExtendedSurface)
+	switch(orientation)
+	{
+	case  irr::EOET_TRANSFORM_NORMAL:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_90:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_180:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+		break;
+	case  irr::EOET_TRANSFORM_270:
+		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+		break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+//			break;
+//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+//			break;
+//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+//			break;
+	}
+}
+
 wchar_t irr::CIrrDeviceSailfish::Key2WChar(uint32_t key) const
 {
 	if( key < 0 || key > 254 )
@@ -1118,7 +1203,6 @@ CIrrDeviceSailfish::CIrrDeviceSailfish(const SIrrlichtCreationParameters& param)
     : CIrrDeviceStub(param),
       Width(param.WindowSize.Width), Height(param.WindowSize.Height),
       WindowHasFocus(true), WindowMinimized(false),
-      UseXVidMode(false), UseXRandR(false),
       ExternalWindow(false), AutorepeatSupport(0),
       wlListener ({
                  global_registry_handler,
@@ -1304,11 +1388,7 @@ bool CIrrDeviceSailfish::createWindow()
 		return false;
 	}
 	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
-	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-//        qt_ex
-	// tranform window if needed
-	//	wl_output_transform:: WL_OUTPUT_TRANSFORM_90
-//	wl_surface_set_buffer_transform(struct wl_client *client, struct wl_resource *resource, wl_output_transform:: WL_OUTPUT_TRANSFORM_90);
+//	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
 
 	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceSailfish::wlShell, wlSurface);
 	if (wlShellSurface == NULL) {

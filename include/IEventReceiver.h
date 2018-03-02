@@ -9,6 +9,7 @@
 #include "Keycodes.h"
 #include "irrString.h"
 
+
 namespace irr
 {
 	//! Enumeration for all event types there are.
@@ -82,6 +83,10 @@ namespace irr
 		//! Application state events like a resume, pause etc.
 		EET_APPLICATION_EVENT,
 
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+		//! Orientation state events
+		EET_ORITENTATION_EVENT,
+#endif
 		//! This enum is never used, it only forces the compiler to
 		//! compile these enumeration values to 32 bit.
 		EGUIET_FORCE_32_BIT = 0x7fffffff
@@ -183,6 +188,22 @@ namespace irr
 		//! No real event. Just for convenience to get number of events
 		ETIE_COUNT
 	};
+
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+	//! Enumeration of all orientation events
+	enum EORIENTATION_EVENT_TYPE
+	{
+		EOET_TRANSFORM_NORMAL = 0,
+		EOET_TRANSFORM_90,
+		EOET_TRANSFORM_180,
+		EOET_TRANSFORM_270,
+		EOET_TRANSFORM_FLIPPED,
+		EOET_TRANSFORM_FLIPPED_90,
+		EOET_TRANSFORM_FLIPPED_180,
+		EOET_TRANSFORM_FLIPPED_270,
+		EOET_COUNT,
+	};
+#endif
 
 	enum ESYSTEM_EVENT_TYPE
 	{
@@ -569,6 +590,12 @@ struct SEvent
 		};
 	};
 
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+	struct SOrientationEvent {
+		EORIENTATION_EVENT_TYPE EventType;
+	};
+#endif
+
 	// Application state event
 	struct SApplicationEvent
 	{
@@ -590,6 +617,9 @@ struct SEvent
 		struct SUserEvent UserEvent;
 		struct SSystemEvent SystemEvent;
 		struct SApplicationEvent ApplicationEvent;
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+		struct SOrientationEvent OrientationEvent;
+#endif
 	};
 
 };

@@ -181,7 +181,7 @@ namespace gui
 		bool MoveOverSelect;
 		bool AutoScroll;
 		bool HighlightWhenNotFocused;
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		core::position2di touchPos;
 		f32				  touchDist;
 #endif

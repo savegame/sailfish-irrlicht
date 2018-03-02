@@ -21,7 +21,7 @@ public:
 	// constructor
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	COSOperator(const core::stringc& osversion, CIrrDeviceLinux* device);
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 	COSOperator(const core::stringc& osversion, CIrrDeviceSailfish* device);
 #endif
 	COSOperator(const core::stringc& osversion);
@@ -53,7 +53,7 @@ private:
 
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	CIrrDeviceLinux * IrrDeviceLinux;
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 	CIrrDeviceSailfish * IrrDeviceSailfish;
 #endif
 

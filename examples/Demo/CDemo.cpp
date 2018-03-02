@@ -323,7 +323,7 @@ void CDemo::switchToNextScene()
 			keyMap.push_back( SKeyMap(EKA_ROTATE_LEFT, KEY_KEY_Q) );
 
 			keyMap.push_back( SKeyMap(EKA_ROTATE_RIGHT, KEY_KEY_E) );
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			camera = sm->addCameraSceneNodeFPS(0, 1.0f, .4f, -1, keyMap.pointer(), keyMap.size(), false, 300.f);
 #else
 			camera = sm->addCameraSceneNodeFPS(0, 100.0f, .4f, -1, keyMap.pointer(), keyMap.size(), false, 300.f);

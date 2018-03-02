@@ -1,4 +1,5 @@
 #include "gameapp.h"
+#include "../ui/gesturearea.h"
 #include <irrlicht.h>
 
 GameApp::GameApp(int argc, char **argv) {
@@ -15,7 +16,8 @@ GameApp::GameApp(int argc, char **argv) {
     if(m_device == nullptr)
         return;
     
-    m_driver = m_device->getVideoDriver(); 
+	m_driver = m_device->getVideoDriver();
+	m_gui = m_device->getGUIEnvironment();
 }
 
 GameApp::~GameApp() {

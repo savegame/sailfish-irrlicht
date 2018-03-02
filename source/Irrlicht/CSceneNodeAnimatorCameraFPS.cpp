@@ -94,7 +94,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	case EET_TOUCH_INPUT_EVENT:
 //		break;
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)

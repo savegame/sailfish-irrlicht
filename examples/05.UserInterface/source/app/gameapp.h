@@ -8,7 +8,7 @@
 #ifndef gameapp_h
 #define gameapp_h
 
-#ifdef SAILFIH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #  define IRR_DRIVER_TYPE irr::video::EDT_OGLES2
 #else
 #  define IRR_DRIVER_TYPE irr::video::EDT_OPENGL
@@ -19,6 +19,9 @@ namespace irr {
     namespace video {
         class IVideoDriver;
     }
+	namespace gui {
+	    class IGUIEnvironment;
+	}
 }
 
 class GameApp
@@ -34,5 +37,6 @@ public:
 protected:
     irr::IrrlichtDevice *m_device;
     irr::video::IVideoDriver *m_driver;
+	irr::gui::IGUIEnvironment *m_gui;
 };
 #endif /* gameapp_h */

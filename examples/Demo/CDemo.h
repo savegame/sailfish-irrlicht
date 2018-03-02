@@ -12,7 +12,7 @@
 #ifdef _IRR_WINDOWS_
 #include <windows.h>
 #endif
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #define USE_SDL_MIXER
 #endif
 
@@ -29,7 +29,7 @@ using namespace irr;
 	#endif
 #endif
 #ifdef USE_SDL_MIXER
-# ifdef SAILFISH
+# ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #  include <SDL.h>
 #  include <SDL_mixer.h>
 # else

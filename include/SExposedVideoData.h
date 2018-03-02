@@ -99,7 +99,7 @@ struct SExposedVideoData
 		void* Window;
 	};
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
     struct SOGLESWayland
     {
 		void* Surface;
@@ -110,6 +110,13 @@ struct SExposedVideoData
     };
 #endif
 
+#ifdef _IRR_COMPILE_WITH_QML_RENDER
+	struct SQML_GLContext 
+	{
+		void *Context;
+	};
+#endif
+	
 	union
 	{
 		SD3D9 D3D9;
@@ -119,8 +126,11 @@ struct SExposedVideoData
 		SOpenGLFB OpenGLFB;
 		SOpenGLiOS OpenGLiOS;
 		SOGLESAndroid OGLESAndroid;
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		SOGLESWayland OGLESWayland;
+#endif
+#ifdef _IRR_COMPILE_WITH_QML_RENDER
+		SQML_GLContext QML_GLContext;
 #endif
 	};
 };

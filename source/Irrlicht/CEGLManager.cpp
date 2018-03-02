@@ -13,7 +13,7 @@
 #include <android/native_activity.h>
 #endif
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 
 #endif
 
@@ -54,7 +54,7 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 #elif defined(_IRR_EMSCRIPTEN_PLATFORM_)
 	EglWindow = 0;
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 	{
 		EglDisplay = (EGLDisplay)Data.OGLESWayland.Display;
 		EglWindow = (NativeWindowType)Data.OGLESWayland.Window;
@@ -327,7 +327,7 @@ bool CEGLManager::generateContext()
 #endif
 		EGL_NONE, 0
 	};
-#if !defined(SAILFISH)
+#if !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 
 //#else
 	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);

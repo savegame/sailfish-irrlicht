@@ -43,7 +43,7 @@
 //! Example: NO_IRR_COMPILE_WITH_X11_ would disable X11
 
 //! Uncomment this line to compile with the SDL device
-#ifndef SAILFISH
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #define _IRR_COMPILE_WITH_SDL_DEVICE_
 #endif
 #ifdef NO_IRR_COMPILE_WITH_SDL_DEVICE_
@@ -144,6 +144,17 @@
 #if defined(__sparc)
 	#define __BIG_ENDIAN__
 #endif
+#endif
+
+#ifdef _IRR_COMPILE_WITH_QML_RENDER
+# define NO_IRR_COMPILE_WITH_DIRECT3D_9_
+# define NO_IRR_COMPILE_WITH_OGLES1_
+# define NO_IRR_COMPILE_WITH_X11_DEVICE_
+# define NO_IRR_COMPILE_WITH_SDL_DEVICE_
+# define NO_IRR_COMPILE_WITH_SDL_DEVICE_
+# define NO_IRR_COMPILE_WITH_SDL_DEVICE_
+# undef _IRR_COMPILE_WITH_SDL_DEVICE_
+# undef _IRR_COMPILE_WITH_EGL_MANAGER_
 #endif
 
 #if !defined(_IRR_WINDOWS_API_) && !defined(_IRR_OSX_PLATFORM_) && !defined(_IRR_IOS_PLATFORM_) && !defined(_IRR_ANDROID_PLATFORM_) && !defined(_IRR_EMSCRIPTEN_PLATFORM_)
