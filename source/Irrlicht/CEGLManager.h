@@ -11,7 +11,7 @@
 
 #if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_) || defined(_IRR_COMPILE_WITH_FB_DEVICE_) || defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) || defined(__EMSCRIPTEN__) || defined(_IRR_COMPILE_WITH_X11_)
 #include <EGL/egl.h>
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 #include <wayland-client.h>
 #include <wayland-server.h>
 #include <wayland-egl.h>
@@ -83,7 +83,7 @@ namespace video
 	private:
 		bool testEGLError();
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		NativeDisplayType nativeDisplay;
 #endif
 		NativeWindowType EglWindow;

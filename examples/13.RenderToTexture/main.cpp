@@ -305,14 +305,14 @@ public:
 		//shaders
 #if !defined(_DEBUG) || defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 		io::path mediaPath = getExampleMediaPath();
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 		io::path mediaPath = "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
 #else
 		io::path mediaPath = getExampleMediaPath();
 #endif
 		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
-#if defined(_OUT_PWD_PATH) && !defined(SAILFISH)
+#if defined(_OUT_PWD_PATH) && !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 		psFileName = io::path(_OUT_PWD_PATH) + io::path("/") + psFileName;
 		vsFileName = io::path(_OUT_PWD_PATH) + io::path("/") + vsFileName;
 #endif

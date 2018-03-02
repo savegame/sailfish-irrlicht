@@ -4,7 +4,7 @@
 
 #include "CIrrDeviceSailfish.h"
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2026,6 +2026,6 @@ irr::core::dimension2di CIrrDeviceSailfish::CCursorControl::getSupportedIconSize
 
 } // end namespace
 
-#endif // SAILFISH
+#endif // _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 
 

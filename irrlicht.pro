@@ -1,4 +1,5 @@
 VERSION = 1.9.0
+
 sailfish: TEMPLATE = app #lib
 x11: TEMPLATE = app #lib
 macx: TEMPLATE = app #lib
@@ -19,7 +20,8 @@ PKGCONFIG += zlib libpng egl
 x11: PKGCONFIG += x11 xrandr gl glesv2 xxf86vm sdl
 sailfish: LIBS += -lbz2
 #x11: LIBS += -lIrrlicht -lIrrXML
-sailfish: DEFINES += SAILFISH
+sailfish: DEFINES += _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+sailfish: DEFINES += NO_IRR_COMPILE_WITH_X11_
 !sailfish: DEFINES += _IRR_COMPILE_WITH_OPENGL_
 !sailfish: DEFINES += NO_IRR_COMPILE_WITH_OGLES1_
 x11: DEFINES += _IRR_LINUX_X11_RANDR_
@@ -67,6 +69,7 @@ include(irrlicht.pri)
 HEADERS += examples/Demo/CDemo.h
 SOURCES += examples/Demo/CDemo.cpp \
             examples/Demo/main.cpp
+DEFINES += USE_SDL_MIXER
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp

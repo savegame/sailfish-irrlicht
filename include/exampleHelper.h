@@ -19,7 +19,7 @@ static io::path getExampleMediaPath()
 # else
     return io::path("../Resources/media/");
 # endif
-#elif defined(SAILFISH)
+#elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 //	return io::path("/opt/sdk/irrlicht-sailfish/usr/share/media/");
 	return io::path("/usr/share/irrlicht/media/");
 #else

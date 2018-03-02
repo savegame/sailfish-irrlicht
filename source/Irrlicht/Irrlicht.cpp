@@ -22,7 +22,7 @@ static const char* const copyright = "Irrlicht Engine (c) 2002-2012 Nikolaus Geb
 #include "CIrrDeviceLinux.h"
 #endif
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #include "CIrrDeviceSailfish.h"
 #endif
 
@@ -110,7 +110,7 @@ namespace irr
 			dev = new CIrrDeviceFB(params);
 #endif
 
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
                 if(params.DeviceType == EIDT_SAILFISH || (!dev && params.DeviceType == EIDT_BEST) )
                         dev = new CIrrDeviceSailfish(params);
 #endif
