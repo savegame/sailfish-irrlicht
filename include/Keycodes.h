@@ -90,7 +90,7 @@ namespace irr
 		KEY_KEY_X            = 0x58,  // X key
 		KEY_KEY_Y            = 0x59,  // Y key
 		KEY_KEY_Z            = 0x5A,  // Z key
-		KEY_LWIN             = 0x5B,  // Left Windows key (Microsoft® Natural® keyboard)
+		KEY_LWIN             = 0x5B,  // Left Windows key (MicrosoftÂ® NaturalÂ® keyboard)
 		KEY_RWIN             = 0x5C,  // Right Windows key (Natural keyboard)
 		KEY_APPS             = 0x5D,  // Applications key (Natural keyboard)
 		KEY_SLEEP            = 0x5F,  // Computer Sleep key
@@ -179,7 +179,7 @@ namespace irr
 		KEY_PA1              = 0xFD,  // PA1 key
 		KEY_OEM_CLEAR        = 0xFE,  // Clear key
 		KEY_NONE             = 0xFF,  // usually no key mapping, but some laptops use it for fn key
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		EKC_KEY_UNKNOWN     = KEY_UNKNOWN,
 		EKC_KEY_LBUTTON     = KEY_LBUTTON,  // Left mouse button
 		EKC_KEY_RBUTTON     = KEY_RBUTTON,  // Right mouse button
@@ -260,7 +260,7 @@ namespace irr
 		EKC_KEY_X           = KEY_KEY_X,  // X key
 		EKC_KEY_Y           = KEY_KEY_Y,  // Y key
 		EKC_KEY_Z           = KEY_KEY_Z,  // Z key
-		EKC_KEY_LWIN        = KEY_LWIN,  // Left Windows key (Microsoft® Natural® keyboard)
+		EKC_KEY_LWIN        = KEY_LWIN,  // Left Windows key (MicrosoftÂ® NaturalÂ® keyboard)
 		EKC_KEY_RWIN        = KEY_RWIN,  // Right Windows key (Natural keyboard)
 		EKC_KEY_APPS        = KEY_APPS,  // Applications key (Natural keyboard)
 		EKC_KEY_SLEEP       = KEY_SLEEP,  // Computer Sleep key

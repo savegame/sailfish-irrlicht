@@ -63,11 +63,11 @@ namespace irr
 #endif
 
 #ifdef _IRR_COMPILE_WITH_OGLES1_
-        IVideoDriver* createOGLES1Driver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+		IVideoDriver* createOGLES1Driver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 #endif
 
 #ifdef _IRR_COMPILE_WITH_OGLES2_
-        IVideoDriver* createOGLES2Driver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+		IVideoDriver* createOGLES2Driver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 #endif
 
 #ifdef _IRR_COMPILE_WITH_WEBGL1_
@@ -78,12 +78,12 @@ namespace irr
 
 
 static struct window {
-//	EGLContext egl_context;
+	//	EGLContext egl_context;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	struct wl_egl_window *egl_window;
 	irr::CIrrDeviceSailfish *irrDevice;
-//	EGLSurface egl_surface;
+	//	EGLSurface egl_surface;
 } wlWindow;
 
 struct wl_compositor *irr::CIrrDeviceSailfish::wlCompositor = NULL;
@@ -97,7 +97,7 @@ struct qt_surface_extension *irr::CIrrDeviceSailfish::qtSurfaceExtension = NULL;
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
-                        uint32_t capabilities);
+                         uint32_t capabilities);
 static void
 keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
                        uint32_t format, int fd, uint32_t size);
@@ -173,7 +173,7 @@ output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
 
 static void
 display_handle_error(void *data, struct wl_display *wl_display, void *object_id,
-                  uint32_t code, const char *message);
+                     uint32_t code, const char *message);
 
 static void
 display_handle_delete_id(void *data, struct wl_display *wl_display, uint32_t id);
@@ -308,21 +308,21 @@ static const struct wl_touch_listener touch_listener = {
  */
 static void
 qt_touch_handle_touch(void *data,
-          struct qt_touch_extension *qt_touch_extension,
-          uint32_t time,
-          uint32_t id,
-          uint32_t state,
-          int32_t x,
-          int32_t y,
-          int32_t normalized_x,
-          int32_t normalized_y,
-          int32_t width,
-          int32_t height,
-          uint32_t pressure,
-          int32_t velocity_x,
-          int32_t velocity_y,
-          uint32_t flags,
-          struct wl_array *rawdata)
+      struct qt_touch_extension *qt_touch_extension,
+      uint32_t time,
+      uint32_t id,
+      uint32_t state,
+      int32_t x,
+      int32_t y,
+      int32_t normalized_x,
+      int32_t normalized_y,
+      int32_t width,
+      int32_t height,
+      uint32_t pressure,
+      int32_t velocity_x,
+      int32_t velocity_y,
+      uint32_t flags,
+      struct wl_array *rawdata)
 {
 	check_logger_debug
 	{
@@ -356,14 +356,14 @@ qt_touch_handle_touch(void *data,
  */
 static void
 qt_touch_handle_configure(void *data,
-          struct qt_touch_extension *qt_touch_extension,
-          uint32_t flags)
+                          struct qt_touch_extension *qt_touch_extension,
+                          uint32_t flags)
 {
 	check_logger_debug
 	{
 		irr::core::stringc m;
 		m = "client_backen: ";
-//	m += name;
+		//	m += name;
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 }
@@ -387,10 +387,10 @@ surface_handle_leave(void *data, struct wl_surface *wl_surface, struct wl_output
 
 static void
 display_handle_error(void *data,
-                  struct wl_display *wl_display,
-                  void *object_id,
-                  uint32_t code,
-                  const char *message)
+                     struct wl_display *wl_display,
+                     void *object_id,
+                     uint32_t code,
+                     const char *message)
 {
 	check_logger_debug
 	{
@@ -407,8 +407,8 @@ display_handle_error(void *data,
 
 static void
 display_handle_delete_id(void *data,
-                      struct wl_display *wl_display,
-                      uint32_t id)
+                         struct wl_display *wl_display,
+                         uint32_t id)
 {
 	check_logger_debug
 	{
@@ -422,18 +422,18 @@ display_handle_delete_id(void *data,
 // https://jan.newmarch.name/Wayland/Input/
 static void
 global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
-           const char *interface, uint32_t version)
+                        const char *interface, uint32_t version)
 {
 	if (strcmp(interface, "wl_compositor") == 0) {
 		irr::CIrrDeviceSailfish::wlCompositor = (struct wl_compositor*)wl_registry_bind(registry,
-		              id,
-		              &wl_compositor_interface,
-		              1);
+		    id,
+		    &wl_compositor_interface,
+		    1);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_compositor_interface\" done");
 	}
 	else if (strcmp(interface, "wl_shell") == 0) {
 		irr::CIrrDeviceSailfish::wlShell = (struct wl_shell*)wl_registry_bind(registry, id,
-		                         &wl_shell_interface, 1);
+		    &wl_shell_interface, 1);
 		irr::os::Printer::log("[Good] wl_registry_bind() of \"wl_shell_interface\" done");
 	}
 	else if (strcmp(interface, "wl_seat") == 0) {
@@ -451,21 +451,21 @@ global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
 	{
 		irr::CIrrDeviceSailfish::qtSurfaceExtension
 		        = (struct qt_surface_extension*)wl_registry_bind(registry, id,
-		                &qt_surface_extension_interface, 1);
+		                                                         &qt_surface_extension_interface, 1);
 	}
-//	else if (strcmp(interface, "qt_touch_extension") == 0)
-//	{
-//		struct qt_touch_extension *qt_touch =
-//		        (struct qt_touch_extension *)wl_registry_bind(registry, id,
-//				                                              &qt_touch_extension_interface, 1);
-//		qt_touch_extension_add_listener(qt_touch, &qt_touch_listener,data);
-//	}
-//	else if(strcmp(interface, "qt_hardware_integration") == 0)
-//	{
-//		//
-//		struct qt_hardware_integration *hw_integration = (struct qt_hardware_integration*)wl_registry_bind(registry,id,&qt_hardware_integration_interface, 1);
-//		qt_hardware_integration_add_listener(hw_integration, &hw_listener, data);
-//	}
+	//	else if (strcmp(interface, "qt_touch_extension") == 0)
+	//	{
+	//		struct qt_touch_extension *qt_touch =
+	//		        (struct qt_touch_extension *)wl_registry_bind(registry, id,
+	//				                                              &qt_touch_extension_interface, 1);
+	//		qt_touch_extension_add_listener(qt_touch, &qt_touch_listener,data);
+	//	}
+	//	else if(strcmp(interface, "qt_hardware_integration") == 0)
+	//	{
+	//		//
+	//		struct qt_hardware_integration *hw_integration = (struct qt_hardware_integration*)wl_registry_bind(registry,id,&qt_hardware_integration_interface, 1);
+	//		qt_hardware_integration_add_listener(hw_integration, &hw_listener, data);
+	//	}
 	else
 	{
 		irr::core::stringc m = "Global registry handler interface \"";
@@ -554,33 +554,33 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 		event.EventType = irr::EET_ORITENTATION_EVENT;
 		// by default in wayland 1.6 oritnations transform enum is 0 - 7, as in irrlicht
 		event.OrientationEvent.EventType = (irr::EORIENTATION_EVENT_TYPE)transform;
-//		switch(transform)
-//		{
-//		case  WL_OUTPUT_TRANSFORM_NORMAL:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_NORMAL;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_90:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_90;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_180:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_180;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_270:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_270;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED;
-//			break;
-//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_90;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_180;
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
-//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_270;
-//			break;
-//		}
+		//		switch(transform)
+		//		{
+		//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_NORMAL;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_90:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_90;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_180:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_180;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_270:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_270;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED;
+		//			break;
+		//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_90;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_180;
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		//			event.OrientationEvent.EventType = irr::EOET_TRANSFORM_FLIPPED_270;
+		//			break;
+		//		}
 		device->postEventFromUser(event);
 	}
 }
@@ -604,38 +604,38 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		m+= flags;
 		m+= " - ";
 
-//		if(dev && dev->qtExtendedSurface)
-//		switch(flags)
-//		{
-//		case  WL_OUTPUT_TRANSFORM_NORMAL:
-//			m += "normal;";
-//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
-//			        break;
-//		case  WL_OUTPUT_TRANSFORM_90:
-//			m += "90;";
-//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_180:
-//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
-//			m += "180;";
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_270:
-//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
-//			m += "270;";
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
-//			m += "flipped;";
-//			break;
-//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-//			m += "flipped 90;";
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
-//			m += "flipped 180;";
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
-//			m += "flipped 270;";
-//			break;
-//		}
+		//		if(dev && dev->qtExtendedSurface)
+		//		switch(flags)
+		//		{
+		//		case  WL_OUTPUT_TRANSFORM_NORMAL:
+		//			m += "normal;";
+		//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+		//			        break;
+		//		case  WL_OUTPUT_TRANSFORM_90:
+		//			m += "90;";
+		//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_180:
+		//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+		//			m += "180;";
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_270:
+		//			qt_extended_surface_set_content_orientation(dev->qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+		//			m += "270;";
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+		//			m += "flipped;";
+		//			break;
+		//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		//			m += "flipped 90;";
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		//			m += "flipped 180;";
+		//			break;
+		//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		//			m += "flipped 270;";
+		//			break;
+		//		}
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 	if(dev)
@@ -643,7 +643,7 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 	//irr::SEvent event;
 	//event.EventType = irr::EET_GYROSCOPE_EVENT;
 	//event.GyroscopeEvent
-//        dev->setWindowSize( irr::core::dimension2du(480,320) );}
+	//        dev->setWindowSize( irr::core::dimension2du(480,320) );}
 }
 
 static void
@@ -786,23 +786,23 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 
 void
 irr::CIrrDeviceSailfish::keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
-                      uint32_t serial, struct wl_surface *surface,
-                      struct wl_array *keys)
+                                               uint32_t serial, struct wl_surface *surface,
+                                               struct wl_array *keys)
 {
 	irr::os::Printer::log("Keyboard gained focus", irr::ELL_DEBUG);
 	irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
-//	device->WindowHasFocus = true;
-//	device->WindowMinimized = false;
+	//	device->WindowHasFocus = true;
+	//	device->WindowMinimized = false;
 }
 
 void
 irr::CIrrDeviceSailfish::keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
-                      uint32_t serial, struct wl_surface *surface)
+                                               uint32_t serial, struct wl_surface *surface)
 {
 	irr::os::Printer::log("Keyboard lost focus", irr::ELL_DEBUG);
 	irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
-//	device->WindowHasFocus = false;
-//	device->WindowMinimized = true;
+	//	device->WindowHasFocus = false;
+	//	device->WindowMinimized = true;
 }
 
 static void
@@ -823,7 +823,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	{
 		irr::SEvent irrevent;
 		irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
-//		irr::core::stringw str;
+		//		irr::core::stringw str;
 		irrevent.KeyInput.Char = device->Key2WChar(key);
 		/// TODO get Modifiers status
 		///
@@ -973,7 +973,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
                   uint32_t time, struct wl_surface *surface,
                   int32_t id, wl_fixed_t x, wl_fixed_t y)
 {
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
@@ -991,7 +991,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		m+= ";";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-//#endif
+	//#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -1010,7 +1010,7 @@ static void
 touch_handle_up(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, int32_t id)
 {
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
@@ -1022,7 +1022,7 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 		m+= ");";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-//#endif
+	//#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -1052,7 +1052,7 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		m+= ", ";
 		m+= wl_fixed_to_double(y);
 		m+= ";";
-//		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
+		//		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 #endif
 	if(data)
@@ -1073,7 +1073,7 @@ static void
 touch_handle_frame(void *data, struct wl_touch *wl_touch)
 {
 #ifdef _DEBUG
-//	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
+	//	irr::os::Printer::log("Wayland touch handle frame", irr::ELL_DEBUG);
 #endif
 }
 
@@ -1121,17 +1121,17 @@ irr::EKEY_CODE irr::CIrrDeviceSailfish::getKeyCode(uint32_t key)
 }
 
 void irr::CIrrDeviceSailfish::setLastTouchPos(int touchID, irr::s32 X, irr::s32 Y) {
-//	if( touchID < 10 && touchID >= 0 )
+	//	if( touchID < 10 && touchID >= 0 )
 	{
 		m_touchPos[touchID] = core::vector2di(X,Y);
-//		m_touchPos.
+		//		m_touchPos.
 
 	}
 }
 
 irr::core::vector2di irr::CIrrDeviceSailfish::getLastTouchPos(irr::s32 touchID)
 {
-//	if( touchID < 10 && touchID >= 0 )
+	//	if( touchID < 10 && touchID >= 0 )
 	{
 		return m_touchPos[touchID];
 	}
@@ -1163,29 +1163,29 @@ void irr::CIrrDeviceSailfish::seatHandleCapabilities(void *data, wl_seat *seat, 
 void irr::CIrrDeviceSailfish::setQESOrientation(int orientation)
 {
 	if(qtExtendedSurface)
-	switch(orientation)
-	{
-	case  irr::EOET_TRANSFORM_NORMAL:
-		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
-		break;
-	case  irr::EOET_TRANSFORM_90:
-		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
-		break;
-	case  irr::EOET_TRANSFORM_180:
-		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
-		break;
-	case  irr::EOET_TRANSFORM_270:
-		qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-		break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
-//			break;
-//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
-//			break;
-//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
-//			break;
-	}
+		switch(orientation)
+		{
+		case  irr::EOET_TRANSFORM_NORMAL:
+			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+			break;
+		case  irr::EOET_TRANSFORM_90:
+			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+			break;
+		case  irr::EOET_TRANSFORM_180:
+			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+			break;
+		case  irr::EOET_TRANSFORM_270:
+			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+			break;
+			//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
+			//			break;
+			//		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+			//			break;
+			//		case  WL_OUTPUT_TRANSFORM_FLIPPED_180:
+			//			break;
+			//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			//			break;
+		}
 }
 
 wchar_t irr::CIrrDeviceSailfish::Key2WChar(uint32_t key) const
@@ -1198,325 +1198,325 @@ wchar_t irr::CIrrDeviceSailfish::Key2WChar(uint32_t key) const
 namespace irr
 {
 
-//! constructor
-CIrrDeviceSailfish::CIrrDeviceSailfish(const SIrrlichtCreationParameters& param)
-    : CIrrDeviceStub(param),
-      Width(param.WindowSize.Width), Height(param.WindowSize.Height),
-      WindowHasFocus(true), WindowMinimized(false),
-      ExternalWindow(false), AutorepeatSupport(0),
-      wlListener ({
-                 global_registry_handler,
-                 global_registry_remover
-      }),
-      PhysicalWidth(0), PhysicalHeight(0)
-{
+	//! constructor
+	CIrrDeviceSailfish::CIrrDeviceSailfish(const SIrrlichtCreationParameters& param)
+	    : CIrrDeviceStub(param),
+	      Width(param.WindowSize.Width), Height(param.WindowSize.Height),
+	      WindowHasFocus(true), WindowMinimized(false),
+	      ExternalWindow(false), AutorepeatSupport(0),
+	      wlListener ({
+	                  global_registry_handler,
+	                  global_registry_remover
+}),
+	      PhysicalWidth(0), PhysicalHeight(0)
+	{
 #ifdef _DEBUG
-	setDebugName("CIrrDeviceSailfish");
+		setDebugName("CIrrDeviceSailfish");
 #endif
 
-	// print version, distribution etc.
-	// thx to LynxLuna for pointing me to the uname function
-	core::stringc linuxversion;
-	struct utsname LinuxInfo;
-	uname(&LinuxInfo);
+		// print version, distribution etc.
+		// thx to LynxLuna for pointing me to the uname function
+		core::stringc linuxversion;
+		struct utsname LinuxInfo;
+		uname(&LinuxInfo);
 
-	linuxversion += LinuxInfo.sysname;
-	linuxversion += " ";
-	linuxversion += LinuxInfo.release;
-	linuxversion += " ";
-	linuxversion += LinuxInfo.version;
-	linuxversion += " ";
-	linuxversion += LinuxInfo.machine;
+		linuxversion += LinuxInfo.sysname;
+		linuxversion += " ";
+		linuxversion += LinuxInfo.release;
+		linuxversion += " ";
+		linuxversion += LinuxInfo.version;
+		linuxversion += " ";
+		linuxversion += LinuxInfo.machine;
 
-	Operator = new COSOperator(linuxversion, this);
-	os::Printer::log(linuxversion.c_str(), ELL_INFORMATION);
+		Operator = new COSOperator(linuxversion, this);
+		os::Printer::log(linuxversion.c_str(), ELL_INFORMATION);
 
-//	m_touchPos.reallocate(10);
-//	m_touchPos.
-	// create keymap
-	createKeyMap();
+		//	m_touchPos.reallocate(10);
+		//	m_touchPos.
+		// create keymap
+		createKeyMap();
 
-	// create window
-	if (CreationParams.DriverType != video::EDT_NULL)
-	{
-		// create the window, only if we do not use the null device
-		if (!createWindow())
+		// create window
+		if (CreationParams.DriverType != video::EDT_NULL)
+		{
+			// create the window, only if we do not use the null device
+			if (!createWindow())
+				return;
+		}
+
+		// create cursor control
+		CursorControl = new CCursorControl(this, CreationParams.DriverType == video::EDT_NULL);
+
+		// create driver
+		createDriver();
+
+		if (!VideoDriver)
 			return;
+
+		createGUIAndScene();
 	}
 
-	// create cursor control
-	CursorControl = new CCursorControl(this, CreationParams.DriverType == video::EDT_NULL);
 
-	// create driver
-	createDriver();
-
-	if (!VideoDriver)
-		return;
-
-	createGUIAndScene();
-}
-
-
-//! destructor
-CIrrDeviceSailfish::~CIrrDeviceSailfish()
-{
-//	qt_extended_surface_destroy(qtExtendedSurface );
-//	wl_shell_surface_destroy(wlShellSurface);
-//	wl_surface_destroy(wlSurface);
-	if(wlDisplay)
+	//! destructor
+	CIrrDeviceSailfish::~CIrrDeviceSailfish()
 	{
-		if ( GUIEnvironment )
+		//	qt_extended_surface_destroy(qtExtendedSurface );
+		//	wl_shell_surface_destroy(wlShellSurface);
+		//	wl_surface_destroy(wlSurface);
+		if(wlDisplay)
 		{
-			GUIEnvironment->drop();
-			GUIEnvironment = NULL;
-		}
+			if ( GUIEnvironment )
+			{
+				GUIEnvironment->drop();
+				GUIEnvironment = NULL;
+			}
 
-		if ( SceneManager )
-		{
-			SceneManager->drop();
-			SceneManager = NULL;
-		}
+			if ( SceneManager )
+			{
+				SceneManager->drop();
+				SceneManager = NULL;
+			}
 
-		if ( VideoDriver )
-		{
-			VideoDriver->drop();
-			VideoDriver = NULL;
-		}
+			if ( VideoDriver )
+			{
+				VideoDriver->drop();
+				VideoDriver = NULL;
+			}
 
-		if (ContextManager)
-		{
-			ContextManager->destroyContext();
-			ContextManager->destroySurface();
-		}
+			if (ContextManager)
+			{
+				ContextManager->destroyContext();
+				ContextManager->destroySurface();
+			}
 
-		wl_display_disconnect((wl_display*)wlDisplay);
-	}
+			wl_display_disconnect((wl_display*)wlDisplay);
+		}
 
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
-	for (u32 joystick = 0; joystick < ActiveJoysticks.size(); ++joystick)
-	{
-		if (ActiveJoysticks[joystick].fd >= 0)
+		for (u32 joystick = 0; joystick < ActiveJoysticks.size(); ++joystick)
 		{
-			close(ActiveJoysticks[joystick].fd);
+			if (ActiveJoysticks[joystick].fd >= 0)
+			{
+				close(ActiveJoysticks[joystick].fd);
+			}
 		}
-	}
 #endif
-}
+	}
 
-bool CIrrDeviceSailfish::switchToFullscreen(bool reset)
-{
-	if (!CreationParams.Fullscreen)
+	bool CIrrDeviceSailfish::switchToFullscreen(bool reset)
+	{
+		if (!CreationParams.Fullscreen)
+			return true;
+		if (reset)
+		{
+			return true;
+		}
+		getVideoModeList();
+		return CreationParams.Fullscreen;
+	}
+
+	bool CIrrDeviceSailfish::createWindow()
+	{
+		/* Jolla 1 */
+		//	int width = 960,
+		//	    height = 540;
+		/* Jolla C */
+		//	int width = CreationParams.WindowSize.Width,
+		//	    height = CreationParams.WindowSize.Height;
+
+		EGLint numConfigs;
+		EGLint majorVersion;
+		EGLint minorVersion;
+		EGLConfig config;
+		EGLint fbAttribs[] =
+		{
+		    EGL_SURFACE_TYPE,     EGL_WINDOW_BIT,
+		    EGL_RENDERABLE_TYPE,  EGL_OPENGL_ES2_BIT,
+		    EGL_RED_SIZE,         8,
+		    EGL_GREEN_SIZE,       8,
+		    EGL_BLUE_SIZE,        8,
+		    EGL_DEPTH_SIZE,       8,
+		    //	    EGL_TRANSPARENT_TYPE, EGL_TRANSPARENT_RGB,
+		    EGL_NONE
+		};
+		EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
+
+		// first
+		//	wl_display_list();
+		wlDisplay = wl_display_connect(NULL);
+		if (wlDisplay == NULL) {
+			os::Printer::log("Can't connect to wayland display", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+		else
+			os::Printer::log("[Good] wl_display_connect() done");
+		wl_display_add_listener(wlDisplay, &display_listener, this);
+
+		wlRegistry = wl_display_get_registry(wlDisplay);
+		wl_registry_add_listener(wlRegistry, &wlListener, this);
+
+		// This call the attached listener global_registry_handler
+		wl_display_dispatch(wlDisplay);
+		wl_display_roundtrip(wlDisplay);
+
+		// If at this point, global_registry_handler didn't set the
+		// compositor, nor the shell, bailout !
+		if (CIrrDeviceSailfish::wlCompositor == NULL || CIrrDeviceSailfish::wlShell == NULL) {
+			os::Printer::log("No wlCompositor and wlShell", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+		else {
+			os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
+		}
+		nativeDisplay = wlDisplay;
+		Width = CreationParams.WindowSize.Width*0.5;//wlCompositor->width;
+		Height = CreationParams.WindowSize.Height*0.5;//wlCompositor->height;
+
+		// second
+		wlSurface = wl_compositor_create_surface(CIrrDeviceSailfish::wlCompositor);
+		if (wlSurface == NULL) {
+			os::Printer::log("Can't create compositor surface on Wayland", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		} else {
+			os::Printer::log("[Good] Created compositor surface on Wayland");
+		}
+		wl_surface_add_listener(wlSurface, &surface_listener, this);
+
+		qtExtendedSurface = qt_surface_extension_get_extended_surface(qtSurfaceExtension, wlSurface);
+		if(qtExtendedSurface == NULL) {
+			os::Printer::log("Can't get qt_extended_surface pointer");
+			return false;
+		}
+		qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
+		//	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+
+		wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceSailfish::wlShell, wlSurface);
+		if (wlShellSurface == NULL) {
+			os::Printer::log("Can't create shell surface", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		} else {
+			os::Printer::log("[Good] Created shell surface");
+		}
+
+		wlWindow.shell_surface = wlShellSurface;
+		wlWindow.surface = wlSurface;
+		wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
+		//	wlWindow.egl_context =
+
+		//	wl_shell_surface_set_toplevel(wlShellSurface);
+		wl_shell_surface_set_fullscreen(wlShellSurface, WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE, 5, wlOutput);
+
+		//        wl_surface_set_buffer_transform(wlSurface, WL_OUTPUT_TRANSFORM_180 );
+
+		// creating window
+		wlRegion = wl_compositor_create_region(CIrrDeviceSailfish::wlCompositor);
+		wl_region_add(wlRegion, 0, 0, Width, Height);
+		wl_surface_set_opaque_region(wlSurface, wlRegion);
+		wl_region_destroy(wlRegion);
+		wlEGLWindow = wl_egl_window_create(wlSurface, Width, Height);
+		//        wl_surface_set_buffer_scale(wlSurface, 1 );
+		if (wlEGLWindow == EGL_NO_SURFACE) {
+			os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+		else
+			os::Printer::log("[Good] Wayland Window created !");
+
+		nativeWindow = (NativeWindowType)wlEGLWindow;
+		// create EGL Context
+		Display = eglGetDisplay( nativeDisplay );
+		if ( Display == EGL_NO_DISPLAY )
+		{
+			os::Printer::log("No EGL Display...", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+		else
+			os::Printer::log("[Good] Got EGLDisplay form nativeDisplay",ELOG_LEVEL::ELL_INFORMATION);
+
+		if ( !eglInitialize(Display, &majorVersion, &minorVersion) )
+		{
+			os::Printer::log("No Initialisation...", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+		else
+		{
+			core::stringc message = "[Good] eglInitialize Version: ";
+			message += majorVersion;
+			message += ".";
+			message += minorVersion;
+			os::Printer::log(message.c_str());
+		}
+
+		// Get configs
+		if ( (eglGetConfigs(Display, NULL, 0, &numConfigs) != EGL_TRUE) || (numConfigs == 0))
+		{
+			os::Printer::log("No configuration...", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+
+		// Choose config
+		if ( (eglChooseConfig(Display, fbAttribs, &config, 1, &numConfigs) != EGL_TRUE) || (numConfigs != 1))
+		{
+			os::Printer::log("No configuration with Attributes...", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+
+		// Create a surface
+		Surface = eglCreateWindowSurface(Display, config, nativeWindow, NULL);
+		if ( Surface == EGL_NO_SURFACE )
+		{
+			os::Printer::log("No surface...\n");
+			return false;
+		}
+
+		// Create a GL context
+		Context = eglCreateContext(Display, config, EGL_NO_CONTEXT, contextAttribs );
+		if ( Context == EGL_NO_CONTEXT )
+		{
+			os::Printer::log("No context...", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+
+		// Make the context current
+		if ( !eglMakeCurrent(Display, Surface, Surface, Context) )
+		{
+			os::Printer::log("Could not make the current window current !", ELOG_LEVEL::ELL_ERROR);
+			return false;
+		}
+
+		wlWindow.egl_window = wlEGLWindow;
+		wlWindow.irrDevice = this;
+
+		wlCallback = wl_display_sync(wlDisplay);
+		wl_callback_add_listener( wlCallback, &wlCallbackListener, this);
+		///////////////////////////////////////////////////////// TEST /////////////////////
+		//	GLint val = 0;
+		//	core::stringc str;
+		//	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&val);
+		//	str = "GL_MAX_TEXTURE_SIZE:";
+		//	str += val;
+		//	os::Printer::log(str.c_str());
+		//	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&val);
+		//	str = "GL_MAX_TEXTURE_IMAGE_UNITS:";
+		//	str += val;
+		//	os::Printer::log(str.c_str());
+		//	str = "GL_VERSION:";
+		//	str += (char*)glGetString(GL_VERSION);
+		//	os::Printer::log(str.c_str());
+		///////////////////////////////////////////////////////////////////////////////////
 		return true;
-	if (reset)
+	}
+
+
+	//! create the driver
+	void CIrrDeviceSailfish::createDriver()
 	{
-		return true;
-	}
-	getVideoModeList();
-	return CreationParams.Fullscreen;
-}
-
-bool CIrrDeviceSailfish::createWindow()
-{
-/* Jolla 1 */
-//	int width = 960,
-//	    height = 540;
-/* Jolla C */
-//	int width = CreationParams.WindowSize.Width,
-//	    height = CreationParams.WindowSize.Height;
-
-	EGLint numConfigs;
-	EGLint majorVersion;
-	EGLint minorVersion;
-	EGLConfig config;
-	EGLint fbAttribs[] =
-	{
-	    EGL_SURFACE_TYPE,     EGL_WINDOW_BIT,
-	    EGL_RENDERABLE_TYPE,  EGL_OPENGL_ES2_BIT,
-	    EGL_RED_SIZE,         8,
-	    EGL_GREEN_SIZE,       8,
-	    EGL_BLUE_SIZE,        8,
-	    EGL_DEPTH_SIZE,       8,
-//	    EGL_TRANSPARENT_TYPE, EGL_TRANSPARENT_RGB,
-	    EGL_NONE
-	};
-	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
-
-	// first
-//	wl_display_list();
-	wlDisplay = wl_display_connect(NULL);
-	if (wlDisplay == NULL) {
-		os::Printer::log("Can't connect to wayland display", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-	else
-		os::Printer::log("[Good] wl_display_connect() done");
-	wl_display_add_listener(wlDisplay, &display_listener, this);
-
-	wlRegistry = wl_display_get_registry(wlDisplay);
-	wl_registry_add_listener(wlRegistry, &wlListener, this);
-
-	// This call the attached listener global_registry_handler
-	wl_display_dispatch(wlDisplay);
-	wl_display_roundtrip(wlDisplay);
-
-	// If at this point, global_registry_handler didn't set the
-	// compositor, nor the shell, bailout !
-	if (CIrrDeviceSailfish::wlCompositor == NULL || CIrrDeviceSailfish::wlShell == NULL) {
-		os::Printer::log("No wlCompositor and wlShell", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-	else {
-		os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
-	}
-	nativeDisplay = wlDisplay;
-        Width = CreationParams.WindowSize.Width*0.5;//wlCompositor->width;
-        Height = CreationParams.WindowSize.Height*0.5;//wlCompositor->height;
-
-	// second
-	wlSurface = wl_compositor_create_surface(CIrrDeviceSailfish::wlCompositor);
-	if (wlSurface == NULL) {
-		os::Printer::log("Can't create compositor surface on Wayland", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	} else {
-		os::Printer::log("[Good] Created compositor surface on Wayland");
-	}
-	wl_surface_add_listener(wlSurface, &surface_listener, this);
-
-	qtExtendedSurface = qt_surface_extension_get_extended_surface(qtSurfaceExtension, wlSurface);
-	if(qtExtendedSurface == NULL) {
-		os::Printer::log("Can't get qt_extended_surface pointer");
-		return false;
-	}
-	qt_extended_surface_add_listener(qtExtendedSurface, &extended_surface_listener, this );
-//	qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
-
-	wlShellSurface = wl_shell_get_shell_surface(CIrrDeviceSailfish::wlShell, wlSurface);
-	if (wlShellSurface == NULL) {
-		os::Printer::log("Can't create shell surface", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	} else {
-		os::Printer::log("[Good] Created shell surface");
-	}
-
-	wlWindow.shell_surface = wlShellSurface;
-	wlWindow.surface = wlSurface;
-	wl_shell_surface_add_listener(wlShellSurface, &shell_surface_listener, &wlWindow);
-//	wlWindow.egl_context =
-
-//	wl_shell_surface_set_toplevel(wlShellSurface);
-        wl_shell_surface_set_fullscreen(wlShellSurface, WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE, 5, wlOutput);
-
-//        wl_surface_set_buffer_transform(wlSurface, WL_OUTPUT_TRANSFORM_180 );
-
-	// creating window
-	wlRegion = wl_compositor_create_region(CIrrDeviceSailfish::wlCompositor);
-	wl_region_add(wlRegion, 0, 0, Width, Height);
-	wl_surface_set_opaque_region(wlSurface, wlRegion);
-        wl_region_destroy(wlRegion);
-	wlEGLWindow = wl_egl_window_create(wlSurface, Width, Height);
-//        wl_surface_set_buffer_scale(wlSurface, 1 );
-	if (wlEGLWindow == EGL_NO_SURFACE) {
-		os::Printer::log("No window !?", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-	else
-		os::Printer::log("[Good] Wayland Window created !");
-
-	nativeWindow = (NativeWindowType)wlEGLWindow;
-	// create EGL Context
-	Display = eglGetDisplay( nativeDisplay );
-	if ( Display == EGL_NO_DISPLAY )
-	{
-		os::Printer::log("No EGL Display...", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-	else
-		os::Printer::log("[Good] Got EGLDisplay form nativeDisplay",ELOG_LEVEL::ELL_INFORMATION);
-
-	if ( !eglInitialize(Display, &majorVersion, &minorVersion) )
-	{
-		os::Printer::log("No Initialisation...", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-	else
-	{
-		core::stringc message = "[Good] eglInitialize Version: ";
-		message += majorVersion;
-		message += ".";
-		message += minorVersion;
-		os::Printer::log(message.c_str());
-	}
-
-	// Get configs
-	if ( (eglGetConfigs(Display, NULL, 0, &numConfigs) != EGL_TRUE) || (numConfigs == 0))
-	{
-		os::Printer::log("No configuration...", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-
-	// Choose config
-	if ( (eglChooseConfig(Display, fbAttribs, &config, 1, &numConfigs) != EGL_TRUE) || (numConfigs != 1))
-	{
-		os::Printer::log("No configuration with Attributes...", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-
-	// Create a surface
-	Surface = eglCreateWindowSurface(Display, config, nativeWindow, NULL);
-	if ( Surface == EGL_NO_SURFACE )
-	{
-		os::Printer::log("No surface...\n");
-		return false;
-	}
-
-	// Create a GL context
-	Context = eglCreateContext(Display, config, EGL_NO_CONTEXT, contextAttribs );
-	if ( Context == EGL_NO_CONTEXT )
-	{
-		os::Printer::log("No context...", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-
-	// Make the context current
-	if ( !eglMakeCurrent(Display, Surface, Surface, Context) )
-	{
-		os::Printer::log("Could not make the current window current !", ELOG_LEVEL::ELL_ERROR);
-		return false;
-	}
-
-	wlWindow.egl_window = wlEGLWindow;
-	wlWindow.irrDevice = this;
-
-	wlCallback = wl_display_sync(wlDisplay);
-	wl_callback_add_listener( wlCallback, &wlCallbackListener, this);
-///////////////////////////////////////////////////////// TEST /////////////////////
-//	GLint val = 0;
-//	core::stringc str;
-//	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&val);
-//	str = "GL_MAX_TEXTURE_SIZE:";
-//	str += val;
-//	os::Printer::log(str.c_str());
-//	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&val);
-//	str = "GL_MAX_TEXTURE_IMAGE_UNITS:";
-//	str += val;
-//	os::Printer::log(str.c_str());
-//	str = "GL_VERSION:";
-//	str += (char*)glGetString(GL_VERSION);
-//	os::Printer::log(str.c_str());
-///////////////////////////////////////////////////////////////////////////////////
-	return true;
-}
-
-
-//! create the driver
-void CIrrDeviceSailfish::createDriver()
-{
-	switch(CreationParams.DriverType)
-	{
-	case video::EDT_OGLES2:
+		switch(CreationParams.DriverType)
+		{
+		case video::EDT_OGLES2:
 #ifdef _IRR_COMPILE_WITH_OGLES2_
-	    {
-		    video::SExposedVideoData data;
+		{
+			video::SExposedVideoData data;
 			data.OGLESWayland.nativeDisplay = nativeDisplay;
 			data.OGLESWayland.Window = nativeWindow;
 			data.OGLESWayland.Display = Display;
@@ -1527,502 +1527,502 @@ void CIrrDeviceSailfish::createDriver()
 			ContextManager->initialize(CreationParams, data);
 
 			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
-	    }
+		}
 #else
-		os::Printer::log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
+			os::Printer::log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
 #endif
-		break;
-	default:
-		os::Printer::log("No Wayland support compiled in. Only Null driver available.", ELL_ERROR);
-		break;
+			break;
+		default:
+			os::Printer::log("No Wayland support compiled in. Only Null driver available.", ELL_ERROR);
+			break;
+		}
 	}
-}
 
-//! runs the device. Returns false if device wants to be deleted
-bool CIrrDeviceSailfish::run()
-{
-	os::Timer::tick();
-
-	if(!Close && wlDisplay)
+	//! runs the device. Returns false if device wants to be deleted
+	bool CIrrDeviceSailfish::run()
 	{
-		wl_display_dispatch(wlDisplay);
+		os::Timer::tick();
+
+		if(!Close && wlDisplay)
+		{
+			wl_display_dispatch(wlDisplay);
+		}
+		else
+			irr::os::Printer::log( "Close", irr::ELL_DEBUG);
+
+		if (!Close)
+			pollJoysticks();
+
+		return !Close;
 	}
-	else
-		irr::os::Printer::log( "Close", irr::ELL_DEBUG);
-
-	if (!Close)
-		pollJoysticks();
-
-	return !Close;
-}
 
 
-//! Pause the current process for the minimum time allowed only to allow other processes to execute
-void CIrrDeviceSailfish::yield()
-{
-	struct timespec ts = {0,1};
-	nanosleep(&ts, NULL);
-}
-
-
-//! Pause execution and let other processes to run for a specified amount of time.
-void CIrrDeviceSailfish::sleep(u32 timeMs, bool pauseTimer=false)
-{
-	const bool wasStopped = Timer ? Timer->isStopped() : true;
-
-	struct timespec ts;
-	ts.tv_sec = (time_t) (timeMs / 1000);
-	ts.tv_nsec = (long) (timeMs % 1000) * 1000000;
-
-	if (pauseTimer && !wasStopped)
-		Timer->stop();
-
-	nanosleep(&ts, NULL);
-
-	if (pauseTimer && !wasStopped)
-		Timer->start();
-}
-
-
-//! sets the caption of the window
-void CIrrDeviceSailfish::setWindowCaption(const wchar_t* text)
-{
-//	irr::core::stringw title(text);
-	/// TODO wchar_t to char
-	irr::core::stringc str = text;
-	wl_shell_surface_set_title(wlShellSurface, str.c_str() );
-}
-
-
-//! presents a surface in the client area
-bool CIrrDeviceSailfish::present(video::IImage* image, void* windowId, core::rect<s32>* srcRect)
-{
-	/// TODO some specific wayland ( maybe Qt ) code here
-	return true;
-}
-
-
-//! notifies the device that it should close itself
-void CIrrDeviceSailfish::closeDevice()
-{
-	Close = true;
-}
-
-
-//! returns if window is active. if not, nothing need to be drawn
-bool CIrrDeviceSailfish::isWindowActive() const
-{
-	return (WindowHasFocus && !WindowMinimized);
-}
-
-
-//! returns if window has focus.
-bool CIrrDeviceSailfish::isWindowFocused() const
-{
-	return WindowHasFocus;
-}
-
-
-//! returns if window is minimized.
-bool CIrrDeviceSailfish::isWindowMinimized() const
-{
-	return WindowMinimized;
-}
-
-
-//! returns color format of the window.
-video::ECOLOR_FORMAT CIrrDeviceSailfish::getColorFormat() const
-{
-	/// TODO test here if it 16 bit or 32 bit color in eglConfigs
-	return video::ECF_R5G6B5;
-}
-
-
-//! Sets if the window should be resizable in windowed mode.
-void CIrrDeviceSailfish::setResizable(bool resize)
-{
-	/// is it need in sailfish?
-}
-
-//! Resize the render window.
-void CIrrDeviceSailfish::setWindowSize(const irr::core::dimension2d<u32>& size)
-{
-	CreationParams.WindowSize = size;
-	if(PhysicalHeight != 0 && PhysicalWidth != 0)
+	//! Pause the current process for the minimum time allowed only to allow other processes to execute
+	void CIrrDeviceSailfish::yield()
 	{
+		struct timespec ts = {0,1};
+		nanosleep(&ts, NULL);
+	}
+
+
+	//! Pause execution and let other processes to run for a specified amount of time.
+	void CIrrDeviceSailfish::sleep(u32 timeMs, bool pauseTimer=false)
+	{
+		const bool wasStopped = Timer ? Timer->isStopped() : true;
+
+		struct timespec ts;
+		ts.tv_sec = (time_t) (timeMs / 1000);
+		ts.tv_nsec = (long) (timeMs % 1000) * 1000000;
+
+		if (pauseTimer && !wasStopped)
+			Timer->stop();
+
+		nanosleep(&ts, NULL);
+
+		if (pauseTimer && !wasStopped)
+			Timer->start();
+	}
+
+
+	//! sets the caption of the window
+	void CIrrDeviceSailfish::setWindowCaption(const wchar_t* text)
+	{
+		//	irr::core::stringw title(text);
+		/// TODO wchar_t to char
+		irr::core::stringc str = text;
+		wl_shell_surface_set_title(wlShellSurface, str.c_str() );
+	}
+
+
+	//! presents a surface in the client area
+	bool CIrrDeviceSailfish::present(video::IImage* image, void* windowId, core::rect<s32>* srcRect)
+	{
+		/// TODO some specific wayland ( maybe Qt ) code here
+		return true;
+	}
+
+
+	//! notifies the device that it should close itself
+	void CIrrDeviceSailfish::closeDevice()
+	{
+		Close = true;
+	}
+
+
+	//! returns if window is active. if not, nothing need to be drawn
+	bool CIrrDeviceSailfish::isWindowActive() const
+	{
+		return (WindowHasFocus && !WindowMinimized);
+	}
+
+
+	//! returns if window has focus.
+	bool CIrrDeviceSailfish::isWindowFocused() const
+	{
+		return WindowHasFocus;
+	}
+
+
+	//! returns if window is minimized.
+	bool CIrrDeviceSailfish::isWindowMinimized() const
+	{
+		return WindowMinimized;
+	}
+
+
+	//! returns color format of the window.
+	video::ECOLOR_FORMAT CIrrDeviceSailfish::getColorFormat() const
+	{
+		/// TODO test here if it 16 bit or 32 bit color in eglConfigs
+		return video::ECF_R5G6B5;
+	}
+
+
+	//! Sets if the window should be resizable in windowed mode.
+	void CIrrDeviceSailfish::setResizable(bool resize)
+	{
+		/// is it need in sailfish?
+	}
+
+	//! Resize the render window.
+	void CIrrDeviceSailfish::setWindowSize(const irr::core::dimension2d<u32>& size)
+	{
+		CreationParams.WindowSize = size;
+		if(PhysicalHeight != 0 && PhysicalWidth != 0)
+		{
 #define mm2inch 25,4000508
-		f32 dpiW = (f32)CreationParams.WindowSize.Width/(f32)PhysicalWidth;
-		f32 dpiH = (f32)CreationParams.WindowSize.Height/(f32)PhysicalHeight;
-		dpi = mm2inch*((dpiW > dpiH)?dpiW:dpiH);
+			f32 dpiW = (f32)CreationParams.WindowSize.Width/(f32)PhysicalWidth;
+			f32 dpiH = (f32)CreationParams.WindowSize.Height/(f32)PhysicalHeight;
+			dpi = mm2inch*((dpiW > dpiH)?dpiW:dpiH);
+		}
 	}
-}
 
-//! Return pointer to a list with all video modes supported by the gfx adapter.
-video::IVideoModeList* CIrrDeviceSailfish::getVideoModeList()
-{
-	/// TODO maybe need more code here
-	VideoModeList->addMode( core::dimension2du(Width, Height), 32 );
-	return VideoModeList;
-}
-
-
-//! Minimize window
-void CIrrDeviceSailfish::minimizeWindow()
-{
-	/// no need in Sailfish
-}
+	//! Return pointer to a list with all video modes supported by the gfx adapter.
+	video::IVideoModeList* CIrrDeviceSailfish::getVideoModeList()
+	{
+		/// TODO maybe need more code here
+		VideoModeList->addMode( core::dimension2du(Width, Height), 32 );
+		return VideoModeList;
+	}
 
 
-//! Maximize window
-void CIrrDeviceSailfish::maximizeWindow()
-{
-	/// is it need in sailfish?
-	if(wlOutput)
-		wl_shell_surface_set_maximized(wlShellSurface, wlOutput);
-}
+	//! Minimize window
+	void CIrrDeviceSailfish::minimizeWindow()
+	{
+		/// no need in Sailfish
+	}
 
 
-//! Restore original window size
-void CIrrDeviceSailfish::restoreWindow()
-{
-	/// TODO is it relly need in Sailfish
-}
+	//! Maximize window
+	void CIrrDeviceSailfish::maximizeWindow()
+	{
+		/// is it need in sailfish?
+		if(wlOutput)
+			wl_shell_surface_set_maximized(wlShellSurface, wlOutput);
+	}
 
-core::position2di CIrrDeviceSailfish::getWindowPosition()
-{
-	int wx = 0, wy = 0;
-	/// no need in Sailfish
-	return core::position2di(wx, wy);
-}
 
-void CIrrDeviceSailfish::createKeyMap()
-{
-	Key2Wchar[KEY_0] =  *L"0";
-	Key2Wchar[KEY_1] = *L"1";
-	Key2Wchar[KEY_2] = *L"2";
-	Key2Wchar[KEY_3] = *L"3";
-	Key2Wchar[KEY_4] = *L"4";
-	Key2Wchar[KEY_5] = *L"5";
-	Key2Wchar[KEY_6] = *L"6";
-	Key2Wchar[KEY_7] = *L"7";
-	Key2Wchar[KEY_8] = *L"8";
-	Key2Wchar[KEY_9] = *L"9";
+	//! Restore original window size
+	void CIrrDeviceSailfish::restoreWindow()
+	{
+		/// TODO is it relly need in Sailfish
+	}
 
-	Key2Wchar[KEY_A] = *L"a";
-	Key2Wchar[KEY_B] = *L"b";
-	Key2Wchar[KEY_C] = *L"c";
-	Key2Wchar[KEY_D] = *L"d";
-	Key2Wchar[KEY_E] = *L"e";
-	Key2Wchar[KEY_F] = *L"f";
-	Key2Wchar[KEY_G] = *L"g";
-	Key2Wchar[KEY_H] = *L"h";
-	Key2Wchar[KEY_I] = *L"i";
-	Key2Wchar[KEY_J] = *L"j";
-	Key2Wchar[KEY_K] = *L"k";
-	Key2Wchar[KEY_L] = *L"l";
-	Key2Wchar[KEY_M] = *L"m";
-	Key2Wchar[KEY_N] = *L"n";
-	Key2Wchar[KEY_O] = *L"o";
-	Key2Wchar[KEY_P] = *L"p";
-	Key2Wchar[KEY_Q] = *L"q";
-	Key2Wchar[KEY_R] = *L"r";
-	Key2Wchar[KEY_S] = *L"s";
-	Key2Wchar[KEY_T] = *L"t";
-	Key2Wchar[KEY_U] = *L"u";
-	Key2Wchar[KEY_V] = *L"v";
-	Key2Wchar[KEY_W] = *L"w";
-	Key2Wchar[KEY_X] = *L"x";
-	Key2Wchar[KEY_Y] = *L"y";
-	Key2Wchar[KEY_Z] = *L"z";
+	core::position2di CIrrDeviceSailfish::getWindowPosition()
+	{
+		int wx = 0, wy = 0;
+		/// no need in Sailfish
+		return core::position2di(wx, wy);
+	}
 
-	Key2Wchar[KEY_SPACE]     = *L" ";
-	Key2Wchar[KEY_DOT]       = *L".";
-	Key2Wchar[KEY_SLASH]     = *L"/";
-	Key2Wchar[KEY_BACKSLASH] = *L"\\";
-	Key2Wchar[KEY_QUESTION]  = *L"?";
+	void CIrrDeviceSailfish::createKeyMap()
+	{
+		Key2Wchar[KEY_0] =  *L"0";
+		Key2Wchar[KEY_1] = *L"1";
+		Key2Wchar[KEY_2] = *L"2";
+		Key2Wchar[KEY_3] = *L"3";
+		Key2Wchar[KEY_4] = *L"4";
+		Key2Wchar[KEY_5] = *L"5";
+		Key2Wchar[KEY_6] = *L"6";
+		Key2Wchar[KEY_7] = *L"7";
+		Key2Wchar[KEY_8] = *L"8";
+		Key2Wchar[KEY_9] = *L"9";
 
-	KeyMap.clear();
-	KeyMap.push_back(SKeyMap(KEY_0, KEY_KEY_0));
-	KeyMap.push_back(SKeyMap(KEY_1, KEY_KEY_1));
-	KeyMap.push_back(SKeyMap(KEY_2, KEY_KEY_2));
-	KeyMap.push_back(SKeyMap(KEY_3, KEY_KEY_3));
-	KeyMap.push_back(SKeyMap(KEY_4, KEY_KEY_4));
-	KeyMap.push_back(SKeyMap(KEY_5, KEY_KEY_5));
-	KeyMap.push_back(SKeyMap(KEY_6, KEY_KEY_6));
-	KeyMap.push_back(SKeyMap(KEY_7, KEY_KEY_7));
-	KeyMap.push_back(SKeyMap(KEY_8, KEY_KEY_8));
-	KeyMap.push_back(SKeyMap(KEY_9, KEY_KEY_9));
-//	KeyMap.push_back(SKeyMap(KEY_, KEY_OEM_4));
-	KeyMap.push_back(SKeyMap(KEY_BACKSLASH, KEY_OEM_5));
-//	KeyMap.push_back(SKeyMap(XK_bracketright, KEY_OEM_6));
-//	KeyMap.push_back(SKeyMap(XK_asciicircum, KEY_OEM_5));
-//	KeyMap.push_back(SKeyMap(XK_dead_circumflex, KEY_OEM_5));
-//	KeyMap.push_back(SKeyMap(XK_degree, 0)); //?
-//	KeyMap.push_back(SKeyMap(XK_underscore, KEY_MINUS)); //?
-//	KeyMap.push_back(SKeyMap(XK_grave, KEY_OEM_3));
-//	KeyMap.push_back(SKeyMap(XK_dead_grave, KEY_OEM_3));
-//	KeyMap.push_back(SKeyMap(XK_acute, KEY_OEM_6));
-//	KeyMap.push_back(SKeyMap(XK_dead_acute, KEY_OEM_6));
-	KeyMap.push_back(SKeyMap(KEY_A, KEY_KEY_A));
-	KeyMap.push_back(SKeyMap(KEY_B, KEY_KEY_B));
-	KeyMap.push_back(SKeyMap(KEY_C, KEY_KEY_C));
-	KeyMap.push_back(SKeyMap(KEY_D, KEY_KEY_D));
-	KeyMap.push_back(SKeyMap(KEY_E, KEY_KEY_E));
-	KeyMap.push_back(SKeyMap(KEY_F, KEY_KEY_F));
-	KeyMap.push_back(SKeyMap(KEY_G, KEY_KEY_G));
-	KeyMap.push_back(SKeyMap(KEY_H, KEY_KEY_H));
-	KeyMap.push_back(SKeyMap(KEY_I, KEY_KEY_I));
-	KeyMap.push_back(SKeyMap(KEY_J, KEY_KEY_J));
-	KeyMap.push_back(SKeyMap(KEY_K, KEY_KEY_K));
-	KeyMap.push_back(SKeyMap(KEY_L, KEY_KEY_L));
-	KeyMap.push_back(SKeyMap(KEY_M, KEY_KEY_M));
-	KeyMap.push_back(SKeyMap(KEY_N, KEY_KEY_N));
-	KeyMap.push_back(SKeyMap(KEY_O, KEY_KEY_O));
-	KeyMap.push_back(SKeyMap(KEY_P, KEY_KEY_P));
-	KeyMap.push_back(SKeyMap(KEY_Q, KEY_KEY_Q));
-	KeyMap.push_back(SKeyMap(KEY_R, KEY_KEY_R));
-	KeyMap.push_back(SKeyMap(KEY_S, KEY_KEY_S));
-	KeyMap.push_back(SKeyMap(KEY_T, KEY_KEY_T));
-	KeyMap.push_back(SKeyMap(KEY_U, KEY_KEY_U));
-	KeyMap.push_back(SKeyMap(KEY_V, KEY_KEY_V));
-	KeyMap.push_back(SKeyMap(KEY_W, KEY_KEY_W));
-	KeyMap.push_back(SKeyMap(KEY_X, KEY_KEY_X));
-	KeyMap.push_back(SKeyMap(KEY_Y, KEY_KEY_Y));
-	KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_Z));
-	KeyMap.push_back(SKeyMap(KEY_F1, EKC_KEY_F1));
-	KeyMap.push_back(SKeyMap(KEY_F2, EKC_KEY_F2));
-	KeyMap.push_back(SKeyMap(KEY_F3, EKC_KEY_F3));
-	KeyMap.push_back(SKeyMap(KEY_F4, EKC_KEY_F4));
-	KeyMap.push_back(SKeyMap(KEY_F5, EKC_KEY_F5));
-	KeyMap.push_back(SKeyMap(KEY_F6, EKC_KEY_F6));
-	KeyMap.push_back(SKeyMap(KEY_F7, EKC_KEY_F7));
-	KeyMap.push_back(SKeyMap(KEY_F8, EKC_KEY_F8));
-	KeyMap.push_back(SKeyMap(KEY_F9, EKC_KEY_F9));
-	KeyMap.push_back(SKeyMap(KEY_F10, EKC_KEY_F10));
-	KeyMap.push_back(SKeyMap(KEY_F11, EKC_KEY_F11));
-	KeyMap.push_back(SKeyMap(KEY_F12, EKC_KEY_F12));
-	KeyMap.push_back(SKeyMap(KEY_ESC, KEY_ESCAPE));
-	KeyMap.push_back(SKeyMap(KEY_INSERT, EKC_KEY_INSERT));
-	KeyMap.push_back(SKeyMap(KEY_DELETE, EKC_KEY_DELETE));
-	KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
-	KeyMap.push_back(SKeyMap(KEY_LEFT, EKC_KEY_LEFT));
-	KeyMap.push_back(SKeyMap(KEY_UP, EKC_KEY_UP));
-	KeyMap.push_back(SKeyMap(KEY_RIGHT, EKC_KEY_RIGHT));
-	KeyMap.push_back(SKeyMap(KEY_DOWN, EKC_KEY_DOWN));
-//	KeyMap.push_back(SKeyMap(KEY_PRIOR, KEY_PRIOR));
-	KeyMap.push_back(SKeyMap(KEY_PAGEUP, KEY_PRIOR));
-	KeyMap.push_back(SKeyMap(KEY_NEXT, EKC_KEY_NEXT));
-	KeyMap.push_back(SKeyMap(KEY_PAGEDOWN, EKC_KEY_NEXT));
-	KeyMap.push_back(SKeyMap(KEY_END, EKC_KEY_END));
-	KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
-	KeyMap.push_back(SKeyMap(KEY_NUMLOCK, EKC_KEY_NUMLOCK));
-	KeyMap.push_back(SKeyMap(KEY_SPACE, EKC_KEY_SPACE));
-	KeyMap.push_back(SKeyMap(KEY_BACKSPACE, EKC_KEY_BACK));
-	KeyMap.sort();
-}
+		Key2Wchar[KEY_A] = *L"a";
+		Key2Wchar[KEY_B] = *L"b";
+		Key2Wchar[KEY_C] = *L"c";
+		Key2Wchar[KEY_D] = *L"d";
+		Key2Wchar[KEY_E] = *L"e";
+		Key2Wchar[KEY_F] = *L"f";
+		Key2Wchar[KEY_G] = *L"g";
+		Key2Wchar[KEY_H] = *L"h";
+		Key2Wchar[KEY_I] = *L"i";
+		Key2Wchar[KEY_J] = *L"j";
+		Key2Wchar[KEY_K] = *L"k";
+		Key2Wchar[KEY_L] = *L"l";
+		Key2Wchar[KEY_M] = *L"m";
+		Key2Wchar[KEY_N] = *L"n";
+		Key2Wchar[KEY_O] = *L"o";
+		Key2Wchar[KEY_P] = *L"p";
+		Key2Wchar[KEY_Q] = *L"q";
+		Key2Wchar[KEY_R] = *L"r";
+		Key2Wchar[KEY_S] = *L"s";
+		Key2Wchar[KEY_T] = *L"t";
+		Key2Wchar[KEY_U] = *L"u";
+		Key2Wchar[KEY_V] = *L"v";
+		Key2Wchar[KEY_W] = *L"w";
+		Key2Wchar[KEY_X] = *L"x";
+		Key2Wchar[KEY_Y] = *L"y";
+		Key2Wchar[KEY_Z] = *L"z";
 
-bool CIrrDeviceSailfish::activateJoysticks(core::array<SJoystickInfo> & joystickInfo)
-{
+		Key2Wchar[KEY_SPACE]     = *L" ";
+		Key2Wchar[KEY_DOT]       = *L".";
+		Key2Wchar[KEY_SLASH]     = *L"/";
+		Key2Wchar[KEY_BACKSLASH] = *L"\\";
+		Key2Wchar[KEY_QUESTION]  = *L"?";
+
+		KeyMap.clear();
+		KeyMap.push_back(SKeyMap(KEY_0, KEY_KEY_0));
+		KeyMap.push_back(SKeyMap(KEY_1, KEY_KEY_1));
+		KeyMap.push_back(SKeyMap(KEY_2, KEY_KEY_2));
+		KeyMap.push_back(SKeyMap(KEY_3, KEY_KEY_3));
+		KeyMap.push_back(SKeyMap(KEY_4, KEY_KEY_4));
+		KeyMap.push_back(SKeyMap(KEY_5, KEY_KEY_5));
+		KeyMap.push_back(SKeyMap(KEY_6, KEY_KEY_6));
+		KeyMap.push_back(SKeyMap(KEY_7, KEY_KEY_7));
+		KeyMap.push_back(SKeyMap(KEY_8, KEY_KEY_8));
+		KeyMap.push_back(SKeyMap(KEY_9, KEY_KEY_9));
+		//	KeyMap.push_back(SKeyMap(KEY_, KEY_OEM_4));
+		KeyMap.push_back(SKeyMap(KEY_BACKSLASH, KEY_OEM_5));
+		//	KeyMap.push_back(SKeyMap(XK_bracketright, KEY_OEM_6));
+		//	KeyMap.push_back(SKeyMap(XK_asciicircum, KEY_OEM_5));
+		//	KeyMap.push_back(SKeyMap(XK_dead_circumflex, KEY_OEM_5));
+		//	KeyMap.push_back(SKeyMap(XK_degree, 0)); //?
+		//	KeyMap.push_back(SKeyMap(XK_underscore, KEY_MINUS)); //?
+		//	KeyMap.push_back(SKeyMap(XK_grave, KEY_OEM_3));
+		//	KeyMap.push_back(SKeyMap(XK_dead_grave, KEY_OEM_3));
+		//	KeyMap.push_back(SKeyMap(XK_acute, KEY_OEM_6));
+		//	KeyMap.push_back(SKeyMap(XK_dead_acute, KEY_OEM_6));
+		KeyMap.push_back(SKeyMap(KEY_A, KEY_KEY_A));
+		KeyMap.push_back(SKeyMap(KEY_B, KEY_KEY_B));
+		KeyMap.push_back(SKeyMap(KEY_C, KEY_KEY_C));
+		KeyMap.push_back(SKeyMap(KEY_D, KEY_KEY_D));
+		KeyMap.push_back(SKeyMap(KEY_E, KEY_KEY_E));
+		KeyMap.push_back(SKeyMap(KEY_F, KEY_KEY_F));
+		KeyMap.push_back(SKeyMap(KEY_G, KEY_KEY_G));
+		KeyMap.push_back(SKeyMap(KEY_H, KEY_KEY_H));
+		KeyMap.push_back(SKeyMap(KEY_I, KEY_KEY_I));
+		KeyMap.push_back(SKeyMap(KEY_J, KEY_KEY_J));
+		KeyMap.push_back(SKeyMap(KEY_K, KEY_KEY_K));
+		KeyMap.push_back(SKeyMap(KEY_L, KEY_KEY_L));
+		KeyMap.push_back(SKeyMap(KEY_M, KEY_KEY_M));
+		KeyMap.push_back(SKeyMap(KEY_N, KEY_KEY_N));
+		KeyMap.push_back(SKeyMap(KEY_O, KEY_KEY_O));
+		KeyMap.push_back(SKeyMap(KEY_P, KEY_KEY_P));
+		KeyMap.push_back(SKeyMap(KEY_Q, KEY_KEY_Q));
+		KeyMap.push_back(SKeyMap(KEY_R, KEY_KEY_R));
+		KeyMap.push_back(SKeyMap(KEY_S, KEY_KEY_S));
+		KeyMap.push_back(SKeyMap(KEY_T, KEY_KEY_T));
+		KeyMap.push_back(SKeyMap(KEY_U, KEY_KEY_U));
+		KeyMap.push_back(SKeyMap(KEY_V, KEY_KEY_V));
+		KeyMap.push_back(SKeyMap(KEY_W, KEY_KEY_W));
+		KeyMap.push_back(SKeyMap(KEY_X, KEY_KEY_X));
+		KeyMap.push_back(SKeyMap(KEY_Y, KEY_KEY_Y));
+		KeyMap.push_back(SKeyMap(KEY_Z, KEY_KEY_Z));
+		KeyMap.push_back(SKeyMap(KEY_F1, EKC_KEY_F1));
+		KeyMap.push_back(SKeyMap(KEY_F2, EKC_KEY_F2));
+		KeyMap.push_back(SKeyMap(KEY_F3, EKC_KEY_F3));
+		KeyMap.push_back(SKeyMap(KEY_F4, EKC_KEY_F4));
+		KeyMap.push_back(SKeyMap(KEY_F5, EKC_KEY_F5));
+		KeyMap.push_back(SKeyMap(KEY_F6, EKC_KEY_F6));
+		KeyMap.push_back(SKeyMap(KEY_F7, EKC_KEY_F7));
+		KeyMap.push_back(SKeyMap(KEY_F8, EKC_KEY_F8));
+		KeyMap.push_back(SKeyMap(KEY_F9, EKC_KEY_F9));
+		KeyMap.push_back(SKeyMap(KEY_F10, EKC_KEY_F10));
+		KeyMap.push_back(SKeyMap(KEY_F11, EKC_KEY_F11));
+		KeyMap.push_back(SKeyMap(KEY_F12, EKC_KEY_F12));
+		KeyMap.push_back(SKeyMap(KEY_ESC, KEY_ESCAPE));
+		KeyMap.push_back(SKeyMap(KEY_INSERT, EKC_KEY_INSERT));
+		KeyMap.push_back(SKeyMap(KEY_DELETE, EKC_KEY_DELETE));
+		KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
+		KeyMap.push_back(SKeyMap(KEY_LEFT, EKC_KEY_LEFT));
+		KeyMap.push_back(SKeyMap(KEY_UP, EKC_KEY_UP));
+		KeyMap.push_back(SKeyMap(KEY_RIGHT, EKC_KEY_RIGHT));
+		KeyMap.push_back(SKeyMap(KEY_DOWN, EKC_KEY_DOWN));
+		//	KeyMap.push_back(SKeyMap(KEY_PRIOR, KEY_PRIOR));
+		KeyMap.push_back(SKeyMap(KEY_PAGEUP, KEY_PRIOR));
+		KeyMap.push_back(SKeyMap(KEY_NEXT, EKC_KEY_NEXT));
+		KeyMap.push_back(SKeyMap(KEY_PAGEDOWN, EKC_KEY_NEXT));
+		KeyMap.push_back(SKeyMap(KEY_END, EKC_KEY_END));
+		KeyMap.push_back(SKeyMap(KEY_HOME, EKC_KEY_HOME));
+		KeyMap.push_back(SKeyMap(KEY_NUMLOCK, EKC_KEY_NUMLOCK));
+		KeyMap.push_back(SKeyMap(KEY_SPACE, EKC_KEY_SPACE));
+		KeyMap.push_back(SKeyMap(KEY_BACKSPACE, EKC_KEY_BACK));
+		KeyMap.sort();
+	}
+
+	bool CIrrDeviceSailfish::activateJoysticks(core::array<SJoystickInfo> & joystickInfo)
+	{
 #if defined (_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 
-	joystickInfo.clear();
+		joystickInfo.clear();
 
-	u32 joystick;
-	for (joystick = 0; joystick < 32; ++joystick)
-	{
-		// The joystick device could be here...
-		core::stringc devName = "/dev/js";
-		devName += joystick;
-
-		SJoystickInfo returnInfo;
-		JoystickInfo info;
-
-		info.fd = open(devName.c_str(), O_RDONLY);
-		if (-1 == info.fd)
+		u32 joystick;
+		for (joystick = 0; joystick < 32; ++joystick)
 		{
-			// ...but Ubuntu and possibly other distros
-			// create the devices in /dev/input
-			devName = "/dev/input/js";
+			// The joystick device could be here...
+			core::stringc devName = "/dev/js";
 			devName += joystick;
+
+			SJoystickInfo returnInfo;
+			JoystickInfo info;
+
 			info.fd = open(devName.c_str(), O_RDONLY);
 			if (-1 == info.fd)
 			{
-				// and BSD here
-				devName = "/dev/joy";
+				// ...but Ubuntu and possibly other distros
+				// create the devices in /dev/input
+				devName = "/dev/input/js";
 				devName += joystick;
 				info.fd = open(devName.c_str(), O_RDONLY);
+				if (-1 == info.fd)
+				{
+					// and BSD here
+					devName = "/dev/joy";
+					devName += joystick;
+					info.fd = open(devName.c_str(), O_RDONLY);
+				}
 			}
-		}
 
-		if (-1 == info.fd)
-			continue;
+			if (-1 == info.fd)
+				continue;
 
 #ifdef __FreeBSD__
-		info.axes=2;
-		info.buttons=2;
+			info.axes=2;
+			info.buttons=2;
 #else
-		ioctl( info.fd, JSIOCGAXES, &(info.axes) );
-		ioctl( info.fd, JSIOCGBUTTONS, &(info.buttons) );
-		fcntl( info.fd, F_SETFL, O_NONBLOCK );
+			ioctl( info.fd, JSIOCGAXES, &(info.axes) );
+			ioctl( info.fd, JSIOCGBUTTONS, &(info.buttons) );
+			fcntl( info.fd, F_SETFL, O_NONBLOCK );
 #endif
 
-		(void)memset(&info.persistentData, 0, sizeof(info.persistentData));
-		info.persistentData.EventType = irr::EET_JOYSTICK_INPUT_EVENT;
-		info.persistentData.JoystickEvent.Joystick = ActiveJoysticks.size();
+			(void)memset(&info.persistentData, 0, sizeof(info.persistentData));
+			info.persistentData.EventType = irr::EET_JOYSTICK_INPUT_EVENT;
+			info.persistentData.JoystickEvent.Joystick = ActiveJoysticks.size();
 
-		// There's no obvious way to determine which (if any) axes represent a POV
-		// hat, so we'll just set it to "not used" and forget about it.
-		info.persistentData.JoystickEvent.POV = 65535;
+			// There's no obvious way to determine which (if any) axes represent a POV
+			// hat, so we'll just set it to "not used" and forget about it.
+			info.persistentData.JoystickEvent.POV = 65535;
 
-		ActiveJoysticks.push_back(info);
+			ActiveJoysticks.push_back(info);
 
-		returnInfo.Joystick = joystick;
-		returnInfo.PovHat = SJoystickInfo::POV_HAT_UNKNOWN;
-		returnInfo.Axes = info.axes;
-		returnInfo.Buttons = info.buttons;
+			returnInfo.Joystick = joystick;
+			returnInfo.PovHat = SJoystickInfo::POV_HAT_UNKNOWN;
+			returnInfo.Axes = info.axes;
+			returnInfo.Buttons = info.buttons;
 
 #ifndef __FreeBSD__
-		char name[80];
-		ioctl( info.fd, JSIOCGNAME(80), name);
-		returnInfo.Name = name;
+			char name[80];
+			ioctl( info.fd, JSIOCGNAME(80), name);
+			returnInfo.Name = name;
 #endif
 
-		joystickInfo.push_back(returnInfo);
-	}
-
-	for (joystick = 0; joystick < joystickInfo.size(); ++joystick)
-	{
-		char logString[256];
-		(void)sprintf(logString, "Found joystick %u, %u axes, %u buttons '%s'",
-			joystick, joystickInfo[joystick].Axes,
-			joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
-		os::Printer::log(logString, ELL_INFORMATION);
-	}
-
-	return true;
-#else
-	return false;
-#endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
-}
-
-
-void CIrrDeviceSailfish::pollJoysticks()
-{
-#if defined (_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
-	if (0 == ActiveJoysticks.size())
-		return;
-
-	for (u32 j= 0; j< ActiveJoysticks.size(); ++j)
-	{
-		JoystickInfo & info =  ActiveJoysticks[j];
-
-		struct js_event event;
-		while (sizeof(event) == read(info.fd, &event, sizeof(event)))
-		{
-			switch(event.type & ~JS_EVENT_INIT)
-			{
-			case JS_EVENT_BUTTON:
-				if (event.value)
-						info.persistentData.JoystickEvent.ButtonStates |= (1 << event.number);
-				else
-						info.persistentData.JoystickEvent.ButtonStates &= ~(1 << event.number);
-				break;
-
-			case JS_EVENT_AXIS:
-				if (event.number < SEvent::SJoystickEvent::NUMBER_OF_AXES)
-					info.persistentData.JoystickEvent.Axis[event.number] = event.value;
-				break;
-
-			default:
-				break;
-			}
+			joystickInfo.push_back(returnInfo);
 		}
 
-		// Send an irrlicht joystick event once per ::run() even if no new data were received.
-		(void)postEventFromUser(info.persistentData);
-	}
+		for (joystick = 0; joystick < joystickInfo.size(); ++joystick)
+		{
+			char logString[256];
+			(void)sprintf(logString, "Found joystick %u, %u axes, %u buttons '%s'",
+			              joystick, joystickInfo[joystick].Axes,
+			              joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
+			os::Printer::log(logString, ELL_INFORMATION);
+		}
+
+		return true;
+#else
+		return false;
 #endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
-}
+	}
 
 
-//! Set the current Gamma Value for the Display
-bool CIrrDeviceSailfish::setGammaRamp( f32 red, f32 green, f32 blue, f32 brightness, f32 contrast )
-{
-	/// TODO set gamma ramp settings if it posible
-	return false;
-}
+	void CIrrDeviceSailfish::pollJoysticks()
+	{
+#if defined (_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+		if (0 == ActiveJoysticks.size())
+			return;
+
+		for (u32 j= 0; j< ActiveJoysticks.size(); ++j)
+		{
+			JoystickInfo & info =  ActiveJoysticks[j];
+
+			struct js_event event;
+			while (sizeof(event) == read(info.fd, &event, sizeof(event)))
+			{
+				switch(event.type & ~JS_EVENT_INIT)
+				{
+				case JS_EVENT_BUTTON:
+					if (event.value)
+						info.persistentData.JoystickEvent.ButtonStates |= (1 << event.number);
+					else
+						info.persistentData.JoystickEvent.ButtonStates &= ~(1 << event.number);
+					break;
+
+				case JS_EVENT_AXIS:
+					if (event.number < SEvent::SJoystickEvent::NUMBER_OF_AXES)
+						info.persistentData.JoystickEvent.Axis[event.number] = event.value;
+					break;
+
+				default:
+					break;
+				}
+			}
+
+			// Send an irrlicht joystick event once per ::run() even if no new data were received.
+			(void)postEventFromUser(info.persistentData);
+		}
+#endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+	}
 
 
-//! Get the current Gamma Value for the Display
-bool CIrrDeviceSailfish::getGammaRamp( f32 &red, f32 &green, f32 &blue, f32 &brightness, f32 &contrast )
-{
-	brightness = 0.f;
-	contrast = 0.f;
-	/// TODO get gamma ramp settings if it posible
-	return false;
-}
+	//! Set the current Gamma Value for the Display
+	bool CIrrDeviceSailfish::setGammaRamp( f32 red, f32 green, f32 blue, f32 brightness, f32 contrast )
+	{
+		/// TODO set gamma ramp settings if it posible
+		return false;
+	}
 
 
-//! gets text from the clipboard
-//! \return Returns 0 if no string is in there.
-const c8* CIrrDeviceSailfish::getTextFromClipboard() const
-{
-	/// TODO Get data from clipboard
-	return 0;
-}
-
-//! copies text to the clipboard
-void CIrrDeviceSailfish::copyToClipboard(const c8* text) const
-{
-	/// TODO put data clipboard Wayland
-}
-
-//! Remove all messages pending in the system message loop
-void CIrrDeviceSailfish::clearSystemMessages()
-{
-	/// TODO ?
-}
-
-CIrrDeviceSailfish::CCursorControl::CCursorControl(CIrrDeviceSailfish* dev, bool null)
-	: Device(dev)
-	, IsVisible(true), Null(null), UseReferenceRect(false)
-	, ActiveIcon(gui::ECI_NORMAL), ActiveIconStartTime(0)
-{
-	/// TODO
-}
-
-CIrrDeviceSailfish::CCursorControl::~CCursorControl()
-{
-	// Do not clearCursors here as the display is already closed
-	// TODO (cutealien): droping cursorcontrol earlier might work, not sure about reason why that's done in stub currently.
-}
-
-//! Sets the active cursor icon
-void CIrrDeviceSailfish::CCursorControl::setActiveIcon(gui::ECURSOR_ICON iconId)
-{
-	/// TODO
-}
+	//! Get the current Gamma Value for the Display
+	bool CIrrDeviceSailfish::getGammaRamp( f32 &red, f32 &green, f32 &blue, f32 &brightness, f32 &contrast )
+	{
+		brightness = 0.f;
+		contrast = 0.f;
+		/// TODO get gamma ramp settings if it posible
+		return false;
+	}
 
 
-//! Add a custom sprite as cursor icon.
-gui::ECURSOR_ICON CIrrDeviceSailfish::CCursorControl::addIcon(const gui::SCursorSprite& icon)
-{
-	/// TODO
-	return gui::ECI_NORMAL;
-}
+	//! gets text from the clipboard
+	//! \return Returns 0 if no string is in there.
+	const c8* CIrrDeviceSailfish::getTextFromClipboard() const
+	{
+		/// TODO Get data from clipboard
+		return 0;
+	}
 
-//! replace the given cursor icon.
-void CIrrDeviceSailfish::CCursorControl::changeIcon(gui::ECURSOR_ICON iconId, const gui::SCursorSprite& icon)
-{
-	/// TODO
-}
+	//! copies text to the clipboard
+	void CIrrDeviceSailfish::copyToClipboard(const c8* text) const
+	{
+		/// TODO put data clipboard Wayland
+	}
 
-irr::core::dimension2di CIrrDeviceSailfish::CCursorControl::getSupportedIconSize() const
-{
-	// this returns the closest match that is smaller or same size, so we just pass a value which should be large enough for cursors
-	unsigned int width=64, height=64;
-	return core::dimension2di(width, height);
-}
+	//! Remove all messages pending in the system message loop
+	void CIrrDeviceSailfish::clearSystemMessages()
+	{
+		/// TODO ?
+	}
+
+	CIrrDeviceSailfish::CCursorControl::CCursorControl(CIrrDeviceSailfish* dev, bool null)
+	    : Device(dev)
+	    , IsVisible(true), Null(null), UseReferenceRect(false)
+	    , ActiveIcon(gui::ECI_NORMAL), ActiveIconStartTime(0)
+	{
+		/// TODO
+	}
+
+	CIrrDeviceSailfish::CCursorControl::~CCursorControl()
+	{
+		// Do not clearCursors here as the display is already closed
+		// TODO (cutealien): droping cursorcontrol earlier might work, not sure about reason why that's done in stub currently.
+	}
+
+	//! Sets the active cursor icon
+	void CIrrDeviceSailfish::CCursorControl::setActiveIcon(gui::ECURSOR_ICON iconId)
+	{
+		/// TODO
+	}
+
+
+	//! Add a custom sprite as cursor icon.
+	gui::ECURSOR_ICON CIrrDeviceSailfish::CCursorControl::addIcon(const gui::SCursorSprite& icon)
+	{
+		/// TODO
+		return gui::ECI_NORMAL;
+	}
+
+	//! replace the given cursor icon.
+	void CIrrDeviceSailfish::CCursorControl::changeIcon(gui::ECURSOR_ICON iconId, const gui::SCursorSprite& icon)
+	{
+		/// TODO
+	}
+
+	irr::core::dimension2di CIrrDeviceSailfish::CCursorControl::getSupportedIconSize() const
+	{
+		// this returns the closest match that is smaller or same size, so we just pass a value which should be large enough for cursors
+		unsigned int width=64, height=64;
+		return core::dimension2di(width, height);
+	}
 
 } // end namespace
 

@@ -58,7 +58,7 @@ INSTALLS += media
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
 
-include(source/qt/qt.pri )
+#include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
 
@@ -66,10 +66,14 @@ include(irrlicht.pri)
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
 #SOURCES =  examples/05.UserInterface/main.cpp
 #SOURCES += examples/16.Quake3MapShader/main.cpp
+
 HEADERS += examples/Demo/CDemo.h
+
 SOURCES += examples/Demo/CDemo.cpp \
-            examples/Demo/main.cpp
+           examples/Demo/main.cpp
+
 DEFINES += USE_SDL_MIXER
+
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp

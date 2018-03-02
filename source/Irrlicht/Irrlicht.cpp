@@ -111,8 +111,8 @@ namespace irr
 #endif
 
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-                if(params.DeviceType == EIDT_SAILFISH || (!dev && params.DeviceType == EIDT_BEST) )
-                        dev = new CIrrDeviceSailfish(params);
+		if(params.DeviceType == EIDT_SAILFISH || (!dev && params.DeviceType == EIDT_BEST) )
+			dev = new CIrrDeviceSailfish(params);
 #endif
 
 #ifdef _IRR_COMPILE_WITH_CONSOLE_DEVICE_
