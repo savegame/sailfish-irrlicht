@@ -3,7 +3,7 @@ This is port of Irrlicht Engine, forked from SVN repository [https://svn.code.sf
 
 This is dirty code, but its works, you can compile all irrlicht examples ( just need set EDT_OGLES2 driver type when creating device).
 Now it compile with QtCreator as Application for sailfish ( or as Application for Linux Desktop, or as Application for OSX by XCode (tested on 8.0 - 9.0)).
-In future, that repository will be deleted, and here i put complete port, but dont now when it done.
+
 
 * irrlicht.pro - its project file for Sailfish IDE (QtCreator), if you want compile that for Sailfish, you need add 
 ```
@@ -28,9 +28,9 @@ and application will build as that example.
 If you want build Irrlciht as shared library *libIrrlicht.so*, you need change **TEMPLATE** from **app** to **lib**, and change **TARGET** to Irrlicht, and remove ***main.cpp*** from **SOURCES**
 
 ### For programmers
-Most changes for Wayland proting situated in source/Irrlicht/CIrrDeviceLinux.cpp (\*.h), and CEGLManager.cpp (\*.h) under macros 
+Most changes for Wayland proting situated in source/Irrlicht/CIrrDeviceSailfish.cpp (\*.h), and CEGLManager.cpp (\*.h) under macros 
 ```cpp
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_OGLES2_
 .....
 #endif
 ```
