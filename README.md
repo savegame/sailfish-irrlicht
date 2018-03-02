@@ -28,9 +28,9 @@ and application will build as that example.
 If you want build Irrlciht as shared library *libIrrlicht.so*, you need change **TEMPLATE** from **app** to **lib**, and change **TARGET** to Irrlicht, and remove ***main.cpp*** from **SOURCES**
 
 ### For programmers
-Most changes for Wayland proting situated in source/Irrlicht/CIrrDeviceLinux.cpp (\*.h), and CEGLManager.cpp (\*.h) under macros 
+Most changes for Wayland proting situated in source/Irrlicht/CIrrDeviceSailfish.cpp (\*.h), and CEGLManager.cpp (\*.h) under macros 
 ```cpp
-#ifdef SAILFISH
+#ifdef _IRR_COMPILE_WITH_OGLES2_
 .....
 #endif
 ```
