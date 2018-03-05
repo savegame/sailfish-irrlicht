@@ -262,7 +262,7 @@ protected:
 		}
 		else if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate90)
 		{
-            cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
+			cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
 			cameraEvent.TouchInput.Y = event.X;
 		}
 		fpsCamera->OnEvent(cameraEvent);
@@ -587,7 +587,7 @@ int main()
         fpsCamera->setFarValue(300.0f);
         fpsCamera->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
 #else
-		fpsCamera = smgr->addCameraSceneNodeFPS(0,100.0f,0.5f);
+		fpsCamera = smgr->addCameraSceneNodeFPS(0,170.0f,0.5f);
 //        fpsCamera->setFarValue(300.0f);
         fpsCamera->setPosition(core::vector3df(0,80,-35));
 
