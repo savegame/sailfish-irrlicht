@@ -262,7 +262,7 @@ protected:
 		}
 		else if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate90)
 		{
-			cameraEvent.TouchInput.X = event.Y;
+            cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
 			cameraEvent.TouchInput.Y = event.X;
 		}
 		fpsCamera->OnEvent(cameraEvent);

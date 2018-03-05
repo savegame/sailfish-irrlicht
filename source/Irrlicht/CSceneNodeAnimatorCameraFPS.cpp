@@ -107,6 +107,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 //			core::vector2di size;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
+			LastTouchPos = TouchPos;
 			//CenterCursor = TouchPos;
 			if ( CursorControl )
 			{
@@ -138,6 +139,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			isTouchPressed = false;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
+			LastTouchPos = TouchPos;
 			CursorControl->setPosition((s32)TouchPos.X, (s32)TouchPos.Y);
 			CenterCursor = CursorControl->getRelativePosition();
 			//CenterCursor = TouchPos;
@@ -189,11 +191,11 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 //		allKeysUp();
 		firstInput = false;
 	}
-
+#endif
 	scene::ISceneManager * smgr = camera->getSceneManager();
 	if(smgr && smgr->getActiveCamera() != camera)
 		return;
-#endif
+
 	// get time
 	f32 timeDiff = (f32) ( timeMs - LastAnimationTime );
 	LastAnimationTime = timeMs;
@@ -283,7 +285,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 	rTouchPos = CursorControl->getRelativePosition();
 
 	CursorControl->setPosition(s32(LastTouchPos.X),s32(LastTouchPos.Y));
-	rLastTouchPos =CursorControl->getRelativePosition();
+	rLastTouchPos = CursorControl->getRelativePosition();
 
 	relativeRotation.Y -= (rLastTouchPos.X - rTouchPos.X) * RotateSpeed;
 	relativeRotation.X -= (rLastTouchPos.Y - rTouchPos.Y) * RotateSpeed * MouseYDirection;

@@ -67,17 +67,17 @@ include(irrlicht.pri)
 #SOURCES =  examples/05.UserInterface/main.cpp
 #SOURCES += examples/16.Quake3MapShader/main.cpp
 
-HEADERS += examples/Demo/CDemo.h
+#HEADERS += examples/Demo/CDemo.h
 
-SOURCES += examples/Demo/CDemo.cpp \
-           examples/Demo/main.cpp
+#SOURCES += examples/Demo/CDemo.cpp \
+#           examples/Demo/main.cpp
 
 DEFINES += USE_SDL_MIXER
 
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \
 #    examples/07.Collision/irrapp.cpp
-#    examples/13.RenderToTexture/main.cpp
+SOURCES += examples/13.RenderToTexture/main.cpp
 
 DISTFILES += \
     rpm/irrlicht-sailfish.yaml \
