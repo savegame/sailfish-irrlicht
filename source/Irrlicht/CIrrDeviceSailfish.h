@@ -28,6 +28,7 @@
 
 namespace irr
 {
+
     class CIrrDeviceSailfish : public CIrrDeviceStub, public video::IImagePresenter
 	{
 	public:
@@ -246,6 +247,7 @@ namespace irr
 			CIrrDeviceSailfish* Device;
 			core::position2d<s32> CursorPos;
 			core::rect<s32> ReferenceRect;
+			core::dimension2du ScreenSizeMm;
 
 			bool IsVisible;
 			bool Null;

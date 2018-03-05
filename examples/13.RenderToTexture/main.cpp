@@ -14,7 +14,7 @@ for the rendering driver, create the Irrlicht Device:
 #include <source/Irrlicht/CGUIButton.h>
 #include <os.h>
 #include "driverChoice.h"
-#include "exampleHelper.h"
+#include <exampleHelper.h>
 #include <map>
 
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
@@ -146,6 +146,7 @@ public:
 #else
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Normal;
 #endif
+		fpsCamera = nullptr;
 	}
 
 	//! Destructor
@@ -250,6 +251,21 @@ protected:
 			}
 			break;
 		}
+
+		SEvent cameraEvent;
+		cameraEvent.EventType = EET_TOUCH_INPUT_EVENT;
+		cameraEvent.TouchInput = event;
+		if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate270)
+		{
+			cameraEvent.TouchInput.X = event.Y;
+			cameraEvent.TouchInput.Y = (m_device->getScreenResolution().Width - event.X);
+		}
+		else if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate90)
+		{
+			cameraEvent.TouchInput.X = event.Y;
+			cameraEvent.TouchInput.Y = event.X;
+		}
+		fpsCamera->OnEvent(cameraEvent);
 	}
 	
 	void eventLog(const SEvent::SLogEvent &event)
@@ -278,6 +294,9 @@ private:
 #endif
 	ScreenShaderCB *m_shader;
 	s32 m_isFlipLandscape;
+public:
+
+	scene::ICameraSceneNode *fpsCamera;
 	//std::map<int> m_touch;
 };
 
@@ -306,11 +325,11 @@ public:
 #if !defined(_DEBUG) || defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 		io::path mediaPath = getExampleMediaPath();
 #elif defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
-		io::path mediaPath = "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
+        io::path mediaPath = getExampleMediaPath();// "/home/src1/OpenGL/harbour-irrlicht/irrlicht/media/";
 #else
 		io::path mediaPath = getExampleMediaPath();
 #endif
-		io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
+        io::path psFileName = mediaPath + "Shaders/DFGLES2Screen.fsh";
 		io::path vsFileName = mediaPath + "Shaders/DFGLES2Screen.vsh";
 #if defined(_OUT_PWD_PATH) && !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 		psFileName = io::path(_OUT_PWD_PATH) + io::path("/") + psFileName;
@@ -540,7 +559,7 @@ int main()
 	video::IRenderTarget* renderTarget = 0;
 	video::ITexture* renderTargetDepth = 0;
 	video::ITexture* renderTargetTex = 0;
-	scene::ICameraSceneNode* fixedCam = 0;
+    scene::ICameraSceneNode* fpsCamera = 0;
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	receiver->setScreenShader(screenNode->getShader());
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
@@ -564,20 +583,23 @@ int main()
 		screenNode->setMaterialTexture(1, renderTargetDepth);
 		// add fixed camera
 #ifdef fairy
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,35,15));
-		fixedCam->setFarValue(300.0f);
-		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
+        fpsCamera = smgr->addCameraSceneNode(0, core::vector3df(0,35,15));
+        fpsCamera->setFarValue(300.0f);
+        fpsCamera->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
 #else
-		fixedCam = smgr->addCameraSceneNode(0, core::vector3df(0,80,-35));
-		fixedCam->setFarValue(300.0f);
-		fixedCam->setTarget( fairy->getPosition() + core::vector3df(0,70,-60) );
+		fpsCamera = smgr->addCameraSceneNodeFPS(0,100.0f,0.5f);
+//        fpsCamera->setFarValue(300.0f);
+        fpsCamera->setPosition(core::vector3df(0,80,-35));
+
+//        fpsCamera->setTarget( fairy->getPosition() + core::vector3df(0,70,-60) );
 #endif
+		receiver->fpsCamera = fpsCamera;
 		//fixedCam->setNearValue(20.0f);
 
 		{
 			f32 width = (f32)resolution.Width;
 			f32 height = (f32)resolution.Height;
-			scene::ICameraSceneNode *cam = fixedCam;
+            scene::ICameraSceneNode *cam = fpsCamera;
 			core::matrix4 m2;
 			f32 wd = (f32)(width*0.003651);
 			f32 hg = (f32)(height*0.003651);
@@ -604,13 +626,13 @@ int main()
 	
 	// add fps camera
 //	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNodeFPS(0,1.0f);
-	scene::ICameraSceneNode* fpsCamera = smgr->addCameraSceneNode(0, core::vector3df(0,0,-1) );
+    scene::ICameraSceneNode* screenCamera = smgr->addCameraSceneNode(0, core::vector3df(0,0,-1) );
 //	fpsCamera->setPosition(core::vector3df(-50,50,-150));
-	fpsCamera->setTarget(screenNode->getPosition());
+    screenCamera->setTarget(screenNode->getPosition());
 	{
 		f32 width = (f32)resolution.Width;
 		f32 height = (f32)resolution.Height;
-		scene::ICameraSceneNode *cam = fpsCamera;
+        scene::ICameraSceneNode *cam = screenCamera;
 		core::matrix4 m,m2;
 		f32 wd = (f32)(width*4);
 		f32 hg = (f32)(height*3);
@@ -618,10 +640,10 @@ int main()
 		cam->setProjectionMatrix(m2);
 	}
 
-	io::path fontPath = mediaPath + "bigfont.png";
+//	io::path fontPath = mediaPath + "bigfont.png";
 	//gui::IGUISkin* skin = env->getSkin();
-	gui::IGUIFont *font = env->getFont(fontPath);
-	env->getSkin()->setFont(font);
+//	gui::IGUIFont *font = env->getFont(fontPath);
+//	env->getSkin()->setFont(font);
 	gui::IGUIStaticText *text = env->addStaticText( L"HelloWorld", core::recti(5,5,resolution.Width,60));
 	/*
 	Nearly finished. Now we need to draw everything. Every frame, we draw
@@ -649,22 +671,22 @@ int main()
 
 			// make cube invisible and set fixed camera as active camera
 			//test->setVisible(false);
-			smgr->setActiveCamera(fixedCam);
+            smgr->setActiveCamera(fpsCamera);
 
 			// draw whole scene into render buffer
 			smgr->drawAll();
-//			env->drawAll();
+			env->drawAll();
 			// set back old render target
 			// The buffer might have been distorted, so clear it
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
 
 			// make the cube visible and set the user controlled camera as active one
 			//test->setVisible(true);
-			smgr->setActiveCamera(fpsCamera);
+            smgr->setActiveCamera(screenCamera);
 		}
 		
 		screenNode->draw(driver);
-		env->drawAll();
+//		env->drawAll();
 //		smgr->drawAll();
 //		driver->drawMeshBuffer();
 
@@ -677,6 +699,8 @@ int main()
 		{
 			core::stringw str = L"FPS:";
 			str += fps;
+			str += "\n Touch: ";
+
 			text->setText(str.c_str());
 
 			//device->setWindowCaption(str.c_str());

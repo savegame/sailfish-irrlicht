@@ -22,7 +22,10 @@ CSceneNodeAnimatorCameraFPS::CSceneNodeAnimatorCameraFPS(gui::ICursorControl* cu
 : CursorControl(cursorControl), MaxVerticalAngle(88.0f), NoVerticalMovement(noVerticalMovement),
 	MoveSpeed(moveSpeed), RotateSpeedKeyboard(rotateSpeedKeyboard), RotateSpeed(rotateSpeed),
 	JumpSpeed(jumpSpeed),
-	MouseYDirection(invertY ? -1.0f : 1.0f),
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+    isTouchPressed(false),
+#endif
+    MouseYDirection(invertY ? -1.0f : 1.0f),
 	LastAnimationTime(0), firstUpdate(true), firstInput(true)
 {
 	#ifdef _DEBUG
@@ -32,7 +35,7 @@ CSceneNodeAnimatorCameraFPS::CSceneNodeAnimatorCameraFPS(gui::ICursorControl* cu
 	if (CursorControl)
 		CursorControl->grab();
 
-	allKeysUp();
+//	allKeysUp();
 
 	// create key map
 	if (!keyMapArray || !keyMapSize)
@@ -97,42 +100,48 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	case EET_TOUCH_INPUT_EVENT:
 //		break;
-		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN)
+		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN && !isTouchPressed)
 		{
-			TouchID[evt.TouchInput.ID] = true;
-//			if(evt.TouchInput.ID != 0)
-//				return false;
-			core::vector2di size;
-//			TouchID = evt.TouchInput.ID;
+			TouchID = evt.TouchInput.ID;
+			isTouchPressed = true;
+//			core::vector2di size;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
-			CenterCursor = TouchPos;
-			CursorControl->setPosition(TouchPos);
+			//CenterCursor = TouchPos;
+			if ( CursorControl )
+			{
+				CursorControl->setPosition((s32)TouchPos.X, (s32)TouchPos.Y);
+				CenterCursor = CursorPos = CursorControl->getRelativePosition();
+			}
+
 			return true;
 		}
-		if(evt.TouchInput.Event == ETIE_MOVED)
+		else if(evt.TouchInput.Event == ETIE_MOVED && isTouchPressed && TouchID == evt.TouchInput.ID)
 		{
-//			if(!TouchID[0])
-//				return false;
-//			CursorControl->setPosition(0.5f,0.5f);
-//			f32 SpeedCoef = 0.1f;
-			// get realitive move
-			CenterCursor = TouchPos;
+
+			//CenterCursor = TouchPos;
 //			CursorPos.X = (TouchPos.X - (f32)evt.TouchInput.X)*SpeedCoef;
 //			CursorPos.Y = (TouchPos.Y - (f32)evt.TouchInput.Y)*SpeedCoef;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
-			CursorPos = TouchPos;
+			if ( CursorControl )
+			{
+				CursorControl->setPosition( (s32)TouchPos.X, (s32)TouchPos.Y );
+				CursorPos = CursorControl->getRelativePosition();
+				//CenterCursor = CursorControl->getRelativePosition();
+			}
 			return true;
 		}
-		if(evt.TouchInput.Event == ETIE_LEFT_UP)
+		else if(evt.TouchInput.Event == ETIE_LEFT_UP && isTouchPressed && TouchID == evt.TouchInput.ID)
 		{
-			TouchID[evt.TouchInput.ID] = false;
-//			if(0 != evt.TouchInput.ID)
-//				return false;
-			CursorControl->setPosition(TouchPos);
-			CenterCursor = TouchPos;
-			CursorPos = CenterCursor;
+			TouchID = evt.TouchInput.ID;
+			isTouchPressed = false;
+			TouchPos.X = (f32)evt.TouchInput.X;
+			TouchPos.Y = (f32)evt.TouchInput.Y;
+			CursorControl->setPosition((s32)TouchPos.X, (s32)TouchPos.Y);
+			CenterCursor = CursorControl->getRelativePosition();
+			//CenterCursor = TouchPos;
+			//CursorPos = TouchPos;
 			return false;
 		}
 		break;
@@ -151,13 +160,15 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 		return;
 
 	ICameraSceneNode* camera = static_cast<ICameraSceneNode*>(node);
-
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	if (firstUpdate)
 	{
 		camera->updateAbsolutePosition();
 		if (CursorControl )
 		{
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorControl->setPosition(0.5f, 0.5f);
+#endif
 			CursorPos = CenterCursor = CursorControl->getRelativePosition();
 		}
 
@@ -175,18 +186,19 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 
 	if ( firstInput )
 	{
-		allKeysUp();
+//		allKeysUp();
 		firstInput = false;
 	}
 
 	scene::ISceneManager * smgr = camera->getSceneManager();
 	if(smgr && smgr->getActiveCamera() != camera)
 		return;
-
+#endif
 	// get time
 	f32 timeDiff = (f32) ( timeMs - LastAnimationTime );
 	LastAnimationTime = timeMs;
 
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	// update position
 	core::vector3df pos = camera->getPosition();
 
@@ -203,11 +215,20 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 
 			// Do the fix as normal, special case below
 			// reset cursor position to the centre of the window.
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorControl->setPosition(0.5f, 0.5f);
+//#else
+			CursorControl->setPosition(CursorPos.X, CursorPos.Y);
+#endif
+//#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CenterCursor = CursorControl->getRelativePosition();
-
+//#else
+//			CenterCursor = CursorPos;
+//#endif
 			// needed to avoid problems when the event receiver is disabled
+#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorPos = CenterCursor;
+#endif
 		}
 
 		// Special case, mouse is whipped outside of window before it can update.
@@ -247,7 +268,28 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 	{
 		relativeRotation.X = MaxVerticalAngle;
 	}
+#else
+	// update position
+	core::vector3df pos = camera->getPosition();
 
+	// Update rotation
+	core::vector3df target = (camera->getTarget() - camera->getAbsolutePosition());
+	core::vector3df relativeRotation = target.getHorizontalAngle();
+
+	core::position2df rLastTouchPos, rTouchPos;
+
+//	rLastTouchPos.X = LastTouchPos.X /
+	CursorControl->setPosition(s32(TouchPos.X),s32(TouchPos.Y));
+	rTouchPos = CursorControl->getRelativePosition();
+
+	CursorControl->setPosition(s32(LastTouchPos.X),s32(LastTouchPos.Y));
+	rLastTouchPos =CursorControl->getRelativePosition();
+
+	relativeRotation.Y -= (rLastTouchPos.X - rTouchPos.X) * RotateSpeed;
+	relativeRotation.X -= (rLastTouchPos.Y - rTouchPos.Y) * RotateSpeed * MouseYDirection;
+
+	LastTouchPos = TouchPos;
+#endif
 
 	// set target
 
@@ -327,18 +369,6 @@ void CSceneNodeAnimatorCameraFPS::resetCursorPos()
 	CenterCursor = CursorControl->getRelativePosition();
 	CursorPos = CenterCursor;
 }
-
-
-void CSceneNodeAnimatorCameraFPS::allKeysUp()
-{
-//	for (u32 i=0; i<EKA_COUNT; ++i)
-//		CursorKeys[i] = false;
-//	for (u32 i=0; i<TOUCH_COUNT; ++i)
-//		TouchID[i] = false;
-	memset(CursorKeys,false,EKA_COUNT*sizeof(bool));
-	memset(TouchID,false,TOUCH_COUNT*sizeof(bool));
-}
-
 
 //! Sets the rotation speed
 void CSceneNodeAnimatorCameraFPS::setRotateSpeed(f32 speed)

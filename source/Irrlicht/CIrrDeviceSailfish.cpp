@@ -582,6 +582,7 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 		//			break;
 		//		}
 		device->postEventFromUser(event);
+//		device->getCursorControl()->setSc
 	}
 }
 
@@ -639,7 +640,9 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
 	if(dev)
+	{
 		dev->setWindowSize( irr::core::dimension2du(width,height) );
+	}
 	//irr::SEvent event;
 	//event.EventType = irr::EET_GYROSCOPE_EVENT;
 	//event.GyroscopeEvent
@@ -1369,8 +1372,8 @@ namespace irr
 			os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 		}
 		nativeDisplay = wlDisplay;
-		Width = CreationParams.WindowSize.Width*0.5;//wlCompositor->width;
-		Height = CreationParams.WindowSize.Height*0.5;//wlCompositor->height;
+		Width = CreationParams.WindowSize.Width;//wlCompositor->width;
+		Height = CreationParams.WindowSize.Height;//wlCompositor->height;
 
 		// second
 		wlSurface = wl_compositor_create_surface(CIrrDeviceSailfish::wlCompositor);
@@ -1655,6 +1658,8 @@ namespace irr
 			f32 dpiH = (f32)CreationParams.WindowSize.Height/(f32)PhysicalHeight;
 			dpi = mm2inch*((dpiW > dpiH)?dpiW:dpiH);
 		}
+		Width = size.Width;
+		Height = size.Height;
 	}
 
 	//! Return pointer to a list with all video modes supported by the gfx adapter.

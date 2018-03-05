@@ -10,6 +10,9 @@
 #include "position2d.h"
 #include "SKeyMap.h"
 #include "irrArray.h"
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+#include <map>
+#endif
 
 namespace irr
 {
@@ -112,7 +115,7 @@ namespace scene
 	private:
 		void resetCursorPos();
 
-		void allKeysUp();
+//		void allKeysUp();
 
 		gui::ICursorControl *CursorControl;
 
@@ -130,11 +133,12 @@ namespace scene
 
 		core::array<SKeyMap> KeyMap;
 		core::position2d<f32> CenterCursor, CursorPos;
-//#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-#define TOUCH_COUNT 20
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		core::vector2df   TouchPos;
-		bool              TouchID[TOUCH_COUNT];
-//#endif
+		core::vector2df   LastTouchPos;
+		size_t            TouchID;
+		bool              isTouchPressed;
+#endif
 		bool CursorKeys[EKA_COUNT];
 
 		bool firstUpdate;
