@@ -4,6 +4,7 @@ uniform lowp int  inScreenOrientation;
 uniform lowp vec2 inResolution;
 uniform lowp vec2 inDepthNear;
 uniform lowp vec2 inDepthFar;
+uniform bool inIsUseDepth;
 varying highp vec2 TexCoord0;
 varying highp vec2 ScreenPos;
 
@@ -42,10 +43,11 @@ void main(void)
     lowp float depth = texture2D(Texture1,nTexCoord).r;
     //lowp float blur  = 0.0;
     lowp float strength = 5.0;
-
-    if( depth >= inDepthFar.x)
+    bool isUseDepth = true;
+    if( depth >= inDepthFar.x && isUseDepth == true)
     {// far depth zone
-        float r = depth - inDepthFar.x;
+        float r = (depth - inDepthFar.x)/(1.0 - inDepthFar.x);
+//        float full = 1.0 - inDepthFar.x;
         if( r < inDepthFar.y )
         {
             strength = strength * r/inDepthFar.y;

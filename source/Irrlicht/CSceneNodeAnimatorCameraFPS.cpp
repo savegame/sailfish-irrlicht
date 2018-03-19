@@ -99,51 +99,27 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 		break;
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	case EET_TOUCH_INPUT_EVENT:
-//		break;
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN && !isTouchPressed)
 		{
 			TouchID = evt.TouchInput.ID;
 			isTouchPressed = true;
-//			core::vector2di size;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
 			LastTouchPos = TouchPos;
-			//CenterCursor = TouchPos;
-			if ( CursorControl )
-			{
-				CursorControl->setPosition((s32)TouchPos.X, (s32)TouchPos.Y);
-				CenterCursor = CursorPos = CursorControl->getRelativePosition();
-			}
-
 			return true;
 		}
 		else if(evt.TouchInput.Event == ETIE_MOVED && isTouchPressed && TouchID == evt.TouchInput.ID)
 		{
-
-			//CenterCursor = TouchPos;
-//			CursorPos.X = (TouchPos.X - (f32)evt.TouchInput.X)*SpeedCoef;
-//			CursorPos.Y = (TouchPos.Y - (f32)evt.TouchInput.Y)*SpeedCoef;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
-			if ( CursorControl )
-			{
-				CursorControl->setPosition( (s32)TouchPos.X, (s32)TouchPos.Y );
-				CursorPos = CursorControl->getRelativePosition();
-				//CenterCursor = CursorControl->getRelativePosition();
-			}
 			return true;
 		}
 		else if(evt.TouchInput.Event == ETIE_LEFT_UP && isTouchPressed && TouchID == evt.TouchInput.ID)
 		{
-			TouchID = evt.TouchInput.ID;
 			isTouchPressed = false;
 			TouchPos.X = (f32)evt.TouchInput.X;
 			TouchPos.Y = (f32)evt.TouchInput.Y;
 			LastTouchPos = TouchPos;
-			CursorControl->setPosition((s32)TouchPos.X, (s32)TouchPos.Y);
-			CenterCursor = CursorControl->getRelativePosition();
-			//CenterCursor = TouchPos;
-			//CursorPos = TouchPos;
 			return false;
 		}
 		break;
@@ -168,10 +144,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 		camera->updateAbsolutePosition();
 		if (CursorControl )
 		{
-#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorControl->setPosition(0.5f, 0.5f);
-#endif
-			CursorPos = CenterCursor = CursorControl->getRelativePosition();
 		}
 
 		LastAnimationTime = timeMs;
@@ -217,20 +190,11 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 
 			// Do the fix as normal, special case below
 			// reset cursor position to the centre of the window.
-#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorControl->setPosition(0.5f, 0.5f);
-//#else
-			CursorControl->setPosition(CursorPos.X, CursorPos.Y);
-#endif
-//#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CenterCursor = CursorControl->getRelativePosition();
-//#else
-//			CenterCursor = CursorPos;
-//#endif
+
 			// needed to avoid problems when the event receiver is disabled
-#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 			CursorPos = CenterCursor;
-#endif
 		}
 
 		// Special case, mouse is whipped outside of window before it can update.
@@ -280,13 +244,14 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 
 	core::position2df rLastTouchPos, rTouchPos;
 
-//	rLastTouchPos.X = LastTouchPos.X /
+	// make touch pos realitive to screen
 	CursorControl->setPosition(s32(TouchPos.X),s32(TouchPos.Y));
 	rTouchPos = CursorControl->getRelativePosition();
 
 	CursorControl->setPosition(s32(LastTouchPos.X),s32(LastTouchPos.Y));
 	rLastTouchPos = CursorControl->getRelativePosition();
 
+	//simple compute rotation
 	relativeRotation.Y -= (rLastTouchPos.X - rTouchPos.X) * RotateSpeed;
 	relativeRotation.X -= (rLastTouchPos.Y - rTouchPos.Y) * RotateSpeed * MouseYDirection;
 

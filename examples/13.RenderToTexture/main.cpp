@@ -10,12 +10,12 @@ for the rendering driver, create the Irrlicht Device:
 
 //#define /*NO_XREADER_DEBUG*/
 
+#include <map>
 #include <irrlicht.h>
 #include <source/Irrlicht/CGUIButton.h>
 #include <os.h>
 #include "driverChoice.h"
 #include <exampleHelper.h>
-#include <map>
 
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 #include <source/Irrlicht/CIrrDeviceSailfish.h>
@@ -26,6 +26,12 @@ using namespace irr;
 #ifdef _MSC_VER
 #pragma comment(lib, "Irrlicht.lib")
 #endif
+
+enum GUI_ID : s32
+{
+	id_Button0 = 100,
+	id_scrollFar1,
+};
 
 class ScreenShaderCB : public video::IShaderConstantSetCallBack
 {
@@ -51,7 +57,7 @@ public:
 	                    ResolutionID(-1)
 	{
 		m_resolution = core::dimension2df(640.0,480.0);
-		m_depth_far = core::vector2df(0.999f,0.0005f);
+		m_depth_far = core::vector2df(0.999f,0.95f);
 		m_depth_near = core::vector2df(0.005f,0.01f);
 	}
 
@@ -75,6 +81,7 @@ public:
 			ResolutionID = services->getPixelShaderConstantID("inResolution");
 			DepthNearID = services->getPixelShaderConstantID("inDepthNear");
 			DepthFarID = services->getPixelShaderConstantID("inDepthFar");
+			IsUseDepthID  = services->getPixelShaderConstantID("inIsUseDepth");
 			FirstUpdate = false;
 		}
 
@@ -119,6 +126,7 @@ private:
 	s32 ResolutionID;
 	s32 DepthNearID;
 	s32 DepthFarID;
+	s32 IsUseDepthID;
 	
 public:	
 	s32  m_screenOrientation;
@@ -128,6 +136,83 @@ public:
 	bool FirstUpdate;
 };
 
+
+class CGUIJoystic : public gui::IGUIElement
+{
+	friend class EventReseiver;
+public:
+	CGUIJoystic(gui::IGUIEnvironment* environment, IGUIElement* parent,
+	            s32 id, const core::rect<s32>& rectangle)
+	    : IGUIElement(gui::EGUIET_BUTTON, environment, parent, id, rectangle)
+	{
+//		RelativeRect.UpperLeftCorner = core::position2di(0,0);
+//		RelativeRect.LowerRightCorner = core::position2di(0,0);
+	}
+
+	//! Draws the element and its children.
+	virtual void draw() _IRR_OVERRIDE_
+	{
+		if ( isVisible() )
+		{
+			core::list<IGUIElement*>::Iterator it = Children.begin();
+			for (; it != Children.end(); ++it)
+				(*it)->draw();
+		}
+
+	}
+
+	//! Called if an event happened.
+	virtual bool OnEvent(const SEvent& event)
+	{
+		bool result = false;
+		if( event.EventType != EET_TOUCH_INPUT_EVENT )
+			return Parent ? Parent->OnEvent(event) : true;
+
+		SEvent::STouchInput te = event.TouchInput;
+		switch(te.Event)
+		{
+		case ETIE_PRESSED_DOWN:
+			if( !AbsoluteRect.isPointInside( core::vector2di(te.X, te.Y) ) )
+				break;
+			TouchPressPosition.X = te.X;
+			TouchPressPosition.Y = te.Y;
+			Velocity.X = Velocity.Y = 0.0f;
+			IsTouchPressed = true;
+			TouchID = te.ID;
+			return true;
+			break;
+		case ETIE_MOVED:
+			if(!IsTouchPressed || te.ID != TouchID)
+				break;
+			Velocity.X = te.X - TouchPressPosition.X;
+			Velocity.X = (Velocity.X > 0) ? (Velocity.X > Radius.X ? Radius.X : Velocity.X) : (Velocity.X < Radius.X ? -Radius.X : Velocity.X);
+			Velocity.X = Velocity.X / Radius.X;
+			Velocity.Y = te.Y - TouchPressPosition.Y;
+			Velocity.Y = (Velocity.Y > 0) ? (Velocity.Y > Radius.Y ? Radius.Y : Velocity.Y) : (Velocity.Y < Radius.Y ? -Radius.Y : Velocity.Y);
+			Velocity.Y = Velocity.Y / Radius.Y;
+			return true;
+			break;
+		case ETIE_LEFT_UP:
+			if(!IsTouchPressed || te.ID != TouchID)
+				break;
+			IsTouchPressed = false;
+			Velocity.X = Velocity.Y = 0.0f;
+			return true;
+			break;
+		}
+
+		return/* Parent && !result  ? Parent->OnEvent(event) : */result;
+	}
+
+
+
+public:
+	size_t             TouchID;
+	bool               IsTouchPressed;
+	core::position2di  TouchPressPosition;
+	core::vector2df    Velocity;
+	core::vector2df    Radius;
+};
 
 class EventReseiver : public irr::IEventReceiver
 {
@@ -147,6 +232,7 @@ public:
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Normal;
 #endif
 		fpsCamera = nullptr;
+		Joystic = nullptr;
 	}
 
 	//! Destructor
@@ -170,8 +256,30 @@ public:
 		case irr::EET_TOUCH_INPUT_EVENT:
 			eventTouch(event.TouchInput);
 			break;
+		case irr::EET_MOUSE_INPUT_EVENT:
+			eventMouse(event.MouseInput);
+			break;
 		case irr::EET_LOG_TEXT_EVENT:
 			eventLog(event.LogEvent);
+			break;
+		case irr::EET_KEY_INPUT_EVENT:
+			if(fpsCamera)
+				fpsCamera->OnEvent(event);
+			break;
+		case irr::EET_GUI_EVENT:
+			if( event.GUIEvent.Caller->getID() == id_Button0 )
+			{
+				gui::IGUIButton *btn = static_cast<gui::IGUIButton *>(event.GUIEvent.Caller);
+				if(fpsCamera && btn)
+				{
+					SEvent keyEvent;
+					keyEvent.EventType = EET_KEY_INPUT_EVENT;
+					keyEvent.KeyInput.PressedDown = btn->isPressed() ;
+					keyEvent.KeyInput.Key =  KEY_DOWN;
+					fpsCamera->OnEvent(keyEvent);
+				}
+			}
+			break;
 		default:
 //			IEventReceiver::OnEvent(event);
 			break;
@@ -184,6 +292,12 @@ public:
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
+
+		Joystic = new CGUIJoystic(
+		            m_device->getGUIEnvironment(),
+		            nullptr, 0,
+		            core::recti(0,0, m_device->getScreenResolution().Height*0.5f, m_device->getScreenResolution().Width) );
+		Joystic->Radius.X = Joystic->Radius.Y = m_device->getScreenResolution().Width * 0.33f;
 	}
 #endif
 
@@ -255,6 +369,7 @@ protected:
 		SEvent cameraEvent;
 		cameraEvent.EventType = EET_TOUCH_INPUT_EVENT;
 		cameraEvent.TouchInput = event;
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate270)
 		{
 			cameraEvent.TouchInput.X = event.Y;
@@ -265,17 +380,55 @@ protected:
 			cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
 			cameraEvent.TouchInput.Y = event.X;
 		}
-		fpsCamera->OnEvent(cameraEvent);
+#endif
+		bool isJoyEvent = Joystic->IsTouchPressed;
+		bool isJoystic = Joystic->OnEvent(cameraEvent);
+
+		if( !isJoystic || (isJoystic && isJoyEvent) )
+			fpsCamera->OnEvent(cameraEvent);
+
+		if(isJoystic && false)
+		{
+			SEvent keyEvent;
+			keyEvent.EventType = EET_KEY_INPUT_EVENT;
+			keyEvent.KeyInput.PressedDown = true;
+
+			if( Joystic->Velocity.Y > 0.2 )
+				keyEvent.KeyInput.Key = KEY_DOWN;
+			else if( Joystic->Velocity.Y < -0.2 )
+				keyEvent.KeyInput.Key = KEY_UP;
+
+			fpsCamera->OnEvent(keyEvent);
+
+//			if( Joystic->Velocity.Y > 0.2 )
+//				keyEvent.KeyInput.Key = KEY_RIGHT;
+//			else if( Joystic->Velocity.Y < -0.2 )
+//				keyEvent.KeyInput.Key = KEY_LEFT;
+
+//			fpsCamera->OnEvent(keyEvent);
+		}
 	}
 	
 	void eventLog(const SEvent::SLogEvent &event)
 	{
 		printf("%s\n", event.Text);
 	}
+	
+	void eventMouse(const SEvent::SMouseInput &event)
+	{
+		if(fpsCamera){
+			SEvent cameraEvent;
+			cameraEvent.EventType = EET_MOUSE_INPUT_EVENT;
+			cameraEvent.MouseInput = event;
+			
+			fpsCamera->OnEvent(cameraEvent);
+		}
+	}
 private:
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	irr::CIrrDeviceSailfish *m_device;
 	//std::map<int,int> m_touch;
+#endif
 
 	struct touch {
 		size_t id;
@@ -291,12 +444,12 @@ private:
 
 	touch m_touches[10];
 	int m_touchCount;
-#endif
 	ScreenShaderCB *m_shader;
 	s32 m_isFlipLandscape;
 public:
 
 	scene::ICameraSceneNode *fpsCamera;
+	CGUIJoystic *Joystic;
 	//std::map<int> m_touch;
 };
 
@@ -445,20 +598,176 @@ protected:
 	
 };
 
-enum GUI_ID : s32
-{
-	id_Button0 = 100,
-	id_scrollFar1,
-};
-
 void create_ui(gui::IGUIEnvironment* env, const core::dimension2du &resolution)
 {
-	env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
+	//env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
+	Button *btn = new Button(env, env->getRootGUIElement(), id_Button0, core::recti(10,10,128,128));
 
 	gui::IGUIScrollBar *scroll = env->addScrollBar(true, core::recti(10, resolution.Height - 30, (resolution.Width < resolution.Height)?resolution.Width:resolution.Height, resolution.Height - 20 ), 0, id_scrollFar1 );
 	scroll->setMin(0);
 	scroll->setMin(100);
-	
+}
+
+#define IRRLICHT_QUAKE3_ARENA
+#ifdef IRRLICHT_QUAKE3_ARENA
+    #define QUAKE3_STORAGE_FORMAT   addFileArchive
+    #define QUAKE3_STORAGE_1        getExampleMediaPath() + "map-20kdm2.pk3"//"q3maps/q3ctfp22_final.pk3"
+    #define QUAKE3_MAP_NAME         "maps/20kdm2.bsp"
+#endif
+
+void load_q3map(io::path path, IrrlichtDevice *device/*, scene::ICameraSceneNode *camera = nullptr*/)
+{
+	if( path.empty() )
+		path = QUAKE3_MAP_NAME;
+
+	if( !device->getFileSystem()->addFileArchive(QUAKE3_STORAGE_1) )
+	{
+		core::stringc m = "ERROR: Cant open \"";
+		m += QUAKE3_STORAGE_1;
+		m += "\" file";
+		device->getLogger()->log(m.c_str(),ELL_ERROR);
+		return;
+	}
+	device->getSceneManager()->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
+
+	scene::IQ3LevelMesh* const mesh =
+	    (scene::IQ3LevelMesh*) device->getSceneManager()->getMesh(path);
+
+	scene::ISceneNode* node = 0;
+	if (mesh)
+	{
+		scene::IMesh * const geometry = mesh->getMesh(scene::quake3::E_Q3_MESH_GEOMETRY);
+		node = device->getSceneManager()->addOctreeSceneNode(geometry, 0, -1, 4096);
+	}
+
+	if ( mesh )
+	{
+		// the additional mesh can be quite huge and is unoptimized
+		const scene::IMesh * const additional_mesh = mesh->getMesh(scene::quake3::E_Q3_MESH_ITEMS);
+
+#ifdef SHOW_SHADER_NAME
+		gui::IGUIFont *font = device->getGUIEnvironment()->getFont(mediaPath + "fontlucida.png");
+		u32 count = 0;
+#endif
+
+		for ( u32 i = 0; i!= additional_mesh->getMeshBufferCount(); ++i )
+		{
+			const scene::IMeshBuffer* meshBuffer = additional_mesh->getMeshBuffer(i);
+			const video::SMaterial& material = meshBuffer->getMaterial();
+
+			// The ShaderIndex is stored in the material parameter
+			const s32 shaderIndex = (s32) material.MaterialTypeParam2;
+
+			// the meshbuffer can be rendered without additional support, or it has no shader
+			const scene::quake3::IShader *shader = mesh->getShader(shaderIndex);
+			if (0 == shader)
+			{
+				continue;
+			}
+
+			// we can dump the shader to the console in its
+			// original but already parsed layout in a pretty
+			// printers way.. commented out, because the console
+			// would be full...
+			// quake3::dumpShader ( Shader );
+
+			node = device->getSceneManager()->addQuake3SceneNode(meshBuffer, shader);
+
+#ifdef SHOW_SHADER_NAME
+			count += 1;
+			core::stringw name( node->getName() );
+			node = device->getSceneManager()->addBillboardTextSceneNode(
+			        font, name.c_str(), node,
+			        core::dimension2d<f32>(80.0f, 8.0f),
+			        core::vector3df(0, 10, 0));
+#endif
+		}
+	}
+
+	/*
+	Now we only need a Camera to look at the Quake 3 map. And we want to
+	create a user controlled camera. There are some different cameras
+	available in the Irrlicht engine. For example the Maya Camera which can
+	be controlled comparable to the camera in Maya: Rotate with left mouse
+	button pressed, Zoom with both buttons pressed, translate with right
+	mouse button pressed. This could be created with
+	addCameraSceneNodeMaya(). But for this example, we want to create a
+	camera which behaves like the ones in first person shooter games (FPS).
+	*/
+
+	/*if(!camera)
+		camera = device->getSceneManager()->getActiveCamera();
+
+//	camera->setUpVector( core::vector3df(1,0,0) );
+
+	if ( mesh )
+	{
+		scene::quake3::tQ3EntityList &entityList = mesh->getEntityList();
+
+		scene::quake3::IEntity search;
+		search.name = "info_player_deathmatch";
+
+		s32 index = entityList.binary_search(search);
+		if (index >= 0)
+		{
+			s32 notEndList;
+			do
+			{
+				const scene::quake3::SVarGroup *group = entityList[index].getGroup(1);
+
+				u32 parsepos = 0;
+				const core::vector3df pos =
+					scene::quake3::getAsVector3df(group->get("origin"), parsepos);
+
+				parsepos = 0;
+				const f32 angle = scene::quake3::getAsFloat(group->get("angle"), parsepos);
+
+				core::vector3df target(0.f, 0.f, 1.f);
+				target.rotateXZBy(angle);
+
+				camera->setPosition(pos);
+				camera->setTarget(pos + target);
+
+				++index;
+/*
+				notEndList = (	index < (s32) entityList.size () &&
+								entityList[index].name == search.name &&
+								(device->getTimer()->getRealTime() >> 3 ) & 1
+							);
+ * /
+				notEndList = index == 2;
+			} while ( notEndList );
+		}
+	}*/
+//	camera->setPosition(core::vector3df(1300,144,1249));
+}
+
+void fixCamera(scene::ICameraSceneNode *cam, core::dimension2du resolution)
+{
+//	core::matrix4 m2;
+//	f32 wd = (f32)((f32)resolution.Width*0.003651);
+//	f32 hg = (f32)((f32)resolution.Height*0.003651);
+//	m2.buildProjectionMatrixPerspectiveLH(wd,hg,cam->getNearValue(),cam->getFarValue());
+//	cam->setProjectionMatrix(m2);
+
+	// set default projection
+	f32 Fovy = core::PI / 2.5f;	// Field of view, in radians.
+	f32 Aspect = (f32)resolution.Width /
+	    (f32)resolution.Height;
+
+	scene::SViewFrustum ViewArea;
+	ViewArea.setFarNearDistance(cam->getFarValue() - cam->getNearValue());
+	ViewArea.getTransform ( video::ETS_PROJECTION ).buildProjectionMatrixPerspectiveFovLH(Fovy, Aspect, cam->getNearValue(),cam->getFarValue());
+
+	ViewArea.cameraPosition = cam->getAbsolutePosition();
+
+	core::matrix4 m(core::matrix4::EM4CONST_NOTHING);
+	m.setbyproduct_nocheck(ViewArea.getTransform(video::ETS_PROJECTION),
+	                       ViewArea.getTransform(video::ETS_VIEW));
+	ViewArea.setFrom(m);
+
+	//m.buildProjectionMatrixPerspectiveLH(resolution.Width,resolution.Height,cam->getNearValue(),cam->getFarValue());
+//	*cam->getViewFrustum() = ViewArea;
 }
 
 int main()
@@ -564,7 +873,7 @@ int main()
 	receiver->setScreenShader(screenNode->getShader());
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	resolution = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
-	resolution = core::dimension2du(resolution.Height*0.5, resolution.Width*0.5);
+//	resolution = core::dimension2du(resolution.Height/**0.15*/, resolution.Width/**0.15*/);
 #endif
 	
 	screenNode->getShader()->m_resolution = core::dimension2df((f32)resolution.Width, (f32)resolution.Height);
@@ -587,7 +896,7 @@ int main()
         fpsCamera->setFarValue(300.0f);
         fpsCamera->setTarget( fairy->getPosition() + core::vector3df(0,10,0) );
 #else
-		fpsCamera = smgr->addCameraSceneNodeFPS(0,170.0f,0.5f);
+		fpsCamera = smgr->addCameraSceneNodeFPS(0,170.0f,0.15f);
 //        fpsCamera->setFarValue(300.0f);
         fpsCamera->setPosition(core::vector3df(0,80,-35));
 
@@ -596,16 +905,7 @@ int main()
 		receiver->fpsCamera = fpsCamera;
 		//fixedCam->setNearValue(20.0f);
 
-		{
-			f32 width = (f32)resolution.Width;
-			f32 height = (f32)resolution.Height;
-            scene::ICameraSceneNode *cam = fpsCamera;
-			core::matrix4 m2;
-			f32 wd = (f32)(width*0.003651);
-			f32 hg = (f32)(height*0.003651);
-			m2.buildProjectionMatrixPerspectiveLH(wd,hg,cam->getNearValue(),cam->getFarValue());
-			cam->setProjectionMatrix(m2);
-		}
+		fixCamera(fpsCamera, resolution);
 		//fixedCam->set
 	}
 	else
@@ -629,16 +929,7 @@ int main()
     scene::ICameraSceneNode* screenCamera = smgr->addCameraSceneNode(0, core::vector3df(0,0,-1) );
 //	fpsCamera->setPosition(core::vector3df(-50,50,-150));
     screenCamera->setTarget(screenNode->getPosition());
-	{
-		f32 width = (f32)resolution.Width;
-		f32 height = (f32)resolution.Height;
-        scene::ICameraSceneNode *cam = screenCamera;
-		core::matrix4 m,m2;
-		f32 wd = (f32)(width*4);
-		f32 hg = (f32)(height*3);
-		m2.buildProjectionMatrixOrthoLH(wd,hg,cam->getNearValue(),cam->getFarValue());
-		cam->setProjectionMatrix(m2);
-	}
+	fixCamera(screenCamera, resolution);
 
 //	io::path fontPath = mediaPath + "bigfont.png";
 	//gui::IGUISkin* skin = env->getSkin();
@@ -653,6 +944,8 @@ int main()
 	render target texture applied to it. That's it, wasn't too complicated
 	I hope. :)
 	*/
+
+	load_q3map("", device/*, fpsCamera*/);
 
 	int lastFPS = -1;
 	bool showPause = true;
@@ -675,7 +968,7 @@ int main()
 
 			// draw whole scene into render buffer
 			smgr->drawAll();
-			env->drawAll();
+//			env->drawAll();
 			// set back old render target
 			// The buffer might have been distorted, so clear it
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
@@ -686,7 +979,7 @@ int main()
 		}
 		
 		screenNode->draw(driver);
-//		env->drawAll();
+		env->drawAll();
 //		smgr->drawAll();
 //		driver->drawMeshBuffer();
 

@@ -26,6 +26,8 @@ sailfish: DEFINES += NO_IRR_COMPILE_WITH_X11_
 !sailfish: DEFINES += NO_IRR_COMPILE_WITH_OGLES1_
 x11: DEFINES += _IRR_LINUX_X11_RANDR_
 
+#INCLUDEPATH+=/usr/include
+
 macx {
     QMAKE_CXXFLAGS += $$system('/opt/local/bin/sdl-config --cflags')
     QMAKE_CXXFLAGS += -I/opt/local/include/
