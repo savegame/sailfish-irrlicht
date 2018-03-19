@@ -774,7 +774,11 @@ int main()
 {
 
 	// ask user for driver
+#ifdef __APPLE__
+	video::E_DRIVER_TYPE driverType=video::EDT_OPENGL;
+#else
 	video::E_DRIVER_TYPE driverType=video::EDT_OGLES2;
+#endif
 	if (driverType==video::EDT_COUNT)
 		return 1;
 
