@@ -18,7 +18,12 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #else
-#include <GLES/egl.h>
+# if defined(_IRR_COMPILE_WITH_OGLES2_)
+#  include <GLES2/gl2.h>
+#  include <EGL/egl.h>
+# else
+#  include <GLES/egl.h>
+# endif
 #endif
 
 #include "SIrrCreationParameters.h"

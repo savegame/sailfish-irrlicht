@@ -2,7 +2,7 @@ VERSION = 1.9.0
 
 TEMPLATE = lib
 TARGET = irrlicht
-DESTDIR = ../lib
+DESTDIR = ../../lib
 
 CONFIG += warn_off staticlib
 CONFIG += wayland-compositor link_pkgconfig
@@ -16,6 +16,14 @@ PKGCONFIG += zlib libpng egl
 LIBS += -lbz2 -Wl,-rpath,/usr/lib
 DEFINES += _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_X11_
+
+x11 {
+	DEFINES -= _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+	DEFINES += _IRR_COMPILE_WITH_X11_
+	DEFINES += _IRR_COMPILE_WITH_OGLES2_
+	DEFINES += NO_IRR_COMPILE_WITH_OGLES1_
+	DEFINES += _IRR_COMPILE_WITH_EGL_MANAGER_
+}
 
 INCLUDEPATH += include
 INCLUDEPATH += source/Irrlicht
