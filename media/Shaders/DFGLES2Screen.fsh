@@ -43,7 +43,7 @@ void main(void)
     lowp float depth = texture2D(Texture1,nTexCoord).r;
     //lowp float blur  = 0.0;
     lowp float strength = 5.0;
-    bool isUseDepth = true;
+    bool isUseDepth = false;
     if( depth >= inDepthFar.x && isUseDepth == true)
     {// far depth zone
         float r = (depth - inDepthFar.x)/(1.0 - inDepthFar.x);
@@ -56,5 +56,6 @@ void main(void)
     }
     else
         gl_FragColor = texture2D(Texture0, nTexCoord);
+        //gl_FragColor = vec4(1.0,1.0,1.0,1.0);
     //	gl_Fr/agColor = texture2D(Texture0,ScreenPos.xy);
 }

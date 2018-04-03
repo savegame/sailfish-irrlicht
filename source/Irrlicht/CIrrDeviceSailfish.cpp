@@ -582,6 +582,7 @@ output_handle_geometry(void *data, struct wl_output *wl_output, int32_t x, int32
 		//			break;
 		//		}
 		device->postEventFromUser(event);
+        device->Orientation = (irr::EORIENTATION_EVENT_TYPE)transform;
 //		device->getCursorControl()->setSc
 	}
 }
@@ -1002,8 +1003,19 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
-		irrevent.TouchInput.X = wl_fixed_to_int(x);
-		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+        switch( device->getWindowOriantation() )
+        {
+        case irr::EOET_TRANSFORM_270:
+            irrevent.TouchInput.X = wl_fixed_to_int(y);
+            irrevent.TouchInput.Y = device->getVideoDriver()->getScreenSize().Width -  wl_fixed_to_int(x);
+        case irr::EOET_TRANSFORM_90:
+            irrevent.TouchInput.X = device->getVideoDriver()->getScreenSize().Height - wl_fixed_to_int(y);
+            irrevent.TouchInput.Y = wl_fixed_to_int(x);
+        default:
+            irrevent.TouchInput.X = wl_fixed_to_int(x);
+            irrevent.TouchInput.Y = wl_fixed_to_int(y);
+        }
+
 		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
 		device->postEventFromUser(irrevent);
 	}
@@ -1170,15 +1182,19 @@ void irr::CIrrDeviceSailfish::setQESOrientation(int orientation)
 		{
 		case  irr::EOET_TRANSFORM_NORMAL:
 			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION );
+            WindowOriantation = irr::EORIENTATION_EVENT_TYPE(orientation);
 			break;
 		case  irr::EOET_TRANSFORM_90:
 			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+            WindowOriantation = irr::EORIENTATION_EVENT_TYPE(orientation);
 			break;
 		case  irr::EOET_TRANSFORM_180:
 			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION );
+            WindowOriantation = irr::EORIENTATION_EVENT_TYPE(orientation);
 			break;
 		case  irr::EOET_TRANSFORM_270:
 			qt_extended_surface_set_content_orientation(qtExtendedSurface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
+            WindowOriantation = irr::EORIENTATION_EVENT_TYPE(orientation);
 			break;
 			//		case  WL_OUTPUT_TRANSFORM_FLIPPED:
 			//			break;
@@ -1188,7 +1204,12 @@ void irr::CIrrDeviceSailfish::setQESOrientation(int orientation)
 			//			break;
 			//		case  WL_OUTPUT_TRANSFORM_FLIPPED_270:
 			//			break;
-		}
+        }
+}
+
+irr::EORIENTATION_EVENT_TYPE irr::CIrrDeviceSailfish::getWindowOriantation()
+{
+    return WindowOriantation;
 }
 
 wchar_t irr::CIrrDeviceSailfish::Key2WChar(uint32_t key) const
@@ -1372,8 +1393,8 @@ namespace irr
 			os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 		}
 		nativeDisplay = wlDisplay;
-		Width = CreationParams.WindowSize.Width;//wlCompositor->width;
-		Height = CreationParams.WindowSize.Height;//wlCompositor->height;
+        //Width = CreationParams.WindowSize.Width;//wlCompositor->width;
+        //Height = CreationParams.WindowSize.Height;//wlCompositor->height;
 
 		// second
 		wlSurface = wl_compositor_create_surface(CIrrDeviceSailfish::wlCompositor);
@@ -1650,7 +1671,8 @@ namespace irr
 	//! Resize the render window.
 	void CIrrDeviceSailfish::setWindowSize(const irr::core::dimension2d<u32>& size)
 	{
-		CreationParams.WindowSize = size;
+        //TODO: add allowed orientations to device !!!!
+        CreationParams.WindowSize = core::dimension2du(size.Height,size.Width);
 		if(PhysicalHeight != 0 && PhysicalWidth != 0)
 		{
 #define mm2inch 25,4000508

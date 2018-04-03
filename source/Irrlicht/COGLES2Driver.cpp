@@ -306,7 +306,7 @@ void COGLES2Driver::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SphereMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "COGLES2Reflection2Layer.vsh";
+    VertexShader = OGLES2ShaderPath + "COGLES2Reflection2Layer.vsh";
 	FragmentShader = OGLES2ShaderPath + "COGLES2Reflection2Layer.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",

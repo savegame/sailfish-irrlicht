@@ -59,6 +59,7 @@ include(irrlicht.pri)
 #           examples/Demo/main.cpp
 
 DEFINES += USE_SDL_MIXER
+DEFINES += _IRR_SAILFISH_USE_RENDER_TARGET
 
 #    waylandtest_main.cpp
 #    examples/07.Collision/main.cpp \

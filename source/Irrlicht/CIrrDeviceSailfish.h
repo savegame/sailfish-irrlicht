@@ -338,9 +338,13 @@ namespace irr
 		EGLSurface  Surface;/// EGL surface
 		s32  PhysicalWidth, PhysicalHeight;
 		u32  dpi;
-
 		wchar_t Key2Wchar[255];
+
+        /** window oriantation,that used for sailfish gestures (menu from down, close from up) */
+        EORIENTATION_EVENT_TYPE  WindowOriantation;
 	public:
+        EORIENTATION_EVENT_TYPE  Orientation;
+
 		void setPhysicalSize(s32  width, s32 height)
 		{
 			PhysicalWidth = width;
@@ -353,6 +357,8 @@ namespace irr
 		}
 
 		void setQESOrientation(int orientation);
+
+        EORIENTATION_EVENT_TYPE getWindowOriantation();
 
 		wchar_t Key2WChar(uint32_t key) const;
 	private:

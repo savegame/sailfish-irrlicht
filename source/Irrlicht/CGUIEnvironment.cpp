@@ -196,6 +196,7 @@ void CGUIEnvironment::drawAll()
 	if (Driver)
 	{
 		core::dimension2d<s32> dim(Driver->getScreenSize());
+
 		if (AbsoluteRect.LowerRightCorner.X != dim.Width ||
 			AbsoluteRect.LowerRightCorner.Y != dim.Height)
 		{
@@ -402,6 +403,9 @@ bool CGUIEnvironment::OnEvent(const SEvent& event)
 {
 	bool ret = false;
 	if (UserReceiver
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+	    && (event.EventType != EET_TOUCH_INPUT_EVENT)
+#endif
 		&& (event.EventType != EET_MOUSE_INPUT_EVENT)
 		&& (event.EventType != EET_KEY_INPUT_EVENT)
 		&& (event.EventType != EET_GUI_EVENT || event.GUIEvent.Caller != this))
