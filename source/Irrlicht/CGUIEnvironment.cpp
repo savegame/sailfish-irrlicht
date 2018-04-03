@@ -195,8 +195,13 @@ void CGUIEnvironment::drawAll()
 {
 	if (Driver)
 	{
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+        core::dimension2d<s32> dim;
+        dim.Width = Driver->getScreenSize().Height;
+        dim.Height = Driver->getScreenSize().Width;
+#else
 		core::dimension2d<s32> dim(Driver->getScreenSize());
-
+#endif
 		if (AbsoluteRect.LowerRightCorner.X != dim.Width ||
 			AbsoluteRect.LowerRightCorner.Y != dim.Height)
 		{

@@ -1008,12 +1008,15 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
         case irr::EOET_TRANSFORM_270:
             irrevent.TouchInput.X = wl_fixed_to_int(y);
             irrevent.TouchInput.Y = device->getVideoDriver()->getScreenSize().Width -  wl_fixed_to_int(x);
+            break;
         case irr::EOET_TRANSFORM_90:
             irrevent.TouchInput.X = device->getVideoDriver()->getScreenSize().Height - wl_fixed_to_int(y);
             irrevent.TouchInput.Y = wl_fixed_to_int(x);
+            break;
         default:
             irrevent.TouchInput.X = wl_fixed_to_int(x);
             irrevent.TouchInput.Y = wl_fixed_to_int(y);
+            break;
         }
 
 		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
@@ -1045,8 +1048,9 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_LEFT_UP;
-		irrevent.TouchInput.X = device->getLastTouchPos(id).X;
-		irrevent.TouchInput.Y = device->getLastTouchPos(id).Y;
+        irrevent.TouchInput.X = device->getLastTouchPos(id).X;
+        irrevent.TouchInput.Y = device->getLastTouchPos(id).Y;
+
 		device->postEventFromUser(irrevent);
 	}
 }
@@ -1077,8 +1081,22 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_MOVED;
-		irrevent.TouchInput.X = wl_fixed_to_int(x);
-		irrevent.TouchInput.Y = wl_fixed_to_int(y);
+        switch( device->getWindowOriantation() )
+        {
+        case irr::EOET_TRANSFORM_270:
+            irrevent.TouchInput.X = wl_fixed_to_int(y);
+            irrevent.TouchInput.Y = device->getVideoDriver()->getScreenSize().Width -  wl_fixed_to_int(x);
+            break;
+        case irr::EOET_TRANSFORM_90:
+            irrevent.TouchInput.X = device->getVideoDriver()->getScreenSize().Height - wl_fixed_to_int(y);
+            irrevent.TouchInput.Y = wl_fixed_to_int(x);
+            break;
+        default:
+            irrevent.TouchInput.X = wl_fixed_to_int(x);
+            irrevent.TouchInput.Y = wl_fixed_to_int(y);
+            break;
+        }
+
 		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
 		device->postEventFromUser(irrevent);
 	}
@@ -1392,9 +1410,7 @@ namespace irr
 		else {
 			os::Printer::log("[Good] Okay, we got a compositor and a shell... That's something !");
 		}
-		nativeDisplay = wlDisplay;
-        //Width = CreationParams.WindowSize.Width;//wlCompositor->width;
-        //Height = CreationParams.WindowSize.Height;//wlCompositor->height;
+        nativeDisplay = wlDisplay;
 
 		// second
 		wlSurface = wl_compositor_create_surface(CIrrDeviceSailfish::wlCompositor);
@@ -1551,6 +1567,7 @@ namespace irr
 			ContextManager->initialize(CreationParams, data);
 
 			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
+            //VideoDriver->
 		}
 #else
 			os::Printer::log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
@@ -1672,7 +1689,8 @@ namespace irr
 	void CIrrDeviceSailfish::setWindowSize(const irr::core::dimension2d<u32>& size)
 	{
         //TODO: add allowed orientations to device !!!!
-        CreationParams.WindowSize = core::dimension2du(size.Height,size.Width);
+       // CreationParams.WindowSize = core::dimension2du(size.Height,size.Width);
+        CreationParams.WindowSize = core::dimension2du(size.Width,size.Height);
 		if(PhysicalHeight != 0 && PhysicalWidth != 0)
 		{
 #define mm2inch 25,4000508
