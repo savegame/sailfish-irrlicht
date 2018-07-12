@@ -274,6 +274,9 @@ namespace irr
 			//! A button was clicked.
 			EGET_BUTTON_CLICKED,
 
+			//! A button was pressed down
+			EGET_BUTTON_PRESSED,
+
 			//! A scrollbar has changed its position.
 			EGET_SCROLL_BAR_CHANGED,
 

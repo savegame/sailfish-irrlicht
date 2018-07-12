@@ -207,11 +207,12 @@ namespace gui
 
 		u32 ClickTime, HoverTime, FocusTime;
 
-		bool IsPushButton;
-		bool Pressed;
-		bool UseAlphaChannel;
-		bool DrawBorder;
-		bool ScaleImage;
+		bool   IsPushButton;
+		bool   Pressed;
+		bool   UseAlphaChannel;
+		bool   DrawBorder;
+		bool   ScaleImage;
+		size_t TouchId;
 	};
 
 } // end namespace gui

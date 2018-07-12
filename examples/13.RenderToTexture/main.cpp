@@ -30,6 +30,7 @@ using namespace irr;
 enum GUI_ID : s32
 {
 	id_Button0 = 100,
+	id_ButtonDown,
 	id_scrollFar1,
 };
 
@@ -109,7 +110,7 @@ public:
 		services->setPixelShaderConstant(DepthFarID,reinterpret_cast<f32*>(&m_depth_far), 2);
 	}
 
-	void setIsFlipped(s32 val)
+	void setOrientation(s32 val)
 	{
 		m_screenOrientation = val;
 	}
@@ -164,6 +165,7 @@ public:
 	//! Called if an event happened.
 	virtual bool OnEvent(const SEvent& event)
 	{
+		return false;
 		bool result = false;
 		if( event.EventType != EET_TOUCH_INPUT_EVENT )
 			return Parent ? Parent->OnEvent(event) : true;
@@ -227,7 +229,7 @@ public:
 #endif
 		m_shader = NULL;
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
+		m_orientation = ScreenShaderCB::ScreenOrientation::Rotate270;
 #else
 		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Normal;
 #endif
@@ -250,40 +252,62 @@ public:
 		{
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		case irr::EET_ORITENTATION_EVENT:
-			eventOrientation(event.OrientationEvent);
+			return eventOrientation(event.OrientationEvent);
 			break;
 #endif
 		case irr::EET_TOUCH_INPUT_EVENT:
-			eventTouch(event.TouchInput);
+			if(!m_device->getGUIEnvironment()->postEventFromUser(event))
+				return eventTouch(event.TouchInput);
 			break;
 		case irr::EET_MOUSE_INPUT_EVENT:
-			eventMouse(event.MouseInput);
+			return eventMouse(event.MouseInput);
 			break;
 		case irr::EET_LOG_TEXT_EVENT:
 			eventLog(event.LogEvent);
 			break;
-		case irr::EET_KEY_INPUT_EVENT:
-			if(fpsCamera)
-				fpsCamera->OnEvent(event);
+//		case irr::EET_KEY_INPUT_EVENT:
+//			if(fpsCamera)
+//				return fpsCamera->OnEvent(event);
 			break;
 		case irr::EET_GUI_EVENT:
-			if( event.GUIEvent.Caller->getID() == id_Button0 )
+			switch( event.GUIEvent.EventType)
 			{
-				gui::IGUIButton *btn = static_cast<gui::IGUIButton *>(event.GUIEvent.Caller);
-				if(fpsCamera && btn)
+			case irr::gui::EGET_BUTTON_CLICKED:
+			case irr::gui::EGET_BUTTON_PRESSED:
 				{
-					SEvent keyEvent;
-					keyEvent.EventType = EET_KEY_INPUT_EVENT;
-					keyEvent.KeyInput.PressedDown = btn->isPressed() ;
-					keyEvent.KeyInput.Key =  KEY_DOWN;
-					fpsCamera->OnEvent(keyEvent);
+					if( event.GUIEvent.Caller->getID() == id_Button0 )
+					{
+						gui::IGUIButton *btn = static_cast<gui::IGUIButton *>(event.GUIEvent.Caller);
+						if(fpsCamera && btn)
+						{
+							SEvent keyEvent;
+							keyEvent.EventType = EET_KEY_INPUT_EVENT;
+							keyEvent.KeyInput.PressedDown = btn->isPressed() ;
+							keyEvent.KeyInput.Key =  KEY_UP;
+							return fpsCamera->OnEvent(keyEvent);
+						}
+					}
+					else if(event.GUIEvent.Caller->getID() == id_ButtonDown )
+					{
+						gui::IGUIButton *btn = static_cast<gui::IGUIButton *>(event.GUIEvent.Caller);
+						if(fpsCamera && btn)
+						{
+							SEvent keyEvent;
+							keyEvent.EventType = EET_KEY_INPUT_EVENT;
+							keyEvent.KeyInput.PressedDown = btn->isPressed() ;
+							keyEvent.KeyInput.Key =  KEY_DOWN;
+							return fpsCamera->OnEvent(keyEvent);
+						}
+					}
 				}
+				break;
 			}
 			break;
 		default:
 //			IEventReceiver::OnEvent(event);
 			break;
 		}
+		return false;
 	}
 
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
@@ -291,101 +315,105 @@ public:
 	{
 		m_device = device;
 		m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-		m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
+		m_orientation = ScreenShaderCB::ScreenOrientation::Rotate270;
 
-		Joystic = new CGUIJoystic(
-		            m_device->getGUIEnvironment(),
-		            nullptr, 0,
-		            core::recti(0,0, m_device->getScreenResolution().Height*0.5f, m_device->getScreenResolution().Width) );
-		Joystic->Radius.X = Joystic->Radius.Y = m_device->getScreenResolution().Width * 0.33f;
+//		Joystic = new CGUIJoystic(
+//		            m_device->getGUIEnvironment(),
+//		            nullptr, 0,
+//		            core::recti(0,0, m_device->getScreenResolution().Height*0.5f, m_device->getScreenResolution().Width) );
+//		Joystic->Radius.X = Joystic->Radius.Y = m_device->getScreenResolution().Width * 0.33f;
 	}
 #endif
 
 	void setScreenShader(ScreenShaderCB *shader)
 	{
 		m_shader = shader;
-		m_shader->setIsFlipped(m_isFlipLandscape);
+		m_shader->setOrientation(m_orientation);
 	}
 
 	s32 isFlipLandscape() const
 	{
-		return m_isFlipLandscape;
+		return m_orientation;
 	}
 
 protected:
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-	void eventOrientation(const SEvent::SOrientationEvent &event)
+	bool eventOrientation(const SEvent::SOrientationEvent &event)
 	{
 		if(!m_device || !m_shader)
-			return;
+			return false;
 		switch (event.EventType) {
 		case irr::EOET_TRANSFORM_90:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_90);
-			m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate90;
-			m_shader->setIsFlipped(m_isFlipLandscape);
+			m_orientation = ScreenShaderCB::ScreenOrientation::Rotate90;
+			m_shader->setOrientation(m_orientation);
+			return true;
 			break;
 		case irr::EOET_TRANSFORM_270:
 			m_device->setQESOrientation(irr::EOET_TRANSFORM_270);
-			m_isFlipLandscape = ScreenShaderCB::ScreenOrientation::Rotate270;
-			m_shader->setIsFlipped(m_isFlipLandscape);
+			m_orientation = ScreenShaderCB::ScreenOrientation::Rotate270;
+			m_shader->setOrientation(m_orientation);
+			return true;
 			break;
 		}
+		return false;
 	}
 #endif
-	void eventTouch(const SEvent::STouchInput &event)
+	bool eventTouch(const SEvent::STouchInput &event)
 	{
-		switch(event.Event)
-		{
-		case irr::ETIE_MOVED:
-			break;
-		case irr::ETIE_PRESSED_DOWN:
-			for( int i = 0; i < 10; i++)
-			{
-				if( m_touches[i].id == -1 )
-				{
-					m_touches[i].id = event.ID;
-					m_touches[i].pos.X = event.X;
-					m_touches[i].pos.Y = event.Y;
-					m_touches[i].pressed = true;
-					break;
-				}
-			}
-			break;
-		case irr::ETIE_LEFT_UP:
-			for( int i = 0; i < 10; i++)
-			{
-				if( m_touches[i].id == event.ID )
-				{
-					m_touches[i].id = -1;
-					m_touches[i].pos.X = event.X;
-					m_touches[i].pos.Y = event.Y;
-					m_touches[i].pressed = false;
-					break;
-				}
-			}
-			break;
-		}
+
+//		switch(event.Event)
+//		{
+//		case irr::ETIE_MOVED:
+//			break;
+//		case irr::ETIE_PRESSED_DOWN:
+//			for( int i = 0; i < 10; i++)
+//			{
+//				if( m_touches[i].id == -1 )
+//				{
+//					m_touches[i].id = event.ID;
+//					m_touches[i].pos.X = event.X;
+//					m_touches[i].pos.Y = event.Y;
+//					m_touches[i].pressed = true;
+//					break;
+//				}
+//			}
+//			break;
+//		case irr::ETIE_LEFT_UP:
+//			for( int i = 0; i < 10; i++)
+//			{
+//				if( m_touches[i].id == event.ID )
+//				{
+//					m_touches[i].id = -1;
+//					m_touches[i].pos.X = event.X;
+//					m_touches[i].pos.Y = event.Y;
+//					m_touches[i].pressed = false;
+//					break;
+//				}
+//			}
+//			break;
+//		}
 
 		SEvent cameraEvent;
 		cameraEvent.EventType = EET_TOUCH_INPUT_EVENT;
 		cameraEvent.TouchInput = event;
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-		if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate270)
-		{
-			cameraEvent.TouchInput.X = event.Y;
-			cameraEvent.TouchInput.Y = (m_device->getScreenResolution().Width - event.X);
-		}
-		else if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate90)
-		{
-			cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
-			cameraEvent.TouchInput.Y = event.X;
-		}
+//		if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate270)
+//		{
+//			cameraEvent.TouchInput.X = event.Y;
+//			cameraEvent.TouchInput.Y = (m_device->getScreenResolution().Width - event.X);
+//		}
+//		else if(m_isFlipLandscape == ScreenShaderCB::ScreenOrientation::Rotate90)
+//		{
+//			cameraEvent.TouchInput.X = (m_device->getScreenResolution().Height - event.Y);
+//			cameraEvent.TouchInput.Y = event.X;
+//		}
 #endif
-		bool isJoyEvent = Joystic->IsTouchPressed;
-		bool isJoystic = Joystic->OnEvent(cameraEvent);
+		bool isJoyEvent = (Joystic)?Joystic->IsTouchPressed:false;
+		bool isJoystic = (Joystic)?Joystic->OnEvent(cameraEvent):false;
 
-		if( !isJoystic || (isJoystic && isJoyEvent) )
-			fpsCamera->OnEvent(cameraEvent);
+		if( !isJoystic )
+			return fpsCamera->OnEvent(cameraEvent);
 
 		if(isJoystic && false)
 		{
@@ -398,7 +426,7 @@ protected:
 			else if( Joystic->Velocity.Y < -0.2 )
 				keyEvent.KeyInput.Key = KEY_UP;
 
-			fpsCamera->OnEvent(keyEvent);
+			return fpsCamera->OnEvent(keyEvent);
 
 //			if( Joystic->Velocity.Y > 0.2 )
 //				keyEvent.KeyInput.Key = KEY_RIGHT;
@@ -414,14 +442,14 @@ protected:
 		printf("%s\n", event.Text);
 	}
 	
-	void eventMouse(const SEvent::SMouseInput &event)
+	bool eventMouse(const SEvent::SMouseInput &event)
 	{
 		if(fpsCamera){
 			SEvent cameraEvent;
 			cameraEvent.EventType = EET_MOUSE_INPUT_EVENT;
 			cameraEvent.MouseInput = event;
 			
-			fpsCamera->OnEvent(cameraEvent);
+			return fpsCamera->OnEvent(cameraEvent);
 		}
 	}
 private:
@@ -445,7 +473,7 @@ private:
 	touch m_touches[10];
 	int m_touchCount;
 	ScreenShaderCB *m_shader;
-	s32 m_isFlipLandscape;
+	s32 m_orientation;
 public:
 
 	scene::ICameraSceneNode *fpsCamera;
@@ -585,23 +613,24 @@ protected:
 };
 
 
-class Button : public gui::CGUIButton
-{
-public:
-	Button(gui::IGUIEnvironment* environment, gui::IGUIElement* parent, s32 id, core::rect<s32> rectangle)
-	    : gui::CGUIButton(environment, parent, id, rectangle)
-	{
-		
-	}
-	
-protected:
-	
-};
-
 void create_ui(gui::IGUIEnvironment* env, const core::dimension2du &resolution)
 {
 	//env->addButton( core::recti(10,10,128,128), nullptr, id_Button0, L"", L"" );
-	Button *btn = new Button(env, env->getRootGUIElement(), id_Button0, core::recti(10,10,128,128));
+//	Button *btn = new Button(env, env->getRootGUIElement(), id_Button0, core::recti(10,10,256,256));
+	core::dimension2du btnSize = core::dimension2du(128,128);
+	core::dimension2du margin = core::dimension2du(10,10);
+	gui::IGUIButton *btn = env->addButton(
+	            core::recti(core::position2di(10,resolution.Height - btnSize.Height*2 - margin.Height*2)
+	                        ,btnSize)
+	            ,nullptr,id_Button0,L"UP"
+	            );
+	env->addButton(
+	            core::recti(
+	                btn->getRelativePosition().UpperLeftCorner + core::position2di(0,btn->getRelativePosition().getHeight() + margin.Height),
+	                btnSize
+	                ),
+	            nullptr,id_ButtonDown,L"DOWN"
+	            );
 
 	gui::IGUIScrollBar *scroll = env->addScrollBar(true, core::recti(10, resolution.Height - 30, (resolution.Width < resolution.Height)?resolution.Width:resolution.Height, resolution.Height - 20 ), 0, id_scrollFar1 );
 	scroll->setMin(0);
@@ -744,30 +773,8 @@ void load_q3map(io::path path, IrrlichtDevice *device/*, scene::ICameraSceneNode
 
 void fixCamera(scene::ICameraSceneNode *cam, core::dimension2du resolution)
 {
-//	core::matrix4 m2;
-//	f32 wd = (f32)((f32)resolution.Width*0.003651);
-//	f32 hg = (f32)((f32)resolution.Height*0.003651);
-//	m2.buildProjectionMatrixPerspectiveLH(wd,hg,cam->getNearValue(),cam->getFarValue());
-//	cam->setProjectionMatrix(m2);
-
-	// set default projection
-	f32 Fovy = core::PI / 2.5f;	// Field of view, in radians.
-	f32 Aspect = (f32)resolution.Width /
-	    (f32)resolution.Height;
-
-	scene::SViewFrustum ViewArea;
-	ViewArea.setFarNearDistance(cam->getFarValue() - cam->getNearValue());
-	ViewArea.getTransform ( video::ETS_PROJECTION ).buildProjectionMatrixPerspectiveFovLH(Fovy, Aspect, cam->getNearValue(),cam->getFarValue());
-
-	ViewArea.cameraPosition = cam->getAbsolutePosition();
-
-	core::matrix4 m(core::matrix4::EM4CONST_NOTHING);
-	m.setbyproduct_nocheck(ViewArea.getTransform(video::ETS_PROJECTION),
-	                       ViewArea.getTransform(video::ETS_VIEW));
-	ViewArea.setFrom(m);
-
-	//m.buildProjectionMatrixPerspectiveLH(resolution.Width,resolution.Height,cam->getNearValue(),cam->getFarValue());
-//	*cam->getViewFrustum() = ViewArea;
+	cam->setAspectRatio((f32)resolution.Width/(f32)resolution.Height);
+	return;
 }
 
 int main()
@@ -807,6 +814,8 @@ int main()
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 	receiver->setSailfishDevice( reinterpret_cast<irr::CIrrDeviceSailfish*>(device) );
 	device->getCursorControl()->setVisible(false);
+	resolution.Width = device->getVideoDriver()->getScreenSize().Height;
+	resolution.Height = device->getVideoDriver()->getScreenSize().Width;
 #else
 	device->getCursorControl()->setVisible(true);
 #endif
@@ -876,7 +885,9 @@ int main()
 	ScreenNode *screenNode = new ScreenNode(smgr->getRootSceneNode(), smgr, -1);
 	receiver->setScreenShader(screenNode->getShader());
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-	resolution = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
+//	resolution = dynamic_cast<irr::CIrrDeviceSailfish*>(device)->getScreenResolution();
+	resolution.Height = driver->getScreenSize().Width;
+	resolution.Width = driver->getScreenSize().Height;
 //	resolution = core::dimension2du(resolution.Height/**0.15*/, resolution.Width/**0.15*/);
 #endif
 	
@@ -911,6 +922,7 @@ int main()
 
 		fixCamera(fpsCamera, resolution);
 		//fixedCam->set
+
 	}
 	else
 	{
@@ -972,7 +984,7 @@ int main()
 
 			// draw whole scene into render buffer
 			smgr->drawAll();
-//			env->drawAll();
+			env->drawAll();
 			// set back old render target
 			// The buffer might have been distorted, so clear it
 			driver->setRenderTargetEx(0, 0, video::SColor(0));
@@ -983,7 +995,7 @@ int main()
 		}
 		
 		screenNode->draw(driver);
-		env->drawAll();
+//		env->drawAll();
 //		smgr->drawAll();
 //		driver->drawMeshBuffer();
 

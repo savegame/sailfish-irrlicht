@@ -703,9 +703,9 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
                          uint32_t capabilities)
 {
 	if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !irr::CIrrDeviceSailfish::wlPointer) {
-		irr::os::Printer::log("Display has a pointer");
+		irr::os::Printer::log("Display has a pointer", irr::ELL_INFORMATION);
 		irr::CIrrDeviceSailfish::wlPointer = wl_seat_get_pointer(seat);
-		irr::os::Printer::log("Wayland add pointer listener");
+		irr::os::Printer::log("Wayland add pointer listener", irr::ELL_INFORMATION);
 		wl_pointer_add_listener(irr::CIrrDeviceSailfish::wlPointer, &pointer_listener, data);
 	} else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && irr::CIrrDeviceSailfish::wlPointer) {
 		wl_pointer_destroy(irr::CIrrDeviceSailfish::wlPointer);
@@ -713,9 +713,9 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
-		irr::os::Printer::log("Display has a keyboard");
+		irr::os::Printer::log("Display has a keyboard", irr::ELL_INFORMATION);
 		irr::CIrrDeviceSailfish::wlKeyboard = wl_seat_get_keyboard(seat);
-		irr::os::Printer::log("Wayland add keyboard listener");
+		irr::os::Printer::log("Wayland add keyboard listener", irr::ELL_INFORMATION);
 		wl_keyboard_add_listener(irr::CIrrDeviceSailfish::wlKeyboard, &keyboard_listener, data);
 	}
 	else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)) {
@@ -725,13 +725,14 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH && !irr::CIrrDeviceSailfish::wlTouch) {
-		irr::os::Printer::log("Display has a touch screen");
+		irr::os::Printer::log("Display has a touch screen", irr::ELL_INFORMATION);
 		irr::CIrrDeviceSailfish::wlTouch = wl_seat_get_touch(seat);
-		irr::os::Printer::log("Wayland add touch listener");
+		irr::os::Printer::log("Wayland add touch listener", irr::ELL_INFORMATION);
 		wl_touch_add_listener(irr::CIrrDeviceSailfish::wlTouch, &touch_listener, data);
 	}
 	else if (capabilities & WL_SEAT_CAPABILITY_TOUCH && irr::CIrrDeviceSailfish::wlTouch) {
 		wl_touch_destroy(irr::CIrrDeviceSailfish::wlTouch);
+		irr::os::Printer::log("Display has no touch capability",irr::ELL_WARNING);
 		irr::CIrrDeviceSailfish::wlTouch = NULL;
 	}
 }
@@ -977,7 +978,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
                   uint32_t time, struct wl_surface *surface,
                   int32_t id, wl_fixed_t x, wl_fixed_t y)
 {
-	//#ifdef _DEBUG
+#ifdef _DEBUG
 	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
@@ -995,7 +996,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		m+= ";";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-	//#endif
+#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
@@ -1003,21 +1004,21 @@ touch_handle_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 		irrevent.EventType = irr::EET_TOUCH_INPUT_EVENT;
 		irrevent.TouchInput.ID = id;
 		irrevent.TouchInput.Event = irr::ETIE_PRESSED_DOWN;
-        switch( device->getWindowOriantation() )
-        {
-        case irr::EOET_TRANSFORM_270:
-            irrevent.TouchInput.X = wl_fixed_to_int(y);
-            irrevent.TouchInput.Y = device->getVideoDriver()->getScreenSize().Width -  wl_fixed_to_int(x);
-            break;
-        case irr::EOET_TRANSFORM_90:
-            irrevent.TouchInput.X = device->getVideoDriver()->getScreenSize().Height - wl_fixed_to_int(y);
-            irrevent.TouchInput.Y = wl_fixed_to_int(x);
-            break;
-        default:
-            irrevent.TouchInput.X = wl_fixed_to_int(x);
-            irrevent.TouchInput.Y = wl_fixed_to_int(y);
-            break;
-        }
+		switch( device->getWindowOriantation() )
+		{
+		case irr::EOET_TRANSFORM_270:
+			irrevent.TouchInput.X = wl_fixed_to_int(y);
+			irrevent.TouchInput.Y = device->getVideoDriver()->getScreenSize().Width -  wl_fixed_to_int(x);
+			break;
+		case irr::EOET_TRANSFORM_90:
+			irrevent.TouchInput.X = device->getVideoDriver()->getScreenSize().Height - wl_fixed_to_int(y);
+			irrevent.TouchInput.Y = wl_fixed_to_int(x);
+			break;
+		default:
+			irrevent.TouchInput.X = wl_fixed_to_int(x);
+			irrevent.TouchInput.Y = wl_fixed_to_int(y);
+			break;
+		}
 
 		device->setLastTouchPos(id, irrevent.TouchInput.X, irrevent.TouchInput.Y);
 		device->postEventFromUser(irrevent);
@@ -1028,7 +1029,7 @@ static void
 touch_handle_up(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, int32_t id)
 {
-	//#ifdef _DEBUG
+#ifdef _DEBUG
 	if(irr::os::Printer::Logger && irr::os::Printer::Logger->getLogLevel() <= irr::ELL_DEBUG )
 	{
 		irr::core::stringc m = "[T:";
@@ -1040,7 +1041,7 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 		m+= ");";
 		irr::os::Printer::log(m.c_str(), irr::ELL_DEBUG);
 	}
-	//#endif
+#endif
 	if(data)
 	{
 		irr::CIrrDeviceSailfish *device = reinterpret_cast<irr::CIrrDeviceSailfish*>(data);
