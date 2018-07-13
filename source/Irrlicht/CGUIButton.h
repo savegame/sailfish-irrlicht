@@ -213,6 +213,7 @@ namespace gui
 		bool   DrawBorder;
 		bool   ScaleImage;
 		size_t TouchId;
+		bool   Touched;
 	};
 
 } // end namespace gui

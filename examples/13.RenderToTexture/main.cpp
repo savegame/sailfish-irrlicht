@@ -50,12 +50,12 @@ public:
 //	    ColorID(-1), 
 	    TextureID0(-1), TextureID1(-1), FirstUpdate(true),
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-	                    m_screenOrientation(Rotate270),
+	    m_screenOrientation(Rotate270),
 #else
-	                    m_screenOrientation(Normal),
+	    m_screenOrientation(Normal),
 #endif
-	                    OrientationID(-1),
-	                    ResolutionID(-1)
+	    OrientationID(-1),
+	    ResolutionID(-1)
 	{
 		m_resolution = core::dimension2df(640.0,480.0);
 		m_depth_far = core::vector2df(0.999f,0.95f);

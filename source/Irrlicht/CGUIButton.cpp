@@ -161,7 +161,7 @@ bool CGUIButton::OnEvent(const SEvent& event)
 		{
 			if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 			{
-				if (!IsPushButton)
+				if (!IsPushButton && !Touched)
 					setPressed(false);
 				FocusTime = os::Timer::getTime();
 			}
@@ -217,13 +217,16 @@ bool CGUIButton::OnEvent(const SEvent& event)
 		}
 		break;
 	case EET_TOUCH_INPUT_EVENT:
-		if (event.TouchInput.Event == ETIE_PRESSED_DOWN)
+		if (event.TouchInput.Event == ETIE_PRESSED_DOWN && !isPressed())
 		{
 			if (!IsPushButton) {
-				if(!Pressed)
+				if(!Touched)
+				{
 					TouchId = event.TouchInput.ID;
+					Touched = true;
+				}
 				setPressed(true);
-				if ( Pressed )
+				//if ( Pressed )
 				{
 					SEvent newEvent;
 					newEvent.EventType = EET_GUI_EVENT;
@@ -236,7 +239,7 @@ bool CGUIButton::OnEvent(const SEvent& event)
 			return true;
 		}
 		else
-		if (event.TouchInput.Event == ETIE_LEFT_UP && TouchId == event.TouchInput.ID)
+		if (event.TouchInput.Event == ETIE_LEFT_UP && TouchId == event.TouchInput.ID && Touched)
 		{
 //			if( TouchId != event.TouchInput.ID )
 //				return false;
@@ -244,8 +247,10 @@ bool CGUIButton::OnEvent(const SEvent& event)
 
 			if ( !AbsoluteClippingRect.isPointInside( core::position2d<s32>(event.TouchInput.X, event.TouchInput.Y ) ) )
 			{
-				if (!IsPushButton)
+				if (!IsPushButton){
 					setPressed(false);
+					Touched = false;
+				}
 				return true;
 			}
 
@@ -267,6 +272,7 @@ bool CGUIButton::OnEvent(const SEvent& event)
 				Parent->OnEvent(newEvent);
 			}
 			TouchId = 0;
+			Touched = false;
 
 			return true;
 		}

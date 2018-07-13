@@ -35,17 +35,17 @@ namespace irr
 		IrrlichtDevice::postEventFromUser. They take the same path as mouse events. */
 		EET_KEY_INPUT_EVENT,
 
-        //! A touch input event.
+		//! A touch input event.
 		EET_TOUCH_INPUT_EVENT,
 
-        //! A accelerometer event.
-        EET_ACCELEROMETER_EVENT,
+		//! A accelerometer event.
+		EET_ACCELEROMETER_EVENT,
 
-        //! A gyroscope event.
-        EET_GYROSCOPE_EVENT,
+		//! A gyroscope event.
+		EET_GYROSCOPE_EVENT,
 
-        //! A device motion event.
-        EET_DEVICE_MOTION_EVENT,
+		//! A device motion event.
+		EET_DEVICE_MOTION_EVENT,
 
 		//! A joystick (joypad, gamepad) input event.
 		/** Joystick events are created by polling all connected joysticks once per
