@@ -35,7 +35,7 @@ CSceneNodeAnimatorCameraFPS::CSceneNodeAnimatorCameraFPS(gui::ICursorControl* cu
 	if (CursorControl)
 		CursorControl->grab();
 
-//	allKeysUp();
+	allKeysUp();
 
 	// create key map
 	if (!keyMapArray || !keyMapSize)
@@ -161,7 +161,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 
 	if ( firstInput )
 	{
-//		allKeysUp();
+		allKeysUp();
 		firstInput = false;
 	}
 #endif
@@ -215,7 +215,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 	}
 
 	// keyboard rotation
-	if (CursorKeys[EKA_ROTATE_LEFT])
+	if ( CursorKeys[EKA_ROTATE_LEFT] )
 		relativeRotation.Y -= timeDiff * RotateSpeedKeyboard;
 
 	if (CursorKeys[EKA_ROTATE_RIGHT])
@@ -335,6 +335,12 @@ void CSceneNodeAnimatorCameraFPS::resetCursorPos()
 	CursorControl->setPosition(0.5f, 0.5f);
 	CenterCursor = CursorControl->getRelativePosition();
 	CursorPos = CenterCursor;
+}
+
+void CSceneNodeAnimatorCameraFPS::allKeysUp()
+{
+	for (u32 i=0; i<EKA_COUNT; ++i)
+		CursorKeys[i] = false;
 }
 
 //! Sets the rotation speed
