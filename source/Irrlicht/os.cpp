@@ -257,9 +257,13 @@ namespace os
 // linux/ansi version
 // ----------------------------------------------------------------
 
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+#include <iostream>
+#endif
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
+
 
 namespace irr
 {
@@ -269,7 +273,11 @@ namespace os
 	//! prints a debuginfo string
 	void Printer::print(const c8* message, ELOG_LEVEL ll)
 	{
+#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+        std::cout << message << std::endl;//:std::cerr << message << std::endl;
+#else
 		printf("%s\n", message);
+#endif
 	}
 
 	void Timer::initTimer(bool usePerformanceTimer)
