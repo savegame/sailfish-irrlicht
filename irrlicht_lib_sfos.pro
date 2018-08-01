@@ -2,9 +2,9 @@ VERSION = 1.9.0
 
 TEMPLATE = lib
 TARGET = irrlicht
-DESTDIR = ../../lib
+DESTDIR = $$OUT_PWD/../lib
 
-CONFIG += warn_off staticlib
+CONFIG += warn_off #staticlib
 CONFIG += wayland-compositor link_pkgconfig
 #QT += compositor widgets core quick
 
