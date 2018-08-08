@@ -22,6 +22,7 @@
 #include "IAnimatedMesh.h"
 #include "SMesh.h"
 #include "CDynamicMeshBuffer.h"
+#include "ITexture.h"
 
 namespace irr
 {
@@ -73,6 +74,175 @@ namespace scene
 	}
 
 
+	//! Initializes the terrain data. Loads the vertices from the heightMapFile
+	bool CTerrainSceneNode::setHeightMap(video::ITexture* textureHeightMap, video::SColor vertexColor,
+			s32 smoothFactor)
+	{
+		if (!textureHeightMap)
+			return false;
+
+		Mesh->MeshBuffers.clear();
+		const u32 startTime = os::Timer::getRealTime();
+//		video::IImage* heightMap = SceneManager->getVideoD`river()->createImageFromFile(file);
+		
+		
+		video::IImage* heightMap = SceneManager->getVideoDriver()->createImageFromData (
+		      textureHeightMap->getColorFormat(),
+		      textureHeightMap->getSize(),
+		      textureHeightMap->lock(),
+		      false  //copy mem
+		      );
+
+		if (!heightMap)
+		{
+			os::Printer::log("Unable to load heightmap.");
+			return false;
+		}
+
+		HeightmapFile = textureHeightMap->getName();
+		SmoothFactor = smoothFactor;
+
+		// Get the dimension of the heightmap data
+		TerrainData.Size = heightMap->getDimension().Width;
+
+		switch (TerrainData.PatchSize)
+		{
+			case ETPS_9:
+				if (TerrainData.MaxLOD > 3)
+				{
+					TerrainData.MaxLOD = 3;
+				}
+			break;
+			case ETPS_17:
+				if (TerrainData.MaxLOD > 4)
+				{
+					TerrainData.MaxLOD = 4;
+				}
+			break;
+			case ETPS_33:
+				if (TerrainData.MaxLOD > 5)
+				{
+					TerrainData.MaxLOD = 5;
+				}
+			break;
+			case ETPS_65:
+				if (TerrainData.MaxLOD > 6)
+				{
+					TerrainData.MaxLOD = 6;
+				}
+			break;
+			case ETPS_129:
+				if (TerrainData.MaxLOD > 7)
+				{
+					TerrainData.MaxLOD = 7;
+				}
+			break;
+		}
+
+		// --- Generate vertex data from heightmap ----
+		// resize the vertex array for the mesh buffer one time (makes loading faster)
+		scene::CDynamicMeshBuffer *mb=0;
+
+		const u32 numVertices = TerrainData.Size * TerrainData.Size;
+		if (numVertices <= 65536)
+		{
+			//small enough for 16bit buffers
+			mb=new scene::CDynamicMeshBuffer(video::EVT_2TCOORDS, video::EIT_16BIT);
+			RenderBuffer->getIndexBuffer().setType(video::EIT_16BIT);
+		}
+		else
+		{
+			//we need 32bit buffers
+			mb=new scene::CDynamicMeshBuffer(video::EVT_2TCOORDS, video::EIT_32BIT);
+			RenderBuffer->getIndexBuffer().setType(video::EIT_32BIT);
+		}
+
+		mb->getVertexBuffer().set_used(numVertices);
+
+		// Read the heightmap to get the vertex data
+		// Apply positions changes, scaling changes
+		const f32 tdSize = 1.0f/(f32)(TerrainData.Size-1);
+		s32 index = 0;
+		float fx=0.f;
+		float fx2=0.f;
+		for (s32 x = 0; x < TerrainData.Size; ++x)
+		{
+			float fz=0.f;
+			float fz2=0.f;
+			for (s32 z = 0; z < TerrainData.Size; ++z)
+			{
+				video::S3DVertex2TCoords& vertex= static_cast<video::S3DVertex2TCoords*>(mb->getVertexBuffer().pointer())[index++];
+				vertex.Normal.set(0.0f, 1.0f, 0.0f);
+				vertex.Color = vertexColor;
+				vertex.Pos.X = fx;
+				vertex.Pos.Y = (f32) heightMap->getPixel(TerrainData.Size-x-1,z).getLightness();
+				vertex.Pos.Z = fz;
+
+				vertex.TCoords.X = vertex.TCoords2.X = 1.f-fx2;
+				vertex.TCoords.Y = vertex.TCoords2.Y = fz2;
+
+				++fz;
+				fz2 += tdSize;
+			}
+			++fx;
+			fx2 += tdSize;
+		}
+
+		// drop heightMap, no longer needed
+		heightMap->drop();
+
+		smoothTerrain(mb, smoothFactor);
+
+		// calculate smooth normals for the vertices
+		calculateNormals(mb);
+
+		// add the MeshBuffer to the mesh
+		Mesh->addMeshBuffer(mb);
+
+		// We copy the data to the renderBuffer, after the normals have been calculated.
+		RenderBuffer->getVertexBuffer().set_used(numVertices);
+
+		for (u32 i = 0; i < numVertices; ++i)
+		{
+			RenderBuffer->getVertexBuffer()[i] = mb->getVertexBuffer()[i];
+			RenderBuffer->getVertexBuffer()[i].Pos *= TerrainData.Scale;
+			RenderBuffer->getVertexBuffer()[i].Pos += TerrainData.Position;
+		}
+
+		// We no longer need the mb
+		mb->drop();
+
+		// calculate all the necessary data for the patches and the terrain
+		calculateDistanceThresholds();
+		createPatches();
+		calculatePatchData();
+
+		// set the default rotation pivot point to the terrain nodes center
+		TerrainData.RotationPivot = TerrainData.Center;
+
+		// Rotate the vertices of the terrain by the rotation
+		// specified. Must be done after calculating the terrain data,
+		// so we know what the current center of the terrain is.
+		setRotation(TerrainData.Rotation);
+
+		// Pre-allocate memory for indices
+
+		RenderBuffer->getIndexBuffer().set_used(
+				TerrainData.PatchCount * TerrainData.PatchCount *
+				TerrainData.CalcPatchSize * TerrainData.CalcPatchSize * 6);
+
+		RenderBuffer->setDirty();
+
+		const u32 endTime = os::Timer::getRealTime();
+
+		c8 tmp[255];
+		snprintf_irr(tmp, 255, "Generated terrain data (%dx%d) in %.4f seconds",
+			TerrainData.Size, TerrainData.Size, (endTime - startTime) / 1000.0f );
+		os::Printer::log(tmp);
+
+		return true;
+	}
+	
 	//! Initializes the terrain data. Loads the vertices from the heightMapFile
 	bool CTerrainSceneNode::loadHeightMap(io::IReadFile* file, video::SColor vertexColor,
 			s32 smoothFactor)

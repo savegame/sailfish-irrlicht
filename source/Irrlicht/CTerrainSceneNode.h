@@ -50,6 +50,9 @@ namespace scene
 
 		virtual ~CTerrainSceneNode();
 
+		bool setHeightMap(video::ITexture *textureHeightMap, 
+			video::SColor vertexColor = video::SColor ( 255, 255, 255, 255 ), s32 smoothFactor = 0);
+		
 		//! Initializes the terrain data.  Loads the vertices from the heightMapFile.
 		virtual bool loadHeightMap(io::IReadFile* file,
 			video::SColor vertexColor = video::SColor ( 255, 255, 255, 255 ), s32 smoothFactor = 0 ) _IRR_OVERRIDE_;
@@ -216,7 +219,7 @@ namespace scene
 		//! Creates a clone of this scene node and its children.
 		virtual ISceneNode* clone(ISceneNode* newParent,
 				ISceneManager* newManager) _IRR_OVERRIDE_;
-
+		
 	private:
 		friend class CTerrainTriangleSelector;
 
