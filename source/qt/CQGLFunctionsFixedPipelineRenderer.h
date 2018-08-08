@@ -17,10 +17,10 @@ namespace irr
 namespace video
 {
 
-class COGLES2MaterialBaseCB : public IShaderConstantSetCallBack
+class CQGLFunctionsMaterialBaseCB : public IShaderConstantSetCallBack
 {
 public:
-	COGLES2MaterialBaseCB();
+	CQGLFunctionsMaterialBaseCB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);
@@ -83,10 +83,10 @@ protected:
 	f32 Thickness;
 };
 
-class COGLES2MaterialSolidCB : public COGLES2MaterialBaseCB
+class CQGLFunctionsMaterialSolidCB : public CQGLFunctionsMaterialBaseCB
 {
 public:
-	COGLES2MaterialSolidCB();
+	CQGLFunctionsMaterialSolidCB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);
@@ -104,10 +104,10 @@ protected:
 	s32 TextureUnit0;
 };
 
-class COGLES2MaterialSolid2CB : public COGLES2MaterialBaseCB
+class CQGLFunctionsMaterialSolid2CB : public CQGLFunctionsMaterialBaseCB
 {
 public:
-	COGLES2MaterialSolid2CB();
+	CQGLFunctionsMaterialSolid2CB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);
@@ -128,10 +128,10 @@ protected:
 	s32 TextureUnit1;
 };
 
-class COGLES2MaterialLightmapCB : public COGLES2MaterialBaseCB
+class CQGLFunctionsMaterialLightmapCB : public CQGLFunctionsMaterialBaseCB
 {
 public:
-	COGLES2MaterialLightmapCB(float modulate);
+	CQGLFunctionsMaterialLightmapCB(float modulate);
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);
@@ -154,10 +154,10 @@ protected:
 	s32 TextureUnit1;
 };
 
-class COGLES2MaterialReflectionCB : public COGLES2MaterialBaseCB
+class CQGLFunctionsMaterialReflectionCB : public CQGLFunctionsMaterialBaseCB
 {
 public:
-	COGLES2MaterialReflectionCB();
+	CQGLFunctionsMaterialReflectionCB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);
@@ -177,10 +177,10 @@ protected:
 	s32 TextureUnit1;
 };
 
-class COGLES2MaterialOneTextureBlendCB : public COGLES2MaterialBaseCB
+class CQGLFunctionsMaterialOneTextureBlendCB : public CQGLFunctionsMaterialBaseCB
 {
 public:
-	COGLES2MaterialOneTextureBlendCB();
+	CQGLFunctionsMaterialOneTextureBlendCB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);

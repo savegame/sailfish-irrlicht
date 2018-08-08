@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "COGLES2ParallaxMapRenderer.h"
+#include "CQGLFunctionsParallaxMapRenderer.h"
 
 #if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
@@ -20,7 +20,7 @@ namespace video
 
 // EMT_PARALLAX_MAP_SOLID + EMT_PARALLAX_MAP_TRANSPARENT_ADD_COLOR + EMT_PARALLAX_MAP_TRANSPARENT_VERTEX_ALPHA
 
-COGLES2MaterialParallaxMapCB::COGLES2MaterialParallaxMapCB() :
+CQGLFunctionsMaterialParallaxMapCB::CQGLFunctionsMaterialParallaxMapCB() :
 	FirstUpdate(true), WVPMatrixID(-1), WVMatrixID(-1), EyePositionID(-1), LightPositionID(-1), LightColorID(-1), FactorID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
 	FogEnableID(-1), FogTypeID(-1), FogColorID(-1), FogStartID(-1), FogEndID(-1), FogDensityID(-1), Factor(0.02f), TextureUnit0(0), TextureUnit1(1),
 	FogEnable(0), FogType(1), FogColor(SColorf(0.f, 0.f, 0.f, 1.f)), FogStart(0.f), FogEnd(0.f), FogDensity(0.f)
@@ -32,7 +32,7 @@ COGLES2MaterialParallaxMapCB::COGLES2MaterialParallaxMapCB() :
 	}
 }
 
-void COGLES2MaterialParallaxMapCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialParallaxMapCB::OnSetMaterial(const SMaterial& material)
 {
 	if (!core::equals(material.MaterialTypeParam, 0.f))
 		Factor = material.MaterialTypeParam;
@@ -45,7 +45,7 @@ void COGLES2MaterialParallaxMapCB::OnSetMaterial(const SMaterial& material)
 		FogEnable = 0;
 }
 
-void COGLES2MaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
 	IVideoDriver* driver = services->getVideoDriver();
 

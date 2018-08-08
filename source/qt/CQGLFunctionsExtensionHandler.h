@@ -23,7 +23,7 @@ namespace irr
 namespace video
 {
 
-	class COGLES2ExtensionHandler
+	class CQGLFunctionsExtensionHandler
 	{
 	public:
 		enum EOGLES2Features
@@ -168,7 +168,7 @@ namespace video
 			IRR_OGLES2_Feature_Count
 		};
 
-		COGLES2ExtensionHandler();
+		CQGLFunctionsExtensionHandler();
 
 		void dump() const;
 

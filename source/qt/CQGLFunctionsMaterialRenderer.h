@@ -7,7 +7,7 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "EMaterialTypes.h"
 #include "IMaterialRenderer.h"
@@ -23,14 +23,14 @@ namespace irr
 namespace video  
 {
 
-class COGLES2Driver;
+class CQGLFunctionsDriver;
 
-class COGLES2MaterialRenderer : public IMaterialRenderer, public IMaterialRendererServices
+class CQGLFunctionsMaterialRenderer : public IMaterialRenderer, public IMaterialRendererServices
 {
 public:
 
-	COGLES2MaterialRenderer(
-		COGLES2Driver* driver, 
+	CQGLFunctionsMaterialRenderer(
+		CQGLFunctionsDriver* driver, 
 		s32& outMaterialTypeNr, 
 		const c8* vertexShaderProgram = 0,
 		const c8* pixelShaderProgram = 0,
@@ -39,7 +39,7 @@ public:
 		s32 userData = 0);
 
 //#ifdef
-	virtual ~COGLES2MaterialRenderer();
+	virtual ~CQGLFunctionsMaterialRenderer();
 
 	GLuint getProgram() const;
 
@@ -69,7 +69,7 @@ public:
 
 protected:
 
-	COGLES2MaterialRenderer(COGLES2Driver* driver,
+	CQGLFunctionsMaterialRenderer(CQGLFunctionsDriver* driver,
 					IShaderConstantSetCallBack* callback = 0,
 					E_MATERIAL_TYPE baseMaterial = EMT_SOLID,
 					s32 userData = 0);
@@ -79,7 +79,7 @@ protected:
 	bool createShader(GLenum shaderType, const char* shader);
 	bool linkProgram();
 	
-	COGLES2Driver* Driver;
+	CQGLFunctionsDriver* Driver;
 	IShaderConstantSetCallBack* CallBack;
 
 	bool Alpha;

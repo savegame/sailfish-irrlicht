@@ -2,9 +2,9 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "COGLES2MaterialRenderer.h"
+#include "CQGLFunctionsMaterialRenderer.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "EVertexAttributes.h"
 #include "IGPUProgrammingServices.h"
@@ -12,7 +12,7 @@
 #include "IVideoDriver.h"
 #include "os.h"
 
-#include "COGLES2Driver.h"
+#include "CQGLFunctionsDriver.h"
 
 #include "COpenGLCoreTexture.h"
 #include "COpenGLCoreCacheHandler.h"
@@ -23,7 +23,7 @@ namespace video
 {
 
 
-COGLES2MaterialRenderer::COGLES2MaterialRenderer(COGLES2Driver* driver,
+CQGLFunctionsMaterialRenderer::CQGLFunctionsMaterialRenderer(CQGLFunctionsDriver* driver,
 		s32& outMaterialTypeNr,
 		const c8* vertexShaderProgram,
 		const c8* pixelShaderProgram,
@@ -33,7 +33,7 @@ COGLES2MaterialRenderer::COGLES2MaterialRenderer(COGLES2Driver* driver,
 	: Driver(driver), CallBack(callback), Alpha(false), Blending(false), FixedBlending(false), Program(0), UserData(userData)
 {
 #ifdef _DEBUG
-	setDebugName("COGLES2MaterialRenderer");
+	setDebugName("CQGLFunctionsMaterialRenderer");
 #endif
 
 	switch (baseMaterial)
@@ -63,7 +63,7 @@ COGLES2MaterialRenderer::COGLES2MaterialRenderer(COGLES2Driver* driver,
 }
 
 
-COGLES2MaterialRenderer::COGLES2MaterialRenderer(COGLES2Driver* driver,
+CQGLFunctionsMaterialRenderer::CQGLFunctionsMaterialRenderer(CQGLFunctionsDriver* driver,
 					IShaderConstantSetCallBack* callback,
 					E_MATERIAL_TYPE baseMaterial, s32 userData)
 : Driver(driver), CallBack(callback), Alpha(false), Blending(false), FixedBlending(false), Program(0), UserData(userData)
@@ -93,7 +93,7 @@ COGLES2MaterialRenderer::COGLES2MaterialRenderer(COGLES2Driver* driver,
 }
 
 
-COGLES2MaterialRenderer::~COGLES2MaterialRenderer()
+CQGLFunctionsMaterialRenderer::~CQGLFunctionsMaterialRenderer()
 {
 	if (CallBack)
 		CallBack->drop();
@@ -114,12 +114,12 @@ COGLES2MaterialRenderer::~COGLES2MaterialRenderer()
 	UniformInfo.clear();
 }
 
-GLuint COGLES2MaterialRenderer::getProgram() const
+GLuint CQGLFunctionsMaterialRenderer::getProgram() const
 {
 	return Program;
 }
 
-void COGLES2MaterialRenderer::init(s32& outMaterialTypeNr,
+void CQGLFunctionsMaterialRenderer::init(s32& outMaterialTypeNr,
 		const c8* vertexShaderProgram,
 		const c8* pixelShaderProgram,
 		bool addMaterial)
@@ -150,7 +150,7 @@ void COGLES2MaterialRenderer::init(s32& outMaterialTypeNr,
 }
 
 
-bool COGLES2MaterialRenderer::OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype)
+bool CQGLFunctionsMaterialRenderer::OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype)
 {
 	if (CallBack && Program)
 		CallBack->OnSetConstants(this, UserData);
@@ -159,12 +159,12 @@ bool COGLES2MaterialRenderer::OnRender(IMaterialRendererServices* service, E_VER
 }
 
 
-void COGLES2MaterialRenderer::OnSetMaterial(const video::SMaterial& material,
+void CQGLFunctionsMaterialRenderer::OnSetMaterial(const video::SMaterial& material,
 				const video::SMaterial& lastMaterial,
 				bool resetAllRenderstates,
 				video::IMaterialRendererServices* services)
 {
-	COGLES2CacheHandler* cacheHandler = Driver->getCacheHandler();
+	CQGLFunctionsCacheHandler* cacheHandler = Driver->getCacheHandler();
 
 	cacheHandler->setProgram(Program);
 
@@ -198,24 +198,24 @@ void COGLES2MaterialRenderer::OnSetMaterial(const video::SMaterial& material,
 }
 
 
-void COGLES2MaterialRenderer::OnUnsetMaterial()
+void CQGLFunctionsMaterialRenderer::OnUnsetMaterial()
 {
 }
 
 
-bool COGLES2MaterialRenderer::isTransparent() const
+bool CQGLFunctionsMaterialRenderer::isTransparent() const
 {
 	return (Alpha || Blending || FixedBlending);
 }
 
 
-s32 COGLES2MaterialRenderer::getRenderCapability() const
+s32 CQGLFunctionsMaterialRenderer::getRenderCapability() const
 {
 	return 0;
 }
 
 
-bool COGLES2MaterialRenderer::createShader(GLenum shaderType, const char* shader)
+bool CQGLFunctionsMaterialRenderer::createShader(GLenum shaderType, const char* shader)
 {
 	if (Program)
 	{
@@ -255,7 +255,7 @@ bool COGLES2MaterialRenderer::createShader(GLenum shaderType, const char* shader
 }
 
 
-bool COGLES2MaterialRenderer::linkProgram()
+bool CQGLFunctionsMaterialRenderer::linkProgram()
 {
 	if (Program)
 	{
@@ -341,19 +341,19 @@ bool COGLES2MaterialRenderer::linkProgram()
 }
 
 
-void COGLES2MaterialRenderer::setBasicRenderStates(const SMaterial& material,
+void CQGLFunctionsMaterialRenderer::setBasicRenderStates(const SMaterial& material,
 						const SMaterial& lastMaterial,
 						bool resetAllRenderstates)
 {
 	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 }
 
-s32 COGLES2MaterialRenderer::getVertexShaderConstantID(const c8* name)
+s32 CQGLFunctionsMaterialRenderer::getVertexShaderConstantID(const c8* name)
 {
 	return getPixelShaderConstantID(name);
 }
 
-s32 COGLES2MaterialRenderer::getPixelShaderConstantID(const c8* name)
+s32 CQGLFunctionsMaterialRenderer::getPixelShaderConstantID(const c8* name)
 {
 	for (u32 i = 0; i < UniformInfo.size(); ++i)
 	{
@@ -364,27 +364,27 @@ s32 COGLES2MaterialRenderer::getPixelShaderConstantID(const c8* name)
 	return -1;
 }
 
-void COGLES2MaterialRenderer::setVertexShaderConstant(const f32* data, s32 startRegister, s32 constantAmount)
+void CQGLFunctionsMaterialRenderer::setVertexShaderConstant(const f32* data, s32 startRegister, s32 constantAmount)
 {
 	os::Printer::log("Cannot set constant, please use high level shader call instead.", ELL_WARNING);
 }
 
-void COGLES2MaterialRenderer::setPixelShaderConstant(const f32* data, s32 startRegister, s32 constantAmount)
+void CQGLFunctionsMaterialRenderer::setPixelShaderConstant(const f32* data, s32 startRegister, s32 constantAmount)
 {
 	os::Printer::log("Cannot set constant, use high level shader call.", ELL_WARNING);
 }
 
-bool COGLES2MaterialRenderer::setVertexShaderConstant(s32 index, const f32* floats, int count)
+bool CQGLFunctionsMaterialRenderer::setVertexShaderConstant(s32 index, const f32* floats, int count)
 {
 	return setPixelShaderConstant(index, floats, count);
 }
 
-bool COGLES2MaterialRenderer::setVertexShaderConstant(s32 index, const s32* ints, int count)
+bool CQGLFunctionsMaterialRenderer::setVertexShaderConstant(s32 index, const s32* ints, int count)
 {
 	return setPixelShaderConstant(index, ints, count);
 }
 
-bool COGLES2MaterialRenderer::setPixelShaderConstant(s32 index, const f32* floats, int count)
+bool CQGLFunctionsMaterialRenderer::setPixelShaderConstant(s32 index, const f32* floats, int count)
 {
 	if(index < 0 || UniformInfo[index].location < 0)
 		return false;
@@ -434,7 +434,7 @@ bool COGLES2MaterialRenderer::setPixelShaderConstant(s32 index, const f32* float
 	return status;
 }
 
-bool COGLES2MaterialRenderer::setPixelShaderConstant(s32 index, const s32* ints, int count)
+bool CQGLFunctionsMaterialRenderer::setPixelShaderConstant(s32 index, const s32* ints, int count)
 {
 	if(index < 0 || UniformInfo[index].location < 0)
 		return false;
@@ -471,7 +471,7 @@ bool COGLES2MaterialRenderer::setPixelShaderConstant(s32 index, const s32* ints,
 	return status;
 }
 
-IVideoDriver* COGLES2MaterialRenderer::getVideoDriver()
+IVideoDriver* CQGLFunctionsMaterialRenderer::getVideoDriver()
 {
 	return Driver;
 }

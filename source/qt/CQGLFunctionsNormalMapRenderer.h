@@ -19,10 +19,10 @@ namespace irr
 namespace video
 {
 
-class COGLES2MaterialNormalMapCB : public IShaderConstantSetCallBack
+class CQGLFunctionsMaterialNormalMapCB : public IShaderConstantSetCallBack
 {
 public:
-	COGLES2MaterialNormalMapCB();
+	CQGLFunctionsMaterialNormalMapCB();
 
 	virtual void OnSetMaterial(const SMaterial& material);
 	virtual void OnSetConstants(IMaterialRendererServices* services, s32 userData);

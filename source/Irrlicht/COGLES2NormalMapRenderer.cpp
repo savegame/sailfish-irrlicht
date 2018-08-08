@@ -4,7 +4,7 @@
 
 #include "COGLES2NormalMapRenderer.h"
 
-#ifdef _IRR_COMPILE_WITH_OGLES2_
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "IMaterialRendererServices.h"
 #include "IGPUProgrammingServices.h"

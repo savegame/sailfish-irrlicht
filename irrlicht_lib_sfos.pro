@@ -19,6 +19,8 @@ LIBS += -lbz2 -Wl,-rpath,/usr/lib -fPIC
 DEFINES += _IRRDIR=\\\"$$PWD\\\"
 !x11: DEFINES += NO_IRR_COMPILE_WITH_X11_
 
+DEFINES += _IRR_COMPILE_WITH_QGLFUNCTIONS_
+
 osx: {
     DEFINES += NO_IRR_COMPILE_WITH_OSX_DEVICE_
     DEFINES += NO_IRR_COMPILE_WITH_OGLES2_
@@ -46,9 +48,10 @@ DEFINES -= _IRR_OPENGL_USE_EXTPOINTER_
 DEFINES += NO_IRR_OPENGL_USE_EXTPOINTER_
 DEFINES += NO_IRR_COMPILE_WITH_GLX_MANAGER_
 
-INCLUDEPATH += include
-INCLUDEPATH += source/Irrlicht
-INCLUDEPATH += source/Irrlicht/libjpeg
+INCLUDEPATH += $$PWD/include
+INCLUDEPATH += $$PWD/source/Irrlicht
+INCLUDEPATH += $$PWD/source/qt
+INCLUDEPATH += $$PWD/source/Irrlicht/libjpeg
 
 #removespec.target = rpm/irrlicht.spec
 #removespec.command = rm -f rpm/irrlicht.spec
@@ -63,7 +66,7 @@ INCLUDEPATH += source/Irrlicht/libjpeg
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
 
-#include(source/qt/qt.pri )
+include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
 

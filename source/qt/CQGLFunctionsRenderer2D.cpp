@@ -2,14 +2,14 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
-#include "COGLES2Renderer2D.h"
+#include "CQGLFunctionsRenderer2D.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "IGPUProgrammingServices.h"
 #include "os.h"
 
-#include "COGLES2Driver.h"
+#include "CQGLFunctionsDriver.h"
 
 #include "COpenGLCoreFeature.h"
 #include "COpenGLCoreTexture.h"
@@ -20,19 +20,19 @@ namespace irr
 namespace video
 {
 
-COGLES2Renderer2D::COGLES2Renderer2D(const c8* vertexShaderProgram, const c8* pixelShaderProgram, COGLES2Driver* driver, bool withTexture) :
-	COGLES2MaterialRenderer(driver, 0, EMT_SOLID),
+CQGLFunctionsRenderer2D::CQGLFunctionsRenderer2D(const c8* vertexShaderProgram, const c8* pixelShaderProgram, CQGLFunctionsDriver* driver, bool withTexture) :
+	CQGLFunctionsMaterialRenderer(driver, 0, EMT_SOLID),
 	WithTexture(withTexture)
 {
 #ifdef _DEBUG
-	setDebugName("COGLES2Renderer2D");
+	setDebugName("CQGLFunctionsRenderer2D");
 #endif
 
 	int Temp = 0;
 
 	init(Temp, vertexShaderProgram, pixelShaderProgram, false);
 
-	COGLES2CacheHandler* cacheHandler = Driver->getCacheHandler();
+	CQGLFunctionsCacheHandler* cacheHandler = Driver->getCacheHandler();
 
 	cacheHandler->setProgram(Program);
 
@@ -54,11 +54,11 @@ COGLES2Renderer2D::COGLES2Renderer2D(const c8* vertexShaderProgram, const c8* pi
 	cacheHandler->setProgram(0);
 }
 
-COGLES2Renderer2D::~COGLES2Renderer2D()
+CQGLFunctionsRenderer2D::~CQGLFunctionsRenderer2D()
 {
 }
 
-void COGLES2Renderer2D::OnSetMaterial(const video::SMaterial& material,
+void CQGLFunctionsRenderer2D::OnSetMaterial(const video::SMaterial& material,
 				const video::SMaterial& lastMaterial,
 				bool resetAllRenderstates,
 				video::IMaterialRendererServices* services)
@@ -76,7 +76,7 @@ void COGLES2Renderer2D::OnSetMaterial(const video::SMaterial& material,
 	}
 }
 
-bool COGLES2Renderer2D::OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype)
+bool CQGLFunctionsRenderer2D::OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype)
 {
 	return true;
 }

@@ -5,9 +5,13 @@
 #ifndef __C_OGLCORE_RENDER_TARGET_H_INCLUDED__
 #define __C_OGLCORE_RENDER_TARGET_H_INCLUDED__
 
+#if defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#include <QOpenGLFunctions>
+#endif
+
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_) || defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OPENGL_) || defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "IRenderTarget.h"
 
@@ -317,12 +321,14 @@ protected:
 			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 				os::Printer::log("FBO has one or several incomplete image attachments", ELL_ERROR);
 				break;
+#if !defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 			case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
 				os::Printer::log("FBO has one or several image attachments with different internal formats", ELL_ERROR);
 				break;
-			case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+		    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
 				os::Printer::log("FBO has one or several image attachments with different dimensions", ELL_ERROR);
 				break;
+#endif
 			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 				os::Printer::log("FBO missing an image attachment", ELL_ERROR);
 				break;

@@ -7,20 +7,20 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
-#include "COGLES2MaterialRenderer.h"
+#include "CQGLFunctionsMaterialRenderer.h"
 
 namespace irr
 {
 namespace video
 {
 
-class COGLES2Renderer2D : public COGLES2MaterialRenderer
+class CQGLFunctionsRenderer2D : public CQGLFunctionsMaterialRenderer
 {
 public:
-	COGLES2Renderer2D(const c8* vertexShaderProgram, const c8* pixelShaderProgram, COGLES2Driver* driver, bool withTexture);
-	~COGLES2Renderer2D();
+	CQGLFunctionsRenderer2D(const c8* vertexShaderProgram, const c8* pixelShaderProgram, CQGLFunctionsDriver* driver, bool withTexture);
+	~CQGLFunctionsRenderer2D();
 
 	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services);

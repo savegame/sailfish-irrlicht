@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
-#include "COGLES2FixedPipelineRenderer.h"
+#include "CQGLFunctionsFixedPipelineRenderer.h"
 
 #if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
@@ -16,7 +16,7 @@ namespace video
 
 // Base callback
 
-COGLES2MaterialBaseCB::COGLES2MaterialBaseCB() :
+CQGLFunctionsMaterialBaseCB::CQGLFunctionsMaterialBaseCB() :
 	FirstUpdateBase(true), WVPMatrixID(-1), WVMatrixID(-1), NMatrixID(-1), GlobalAmbientID(-1), MaterialAmbientID(-1), MaterialDiffuseID(-1), MaterialEmissiveID(-1), MaterialSpecularID(-1), MaterialShininessID(-1), LightCountID(-1), LightTypeID(-1),
 	LightPositionID(-1), LightDirectionID(-1), LightAttenuationID(-1), LightAmbientID(-1), LightDiffuseID(-1), LightSpecularID(-1), FogEnableID(-1), FogTypeID(-1), FogColorID(-1), FogStartID(-1),
 	FogEndID(-1), FogDensityID(-1), ThicknessID(-1), LightEnable(false), MaterialAmbient(SColorf(0.f, 0.f, 0.f)), MaterialDiffuse(SColorf(0.f, 0.f, 0.f)), MaterialEmissive(SColorf(0.f, 0.f, 0.f)), MaterialSpecular(SColorf(0.f, 0.f, 0.f)),
@@ -34,7 +34,7 @@ COGLES2MaterialBaseCB::COGLES2MaterialBaseCB() :
 	}
 }
 
-void COGLES2MaterialBaseCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialBaseCB::OnSetMaterial(const SMaterial& material)
 {
 	LightEnable = material.Lighting;
 	MaterialAmbient = SColorf(material.AmbientColor);
@@ -48,7 +48,7 @@ void COGLES2MaterialBaseCB::OnSetMaterial(const SMaterial& material)
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
 }
 
-void COGLES2MaterialBaseCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialBaseCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -175,22 +175,22 @@ void COGLES2MaterialBaseCB::OnSetConstants(IMaterialRendererServices* services, 
 
 // EMT_SOLID + EMT_TRANSPARENT_ADD_COLOR + EMT_TRANSPARENT_ALPHA_CHANNEL + EMT_TRANSPARENT_VERTEX_ALPHA
 
-COGLES2MaterialSolidCB::COGLES2MaterialSolidCB() :
+CQGLFunctionsMaterialSolidCB::CQGLFunctionsMaterialSolidCB() :
 	FirstUpdate(true), TMatrix0ID(-1), AlphaRefID(-1), TextureUsage0ID(-1), TextureUnit0ID(-1), AlphaRef(0.5f), TextureUsage0(0), TextureUnit0(0)
 {
 }
 
-void COGLES2MaterialSolidCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialSolidCB::OnSetMaterial(const SMaterial& material)
 {
-	COGLES2MaterialBaseCB::OnSetMaterial(material);
+	CQGLFunctionsMaterialBaseCB::OnSetMaterial(material);
 
 	AlphaRef = material.MaterialTypeParam;
 	TextureUsage0 = (material.TextureLayer[0].Texture) ? 1 : 0;
 }
 
-void COGLES2MaterialSolidCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialSolidCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
-	COGLES2MaterialBaseCB::OnSetConstants(services, userData);
+	CQGLFunctionsMaterialBaseCB::OnSetConstants(services, userData);
 
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -214,23 +214,23 @@ void COGLES2MaterialSolidCB::OnSetConstants(IMaterialRendererServices* services,
 
 // EMT_SOLID_2_LAYER + EMT_DETAIL_MAP
 
-COGLES2MaterialSolid2CB::COGLES2MaterialSolid2CB() :
+CQGLFunctionsMaterialSolid2CB::CQGLFunctionsMaterialSolid2CB() :
 	FirstUpdate(true), TMatrix0ID(-1), TMatrix1ID(-1), TextureUsage0ID(-1), TextureUsage1ID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
 	TextureUsage0(0), TextureUsage1(0), TextureUnit0(0), TextureUnit1(1)
 {
 }
 
-void COGLES2MaterialSolid2CB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialSolid2CB::OnSetMaterial(const SMaterial& material)
 {
-	COGLES2MaterialBaseCB::OnSetMaterial(material);
+	CQGLFunctionsMaterialBaseCB::OnSetMaterial(material);
 
 	TextureUsage0 = (material.TextureLayer[0].Texture) ? 1 : 0;
 	TextureUsage1 = (material.TextureLayer[1].Texture) ? 1 : 0;
 }
 
-void COGLES2MaterialSolid2CB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialSolid2CB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
-	COGLES2MaterialBaseCB::OnSetConstants(services, userData);
+	CQGLFunctionsMaterialBaseCB::OnSetConstants(services, userData);
 
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -260,23 +260,23 @@ void COGLES2MaterialSolid2CB::OnSetConstants(IMaterialRendererServices* services
 
 // EMT_LIGHTMAP + EMT_LIGHTMAP_ADD + EMT_LIGHTMAP_M2 + EMT_LIGHTMAP_M4
 
-COGLES2MaterialLightmapCB::COGLES2MaterialLightmapCB(float modulate) :
+CQGLFunctionsMaterialLightmapCB::CQGLFunctionsMaterialLightmapCB(float modulate) :
 	FirstUpdate(true), TMatrix0ID(-1), TMatrix1ID(-1), ModulateID(-1), TextureUsage0ID(-1), TextureUsage1ID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
 	Modulate(modulate), TextureUsage0(0), TextureUsage1(0), TextureUnit0(0), TextureUnit1(1)
 {
 }
 
-void COGLES2MaterialLightmapCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialLightmapCB::OnSetMaterial(const SMaterial& material)
 {
-	COGLES2MaterialBaseCB::OnSetMaterial(material);
+	CQGLFunctionsMaterialBaseCB::OnSetMaterial(material);
 
 	TextureUsage0 = (material.TextureLayer[0].Texture) ? 1 : 0;
 	TextureUsage1 = (material.TextureLayer[1].Texture) ? 1 : 0;
 }
 
-void COGLES2MaterialLightmapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialLightmapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
-	COGLES2MaterialBaseCB::OnSetConstants(services, userData);
+	CQGLFunctionsMaterialBaseCB::OnSetConstants(services, userData);
 
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -308,23 +308,23 @@ void COGLES2MaterialLightmapCB::OnSetConstants(IMaterialRendererServices* servic
 
 // EMT_SPHERE_MAP + EMT_REFLECTION_2_LAYER + EMT_TRANSPARENT_REFLECTION_2_LAYER
 
-COGLES2MaterialReflectionCB::COGLES2MaterialReflectionCB() :
+CQGLFunctionsMaterialReflectionCB::CQGLFunctionsMaterialReflectionCB() :
 	FirstUpdate(true), TMatrix0ID(-1), TextureUsage0ID(-1), TextureUsage1ID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
 	TextureUsage0(0), TextureUsage1(0), TextureUnit0(0), TextureUnit1(1)
 {
 }
 
-void COGLES2MaterialReflectionCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialReflectionCB::OnSetMaterial(const SMaterial& material)
 {
-	COGLES2MaterialBaseCB::OnSetMaterial(material);
+	CQGLFunctionsMaterialBaseCB::OnSetMaterial(material);
 
 	TextureUsage0 = (material.TextureLayer[0].Texture) ? 1 : 0;
 	TextureUsage1 = (material.TextureLayer[1].Texture) ? 1 : 0;
 }
 
-void COGLES2MaterialReflectionCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialReflectionCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
-	COGLES2MaterialBaseCB::OnSetConstants(services, userData);
+	CQGLFunctionsMaterialBaseCB::OnSetConstants(services, userData);
 
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -350,14 +350,14 @@ void COGLES2MaterialReflectionCB::OnSetConstants(IMaterialRendererServices* serv
 
 // EMT_ONETEXTURE_BLEND
 
-COGLES2MaterialOneTextureBlendCB::COGLES2MaterialOneTextureBlendCB() :
+CQGLFunctionsMaterialOneTextureBlendCB::CQGLFunctionsMaterialOneTextureBlendCB() :
 	FirstUpdate(true), TMatrix0ID(-1), BlendTypeID(-1), TextureUsage0ID(-1), TextureUnit0ID(-1), BlendType(0), TextureUsage0(0), TextureUnit0(0)
 {
 }
 
-void COGLES2MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialOneTextureBlendCB::OnSetMaterial(const SMaterial& material)
 {
-	COGLES2MaterialBaseCB::OnSetMaterial(material);
+	CQGLFunctionsMaterialBaseCB::OnSetMaterial(material);
 
 	BlendType = 0;
 
@@ -381,9 +381,9 @@ void COGLES2MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial& material)
 	TextureUsage0 = (material.TextureLayer[0].Texture) ? 1 : 0;
 }
 
-void COGLES2MaterialOneTextureBlendCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialOneTextureBlendCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
-	COGLES2MaterialBaseCB::OnSetConstants(services, userData);
+	CQGLFunctionsMaterialBaseCB::OnSetConstants(services, userData);
 
 	IVideoDriver* driver = services->getVideoDriver();
 

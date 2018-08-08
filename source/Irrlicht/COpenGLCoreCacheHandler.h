@@ -7,7 +7,11 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_) || defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OPENGL_) || defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+
+#if defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#include <QOpenGLFunctions>
+#endif
 
 #include "SMaterial.h"
 #include "ITexture.h"

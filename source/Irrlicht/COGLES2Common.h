@@ -7,7 +7,11 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_COMPILE_WITH_OGLES2_
+#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+#include <QOpenGLFunctions>
+#endif
 
 #if defined(_IRR_COMPILE_WITH_IOS_DEVICE_)
 #include <OpenGLES/ES2/gl.h>
@@ -21,8 +25,10 @@
 	#define GL_GLEXT_PROTOTYPES 1
 	#define GLX_GLXEXT_PROTOTYPES 1
 #endif
+#ifndef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 #include <GLES2/gl2.h>
 #include <EGL/eglplatform.h>
+#endif
 typedef char GLchar;
 #if defined(_IRR_OGLES2_USE_EXTPOINTER_)
 #include "gles2-ext.h"
@@ -66,6 +72,12 @@ namespace video
 	typedef COpenGLCoreRenderTarget<COGLES2Driver, COGLES2Texture> COGLES2RenderTarget;
 	typedef COpenGLCoreCacheHandler<COGLES2Driver, COGLES2Texture> COGLES2CacheHandler;
 
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+	class CQGLFunctionsDriver;
+	typedef COpenGLCoreTexture<CQGLFunctionsDriver> CQGLFunctionsTexture;
+	typedef COpenGLCoreRenderTarget<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsRenderTarget;
+	typedef COpenGLCoreCacheHandler<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsCacheHandler;
+#endif
 }
 }
 

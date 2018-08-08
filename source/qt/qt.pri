@@ -1,11 +1,19 @@
 HEADERS += \
-    $$PWD/IrrQuick.h
+    $$PWD/CQGLFunctionsDriver.h \
+    $$PWD/CQGLFunctionsExtensionHandler.h \
+    $$PWD/CQGLFunctionsFixedPipelineRenderer.h \
+    $$PWD/CQGLFunctionsMaterialRenderer.h \
+    $$PWD/CQGLFunctionsNormalMapRenderer.h \
+    $$PWD/CQGLFunctionsParallaxMapRenderer.h \
+    $$PWD/CQGLFunctionsRenderer2D.h
 
 SOURCES += \
-    $$PWD/IrrQuick.cpp \
-    $$PWD/main.cpp
+    $$PWD/CQGLFunctionsDriver.cpp \
+    $$PWD/CQGLFunctionsExtensionHandler.cpp \
+    $$PWD/CQGLFunctionsFixedPipelineRenderer.cpp \
+    $$PWD/CQGLFunctionsMaterialRenderer.cpp \
+    $$PWD/CQGLFunctionsNormalMapRenderer.cpp \
+    $$PWD/CQGLFunctionsParallaxMapRenderer.cpp \
+    $$PWD/CQGLFunctionsRenderer2D.cpp
 
-DISTFILES += \
-    ../../qml/irrlicht.qml \
-    ../../qml/RenderPage.qml
 

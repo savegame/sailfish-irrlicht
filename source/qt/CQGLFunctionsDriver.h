@@ -3,20 +3,24 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
-#ifndef __C_OGLES2_DRIVER_H_INCLUDED__
-#define __C_OGLES2_DRIVER_H_INCLUDED__
+#ifndef __C_QGLFUNCTIONS_DRIVER_H_INCLUDED__
+#define __C_QGLFUNCTIONS_DRIVER_H_INCLUDED__
 
+#include <QOpenGLFunctions>
 #include "IrrCompileConfig.h"
 
 #include "SIrrCreationParameters.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 
 #include "CNullDriver.h"
+#include "COpenGLCoreTexture.h"
+#include "COGLES2Common.h"
+//#include "CQGLFunctionsCa
 #include "IMaterialRendererServices.h"
 #include "EDriverFeatures.h"
 #include "fast_atof.h"
-#include "COGLES2ExtensionHandler.h"
+#include "CQGLFunctionsExtensionHandler.h"
 #include "IContextManager.h"
 
 #if defined(_IRR_WINDOWS_API_)
@@ -27,12 +31,6 @@
 #include <windows.h>
 #endif
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
-#ifdef _MSC_VER
-#pragma comment(lib, "libGLESv2.lib")
-#endif
-#endif
-
 class QOpenGLFunctions;
 class QOpenGLExtraFunctions;
 
@@ -41,26 +39,26 @@ namespace irr
 namespace video
 {
 
-	class COGLES2FixedPipelineRenderer;
-	class COGLES2NormalMapRenderer;
-	class COGLES2ParallaxMapRenderer;
-	class COGLES2Renderer2D;
+    class CQGLFunctionsFixedPipelineRenderer;
+	class CQGLFunctionsNormalMapRenderer;
+	class CQGLFunctionsParallaxMapRenderer;
+	class CQGLFunctionsRenderer2D;
 
-	class COGLES2Driver : public CNullDriver, public IMaterialRendererServices, public COGLES2ExtensionHandler
+	class CQGLFunctionsDriver : public CNullDriver, public IMaterialRendererServices, public CQGLFunctionsExtensionHandler
 	{
-		friend class COpenGLCoreTexture<COGLES2Driver>;
-		friend IVideoDriver* createOGLES2Driver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+		friend class COpenGLCoreTexture<CQGLFunctionsDriver>;
+		friend IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 	public: 
 		QOpenGLFunctions *m_functions;
 		QOpenGLExtraFunctions *m_extra;
 	protected:
-		//! constructor (use createOGLES2Driver instead)
-		COGLES2Driver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+		//! constructor (use createQGLFunctionsDriver instead)
+		CQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 
 	public:
 
 		//! destructor
-		virtual ~COGLES2Driver();
+		virtual ~CQGLFunctionsDriver();
 
 		virtual bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
 			const SExposedVideoData& videoData = SExposedVideoData(), core::rect<s32>* sourceRect = 0) _IRR_OVERRIDE_;
@@ -109,7 +107,7 @@ namespace video
 		//! queries the features of the driver, returns true if feature is available
 		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const _IRR_OVERRIDE_
 		{
-			return FeatureEnabled[feature] && COGLES2ExtensionHandler::queryFeature(feature);
+			return FeatureEnabled[feature] && CQGLFunctionsExtensionHandler::queryFeature(feature);
 		}
 
 		//! Sets a material.
@@ -324,7 +322,7 @@ namespace video
 		//! Get current material.
 		const SMaterial& getCurrentMaterial() const;
 
-		COGLES2CacheHandler* getCacheHandler() const;
+		CQGLFunctionsCacheHandler* getCacheHandler() const;
 
 	protected:
 		//! inits the opengl-es driver
@@ -371,13 +369,13 @@ namespace video
 
 		bool setMaterialTexture(irr::u32 layerIdx, const irr::video::ITexture* texture);
 
-		COGLES2CacheHandler* CacheHandler;
+		CQGLFunctionsCacheHandler* CacheHandler;
 
 private:
 
-		COGLES2Renderer2D* MaterialRenderer2DActive;
-		COGLES2Renderer2D* MaterialRenderer2DTexture;
-		COGLES2Renderer2D* MaterialRenderer2DNoTexture;
+		CQGLFunctionsRenderer2D* MaterialRenderer2DActive;
+		CQGLFunctionsRenderer2D* MaterialRenderer2DTexture;
+		CQGLFunctionsRenderer2D* MaterialRenderer2DNoTexture;
 
 		core::stringw Name;
 		core::matrix4 Matrices[ETS_COUNT];
@@ -436,6 +434,6 @@ private:
 } // end namespace video
 } // end namespace irr
 
-#endif // _IRR_COMPILE_WITH_OGLES2_
+#endif // _IRR_COMPILE_WITH_QGLFUNCTIONS_
 
-#endif // __C_OGLES2_DRIVER_H_INCLUDED__
+#endif // __C_QGLFUNCTIONS_DRIVER_H_INCLUDED__

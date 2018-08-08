@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "COGLES2ParallaxMapRenderer.h"
+#include "CQGLFunctionsNormalMapRenderer.h"
 
 #if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
@@ -18,11 +18,11 @@ namespace irr
 namespace video
 {
 
-// EMT_PARALLAX_MAP_SOLID + EMT_PARALLAX_MAP_TRANSPARENT_ADD_COLOR + EMT_PARALLAX_MAP_TRANSPARENT_VERTEX_ALPHA
+// EMT_NORMAL_MAP_SOLID + EMT_NORMAL_MAP_TRANSPARENT_ADD_COLOR + EMT_NORMAL_MAP_TRANSPARENT_VERTEX_ALPHA
 
-COGLES2MaterialParallaxMapCB::COGLES2MaterialParallaxMapCB() :
-	FirstUpdate(true), WVPMatrixID(-1), WVMatrixID(-1), EyePositionID(-1), LightPositionID(-1), LightColorID(-1), FactorID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
-	FogEnableID(-1), FogTypeID(-1), FogColorID(-1), FogStartID(-1), FogEndID(-1), FogDensityID(-1), Factor(0.02f), TextureUnit0(0), TextureUnit1(1),
+CQGLFunctionsMaterialNormalMapCB::CQGLFunctionsMaterialNormalMapCB() :
+	FirstUpdate(true), WVPMatrixID(-1), WVMatrixID(-1), LightPositionID(-1), LightColorID(-1), TextureUnit0ID(-1), TextureUnit1ID(-1),
+	FogEnableID(-1), FogTypeID(-1), FogColorID(-1), FogStartID(-1), FogEndID(-1), FogDensityID(-1), TextureUnit0(0), TextureUnit1(1),
 	FogEnable(0), FogType(1), FogColor(SColorf(0.f, 0.f, 0.f, 1.f)), FogStart(0.f), FogEnd(0.f), FogDensity(0.f)
 {
 	for (u32 i = 0; i < 2; ++i)
@@ -32,20 +32,15 @@ COGLES2MaterialParallaxMapCB::COGLES2MaterialParallaxMapCB() :
 	}
 }
 
-void COGLES2MaterialParallaxMapCB::OnSetMaterial(const SMaterial& material)
+void CQGLFunctionsMaterialNormalMapCB::OnSetMaterial(const SMaterial& material)
 {
-	if (!core::equals(material.MaterialTypeParam, 0.f))
-		Factor = material.MaterialTypeParam;
-	else
-		Factor = 0.02f;
-
 	if (material.FogEnable)
 		FogEnable = 1;
 	else
 		FogEnable = 0;
 }
 
-void COGLES2MaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
+void CQGLFunctionsMaterialNormalMapCB::OnSetConstants(IMaterialRendererServices* services, s32 userData)
 {
 	IVideoDriver* driver = services->getVideoDriver();
 
@@ -53,10 +48,8 @@ void COGLES2MaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* ser
 	{
 		WVPMatrixID = services->getVertexShaderConstantID("uWVPMatrix");
 		WVMatrixID = services->getVertexShaderConstantID("uWVMatrix");
-		EyePositionID = services->getVertexShaderConstantID("uEyePosition");
 		LightPositionID = services->getVertexShaderConstantID("uLightPosition");
 		LightColorID = services->getVertexShaderConstantID("uLightColor");
-		FactorID = services->getVertexShaderConstantID("uFactor");
 		TextureUnit0ID = services->getVertexShaderConstantID("uTextureUnit0");
 		TextureUnit1ID = services->getVertexShaderConstantID("uTextureUnit1");
 		FogEnableID = services->getVertexShaderConstantID("uFogEnable");
@@ -78,12 +71,6 @@ void COGLES2MaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* ser
 
 	Matrix = V * W;
 	services->setPixelShaderConstant(WVMatrixID, Matrix.pointer(), 16);
-
-	core::vector3df EyePosition(0.0f, 0.0f, 0.0f);
-
-	Matrix.makeInverse();
-	Matrix.transformVect(EyePosition);
-	services->setPixelShaderConstant(EyePositionID, reinterpret_cast<f32*>(&EyePosition), 3);
 
 	Matrix = W;
 	Matrix.makeInverse();
@@ -113,7 +100,6 @@ void COGLES2MaterialParallaxMapCB::OnSetConstants(IMaterialRendererServices* ser
 	services->setPixelShaderConstant(LightPositionID, reinterpret_cast<f32*>(LightPosition), 6);
 	services->setPixelShaderConstant(LightColorID, reinterpret_cast<f32*>(LightColor), 8);
 
-	services->setPixelShaderConstant(FactorID, &Factor, 1);
 	services->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
 	services->setPixelShaderConstant(TextureUnit1ID, &TextureUnit1, 1);
 

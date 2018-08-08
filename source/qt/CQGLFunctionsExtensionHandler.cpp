@@ -3,7 +3,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
-#include "COGLES2ExtensionHandler.h"
+#include "CQGLFunctionsExtensionHandler.h"
 
 #if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
@@ -16,7 +16,7 @@ namespace irr
 namespace video
 {
 
-	static const char* const OGLES2FeatureStrings[COGLES2ExtensionHandler::IRR_OGLES2_Feature_Count] =
+	static const char* const OGLES2FeatureStrings[CQGLFunctionsExtensionHandler::IRR_OGLES2_Feature_Count] =
 	{
 		"GL_AMD_compressed_3DC_texture",
 		"GL_AMD_compressed_ATC_texture",
@@ -157,7 +157,7 @@ namespace video
 	};
 
 
-	COGLES2ExtensionHandler::COGLES2ExtensionHandler() :
+	CQGLFunctionsExtensionHandler::CQGLFunctionsExtensionHandler() :
 			Version(0), MaxAnisotropy(1), MaxIndices(0xffff),
 			MaxTextureSize(1), MaxTextureLODBias(0.f),
 			StencilBuffer(false)
@@ -172,14 +172,14 @@ namespace video
 	}
 
 
-	void COGLES2ExtensionHandler::dump() const
+	void CQGLFunctionsExtensionHandler::dump() const
 	{
 		for (u32 i = 0; i < IRR_OGLES2_Feature_Count; ++i)
 			os::Printer::log(OGLES2FeatureStrings[i], FeatureAvailable[i] ? " true" : " false");
 	}
 
 
-	void COGLES2ExtensionHandler::initExtensions()
+	void CQGLFunctionsExtensionHandler::initExtensions()
 	{
 		Version = 0;
 		s32 multiplier = 100;
@@ -266,7 +266,7 @@ namespace video
 		Feature.ColorAttachment = 1;
 	}
 
-	const COpenGLCoreFeature& COGLES2ExtensionHandler::getFeature() const
+	const COpenGLCoreFeature& CQGLFunctionsExtensionHandler::getFeature() const
 	{
 		return Feature;
 	}
