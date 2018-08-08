@@ -31,6 +31,9 @@
 #pragma comment(lib, "libGLESv2.lib")
 #endif
 
+class QOpenGLFunctions;
+class QOpenGLExtraFunctions;
+
 namespace irr
 {
 namespace video
@@ -45,7 +48,9 @@ namespace video
 	{
 		friend class COpenGLCoreTexture<COGLES2Driver>;
 		friend IVideoDriver* createOGLES2Driver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
-
+	public: 
+		QOpenGLFunctions *m_functions;
+		QOpenGLExtraFunctions *m_extra;
 	protected:
 		//! constructor (use createOGLES2Driver instead)
 		COGLES2Driver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);

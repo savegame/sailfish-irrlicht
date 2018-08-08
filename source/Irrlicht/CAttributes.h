@@ -6,9 +6,12 @@
 #define __C_ATTRIBUTES_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
-
 #include "IAttributes.h"
 #include "IAttribute.h"
+
+#ifndef _IRR_OVERRIDE_ 
+#define _IRR_OVERRIDE_
+#endif
 
 namespace irr
 {
@@ -19,7 +22,6 @@ namespace video
 }
 namespace io
 {
-
 
 //! Implementation of the IAttributes interface
 class CAttributes : public IAttributes

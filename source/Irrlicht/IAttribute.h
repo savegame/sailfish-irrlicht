@@ -24,7 +24,7 @@
 #include "irrString.h"
 #include "irrArray.h"
 #include "EAttributes.h"
-
+#include <ITexture.h>
 
 namespace irr
 {

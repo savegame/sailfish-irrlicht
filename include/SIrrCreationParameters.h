@@ -13,6 +13,8 @@
 #include "path.h"
 #include "IrrCompileConfig.h"
 
+class QOpenGLFunctions;
+
 namespace irr
 {
 	class IEventReceiver;
@@ -51,6 +53,7 @@ namespace irr
 			UsePerformanceTimer(true),
 			SDK_version_do_not_use(IRRLICHT_SDK_VERSION),
 			PrivateData(0),
+			qOpenGLFunctions(NULL),
 #if defined(_IRR_COMPILE_WITH_IOS_DEVICE_) || defined(_IRR_ANDROID_PLATFORM_) || defined(_IRR_EMSCRIPTEN_PLATFORM_)
 			OGLES2ShaderPath("media/Shaders/")
 #elif _IRR_COMPILE_WITH_SAILFISH_DEVICE_
@@ -96,8 +99,12 @@ namespace irr
 			UsePerformanceTimer = other.UsePerformanceTimer;
 			PrivateData = other.PrivateData;
 			OGLES2ShaderPath = other.OGLES2ShaderPath;
+			qOpenGLFunctions = other.qOpenGLFunctions;
+			
 			return *this;
 		}
+		
+		QOpenGLFunctions *qOpenGLFunctions;
 
 		//! Type of the device.
 		/** This setting decides the windowing system used by the device, most device types are native
