@@ -33,7 +33,7 @@ CQGLFunctionsRenderer2D::CQGLFunctionsRenderer2D(const c8* vertexShaderProgram, 
 	init(Temp, vertexShaderProgram, pixelShaderProgram, false);
 
 	CQGLFunctionsCacheHandler* cacheHandler = Driver->getCacheHandler();
-
+	
 	cacheHandler->setProgram(Program);
 
 	// These states don't change later.

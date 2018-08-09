@@ -104,12 +104,12 @@ CQGLFunctionsMaterialRenderer::~CQGLFunctionsMaterialRenderer()
 	{
 		GLuint shaders[8];
 		GLint count;
-		Functions->glGetAttachedShaders(Program, 8, &count, shaders);
+		Driver->m_functions->glGetAttachedShaders(Program, 8, &count, shaders);
 
 		count=core::min_(count,8);
 		for (GLint i=0; i<count; ++i)
-			Functions->glDeleteShader(shaders[i]);
-		Functions->glDeleteProgram(Program);
+			Driver->m_functions->glDeleteShader(shaders[i]);
+		Driver->m_functions->glDeleteProgram(Program);
 		Program = 0;
 	}
 
@@ -128,7 +128,7 @@ void CQGLFunctionsMaterialRenderer::init(s32& outMaterialTypeNr,
 {
 	outMaterialTypeNr = -1;
 
-	Program = Functions->glCreateProgram();
+	Program = Driver->m_functions->glCreateProgram();
 
 	if (!Program)
 		return;
@@ -142,7 +142,7 @@ void CQGLFunctionsMaterialRenderer::init(s32& outMaterialTypeNr,
 			return;
 
 	for ( size_t i = 0; i < EVA_COUNT; ++i )
-			Functions->glBindAttribLocation( Program, i, sBuiltInVertexAttributeNames[i]);
+			Driver->m_functions->glBindAttribLocation( Program, i, sBuiltInVertexAttributeNames[i]);
 
 	if (!linkProgram())
 		return;
@@ -221,13 +221,13 @@ bool CQGLFunctionsMaterialRenderer::createShader(GLenum shaderType, const char* 
 {
 	if (Program)
 	{
-		GLuint shaderHandle = Functions->glCreateShader(shaderType);
-		Functions->glShaderSource(shaderHandle, 1, &shader, NULL);
-		Functions->glCompileShader(shaderHandle);
+		GLuint shaderHandle = Driver->m_functions->glCreateShader(shaderType);
+		Driver->m_functions->glShaderSource(shaderHandle, 1, &shader, NULL);
+		Driver->m_functions->glCompileShader(shaderHandle);
 
 		GLint status = 0;
 
-		Functions->glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
+		Driver->m_functions->glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
 
 		if (status != GL_TRUE)
 		{
@@ -236,13 +236,13 @@ bool CQGLFunctionsMaterialRenderer::createShader(GLenum shaderType, const char* 
 			GLint maxLength=0;
 			GLint length;
 
-			Functions->glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH,
+			Driver->m_functions->glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH,
 					&maxLength);
 
 			if (maxLength)
 			{
 				GLchar *infoLog = new GLchar[maxLength];
-				Functions->glGetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
+				Driver->m_functions->glGetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
 				os::Printer::log(reinterpret_cast<const c8*>(infoLog), ELL_ERROR);
 				delete [] infoLog;
 			}
@@ -250,7 +250,7 @@ bool CQGLFunctionsMaterialRenderer::createShader(GLenum shaderType, const char* 
 			return false;
 		}
 
-		Functions->glAttachShader(Program, shaderHandle);
+		Driver->m_functions->glAttachShader(Program, shaderHandle);
 	}
 
 	return true;
@@ -261,11 +261,11 @@ bool CQGLFunctionsMaterialRenderer::linkProgram()
 {
 	if (Program)
 	{
-		Functions->glLinkProgram(Program);
+		Driver->m_functions->glLinkProgram(Program);
 
 		GLint status = 0;
 
-		Functions->glGetProgramiv(Program, GL_LINK_STATUS, &status);
+		Driver->m_functions->glGetProgramiv(Program, GL_LINK_STATUS, &status);
 
 		if (!status)
 		{
@@ -274,12 +274,12 @@ bool CQGLFunctionsMaterialRenderer::linkProgram()
 			GLint maxLength=0;
 			GLsizei length;
 
-			Functions->glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &maxLength);
+			Driver->m_functions->glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &maxLength);
 
 			if (maxLength)
 			{
 				GLchar *infoLog = new GLchar[maxLength];
-				Functions->glGetProgramInfoLog(Program, maxLength, &length, infoLog);
+				Driver->m_functions->glGetProgramInfoLog(Program, maxLength, &length, infoLog);
 				os::Printer::log(reinterpret_cast<const c8*>(infoLog), ELL_ERROR);
 				delete [] infoLog;
 			}
@@ -289,14 +289,14 @@ bool CQGLFunctionsMaterialRenderer::linkProgram()
 
 		GLint num = 0;
 
-		Functions->glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num);
+		Driver->m_functions->glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num);
 
 		if (num == 0)
 			return true;
 
 		GLint maxlen = 0;
 
-		Functions->glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
+		Driver->m_functions->glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
 		if (maxlen == 0)
 		{
@@ -317,7 +317,7 @@ bool CQGLFunctionsMaterialRenderer::linkProgram()
 			memset(buf, 0, maxlen);
 
 			GLint size;
-			Functions->glGetActiveUniform(Program, i, maxlen, 0, &size, &ui.type, reinterpret_cast<GLchar*>(buf));
+			Driver->m_functions->glGetActiveUniform(Program, i, maxlen, 0, &size, &ui.type, reinterpret_cast<GLchar*>(buf));
 
             core::stringc name = "";
 
@@ -331,7 +331,7 @@ bool CQGLFunctionsMaterialRenderer::linkProgram()
 			}
 
 			ui.name = name;
-			ui.location = Functions->glGetUniformLocation(Program, buf);
+			ui.location = Driver->m_functions->glGetUniformLocation(Program, buf);
 
 			UniformInfo.push_back(ui);
 		}
@@ -396,25 +396,25 @@ bool CQGLFunctionsMaterialRenderer::setPixelShaderConstant(s32 index, const f32*
 	switch (UniformInfo[index].type)
 	{
 		case GL_FLOAT:
-			Functions->glUniform1fv(UniformInfo[index].location, count, floats);
+			Driver->m_functions->glUniform1fv(UniformInfo[index].location, count, floats);
 			break;
 		case GL_FLOAT_VEC2:
-			Functions->glUniform2fv(UniformInfo[index].location, count/2, floats);
+			Driver->m_functions->glUniform2fv(UniformInfo[index].location, count/2, floats);
 			break;
 		case GL_FLOAT_VEC3:
-			Functions->glUniform3fv(UniformInfo[index].location, count/3, floats);
+			Driver->m_functions->glUniform3fv(UniformInfo[index].location, count/3, floats);
 			break;
 		case GL_FLOAT_VEC4:
-			Functions->glUniform4fv(UniformInfo[index].location, count/4, floats);
+			Driver->m_functions->glUniform4fv(UniformInfo[index].location, count/4, floats);
 			break;
 		case GL_FLOAT_MAT2:
-			Functions->glUniformMatrix2fv(UniformInfo[index].location, count/4, false, floats);
+			Driver->m_functions->glUniformMatrix2fv(UniformInfo[index].location, count/4, false, floats);
 			break;
 		case GL_FLOAT_MAT3:
-			Functions->glUniformMatrix3fv(UniformInfo[index].location, count/9, false, floats);
+			Driver->m_functions->glUniformMatrix3fv(UniformInfo[index].location, count/9, false, floats);
 			break;
 		case GL_FLOAT_MAT4:
-			Functions->glUniformMatrix4fv(UniformInfo[index].location, count/16, false, floats);
+			Driver->m_functions->glUniformMatrix4fv(UniformInfo[index].location, count/16, false, floats);
 			break;
 		case GL_SAMPLER_2D:
 		case GL_SAMPLER_CUBE:
@@ -422,7 +422,7 @@ bool CQGLFunctionsMaterialRenderer::setPixelShaderConstant(s32 index, const f32*
 				if(floats)
 				{
 					const GLint id = (GLint)(*floats);
-					Functions->glUniform1iv(UniformInfo[index].location, 1, &id);
+					Driver->m_functions->glUniform1iv(UniformInfo[index].location, 1, &id);
 				}
 				else
 					status = false;
@@ -447,23 +447,23 @@ bool CQGLFunctionsMaterialRenderer::setPixelShaderConstant(s32 index, const s32*
 	{
 		case GL_INT:
 		case GL_BOOL:
-			Functions->glUniform1iv(UniformInfo[index].location, count, ints);
+			Driver->m_functions->glUniform1iv(UniformInfo[index].location, count, ints);
 			break;
 		case GL_INT_VEC2:
 		case GL_BOOL_VEC2:
-			Functions->glUniform2iv(UniformInfo[index].location, count/2, ints);
+			Driver->m_functions->glUniform2iv(UniformInfo[index].location, count/2, ints);
 			break;
 		case GL_INT_VEC3:
 		case GL_BOOL_VEC3:
-			Functions->glUniform3iv(UniformInfo[index].location, count/3, ints);
+			Driver->m_functions->glUniform3iv(UniformInfo[index].location, count/3, ints);
 			break;
 		case GL_INT_VEC4:
 		case GL_BOOL_VEC4:
-			Functions->glUniform4iv(UniformInfo[index].location, count/4, ints);
+			Driver->m_functions->glUniform4iv(UniformInfo[index].location, count/4, ints);
 			break;
 		case GL_SAMPLER_2D:
 		case GL_SAMPLER_CUBE:
-			Functions->glUniform1iv(UniformInfo[index].location, 1, ints);
+			Driver->m_functions->glUniform1iv(UniformInfo[index].location, 1, ints);
 			break;
 		default:
 			status = false;

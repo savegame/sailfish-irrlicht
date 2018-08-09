@@ -187,6 +187,9 @@ public:
 		BlendDestinationRGB(0), BlendSourceAlpha(0), BlendDestinationAlpha(0), Blend(0), BlendEquationInvalid(false), BlendFuncInvalid(false), BlendInvalid(false),
 		ColorMask(0), ColorMaskInvalid(false), CullFaceMode(GL_BACK), CullFace(false), DepthFunc(GL_LESS), DepthMask(true), DepthTest(false), FrameBufferID(0),
 		ProgramID(0), ActiveTexture(GL_TEXTURE0), ViewportX(0), ViewportY(0)
+  #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+		, Functions(NULL)
+  #endif
 	{
 		const COpenGLCoreFeature& feature = Driver->getFeature();
 
@@ -574,6 +577,9 @@ public:
 	}
 
 protected:
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+	QOpenGLFunctions *Functions;
+#endif
 	TOpenGLDriver* Driver;
 
 	STextureCache TextureCache;
