@@ -294,7 +294,7 @@ HEADERS += \
     source/Irrlicht/CIrrDeviceFB.h \
     source/Irrlicht/CIrrDeviceiOS.h \
     source/Irrlicht/CIrrDeviceLinux.h \
-    source/Irrlicht/CIrrDeviceOSX.h \
+#    source/Irrlicht/CIrrDeviceOSX.h \
     source/Irrlicht/CIrrDeviceSDL.h \
     source/Irrlicht/CIrrDeviceStub.h \
     source/Irrlicht/CIrrDeviceWin32.h \

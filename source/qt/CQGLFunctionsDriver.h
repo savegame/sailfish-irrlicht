@@ -39,7 +39,11 @@ namespace irr
 namespace video
 {
 
-    class CQGLFunctionsFixedPipelineRenderer;
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+    IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+#endif
+
+	class CQGLFunctionsFixedPipelineRenderer;
 	class CQGLFunctionsNormalMapRenderer;
 	class CQGLFunctionsParallaxMapRenderer;
 	class CQGLFunctionsRenderer2D;

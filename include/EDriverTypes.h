@@ -62,6 +62,9 @@ namespace video
 		//! WebGL1 friendly subset of OpenGL-ES 2.x driver for Emscripten
 		EDT_WEBGL1,
 
+		//! QOpenGLFunctions driver, for use rendering inside QtOpenGL
+		EDT_QOGLDUNCTIONS,
+
 		//! No driver, just for counting the elements
 		EDT_COUNT
 	};

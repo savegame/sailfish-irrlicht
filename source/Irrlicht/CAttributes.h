@@ -9,8 +9,14 @@
 #include "IAttributes.h"
 #include "IAttribute.h"
 
-#ifndef _IRR_OVERRIDE_ 
+#ifndef _IRR_OSX_PLATFORM_
+#ifndef _IRR_OVERRIDE_
+#define _IRR_OVERRIDE_ override
+#endif
+#else
+#ifndef _IRR_OVERRIDE_
 #define _IRR_OVERRIDE_
+#endif
 #endif
 
 namespace irr

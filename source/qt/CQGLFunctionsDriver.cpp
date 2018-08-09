@@ -2867,16 +2867,16 @@ class IVideoDriver;
 class IContextManager;
 #endif
 
-IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager)
-{
-#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
-	CQGLFunctionsDriver* driver = new CQGLFunctionsDriver(params, io, contextManager);
-	driver->genericDriverInit(params.WindowSize, params.Stencilbuffer);	// don't call in constructor, it uses virtual function calls of driver
-	return driver;
-#else
-	return 0;
-#endif //  _IRR_COMPILE_WITH_QGLFUNCTIONS_
-}
+    IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager)
+	{
+    #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+		CQGLFunctionsDriver* driver = new CQGLFunctionsDriver(params, io, contextManager);
+		driver->genericDriverInit(params.WindowSize, params.Stencilbuffer);	// don't call in constructor, it uses virtual function calls of driver
+		return driver;
+    #else
+		return 0;
+    #endif //  _IRR_COMPILE_WITH_QGLFUNCTIONS_
+	}
 
 } // end namespace
 } // end namespace

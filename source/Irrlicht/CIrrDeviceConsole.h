@@ -33,6 +33,10 @@
 #define _IRR_VT100_CONSOLE_
 #endif
 
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+#include <CQGLFunctionsDriver.h>
+#endif
+
 namespace irr
 {
 
