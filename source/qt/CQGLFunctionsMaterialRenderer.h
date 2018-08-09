@@ -79,6 +79,7 @@ protected:
 	bool createShader(GLenum shaderType, const char* shader);
 	bool linkProgram();
 	
+	QOpenGLFunctions*    Functions;
 	CQGLFunctionsDriver* Driver;
 	IShaderConstantSetCallBack* CallBack;
 

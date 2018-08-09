@@ -40,10 +40,10 @@ namespace video
 {
 
 CQGLFunctionsDriver::CQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager) :
-    CNullDriver(io, params.WindowSize), CQGLFunctionsExtensionHandler(), CacheHandler(0),
+    CNullDriver(io, params.WindowSize), CQGLFunctionsExtensionHandler(params.qOpenGLFunctions), CacheHandler(0),
     MaterialRenderer2DActive(0), MaterialRenderer2DTexture(0), MaterialRenderer2DNoTexture(0),
     CurrentRenderMode(ERM_NONE), ResetRenderStates(true), LockRenderStateMode(false), Transformation3DChanged(true), AntiAlias(params.AntiAlias),
-    OGLES2ShaderPath(params.OGLES2ShaderPath), m_functions(params.qOpenGLFunctions),
+    m_functions(params.qOpenGLFunctions), OGLES2ShaderPath(params.OGLES2ShaderPath),
     ColorFormat(ECF_R8G8B8), Params(params), ContextManager(contextManager)
 {
 #ifdef _DEBUG

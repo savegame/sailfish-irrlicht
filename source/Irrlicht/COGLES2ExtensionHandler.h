@@ -8,7 +8,7 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_) 
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"

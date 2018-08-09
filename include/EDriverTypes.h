@@ -80,6 +80,7 @@ namespace video
 		"OpenGL ES1",
 		"OpenGL ES2",
 		"WebGL 1",
+	    "QOpenGLFucntions",
 		0
 	};
 

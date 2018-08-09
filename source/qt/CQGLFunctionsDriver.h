@@ -50,9 +50,10 @@ namespace video
 
 	class CQGLFunctionsDriver : public CNullDriver, public IMaterialRendererServices, public CQGLFunctionsExtensionHandler
 	{
+		friend class CQGLFunctionsMaterialRenderer;
 		friend class COpenGLCoreTexture<CQGLFunctionsDriver>;
 		friend IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
-	public: 
+	protected: 
 		QOpenGLFunctions *m_functions;
 		QOpenGLExtraFunctions *m_extra;
 	protected:

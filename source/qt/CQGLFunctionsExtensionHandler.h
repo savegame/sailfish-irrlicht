@@ -8,12 +8,12 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#if defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
 #include "os.h"
-
+#include <QOpenGLFunctions>
 #include "COGLES2Common.h"
 
 #include "COpenGLCoreFeature.h"
@@ -168,7 +168,7 @@ namespace video
 			IRR_OGLES2_Feature_Count
 		};
 
-		CQGLFunctionsExtensionHandler();
+		CQGLFunctionsExtensionHandler(QOpenGLFunctions *f);
 
 		void dump() const;
 
@@ -237,54 +237,54 @@ namespace video
 
 		inline void irrGlActiveTexture(GLenum texture)
 		{
-			glActiveTexture(texture);
+			Functions->glActiveTexture(texture);
 		}
 
 		inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
 			GLsizei imageSize, const void* data)
 		{
-			glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
+			Functions->glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
 		}
 
 		inline void irrGlCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
 			GLenum format, GLsizei imageSize, const void* data)
 		{
-			glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+			Functions->glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
 		}
 
 		inline void irrGlUseProgram(GLuint prog)
 		{
-			glUseProgram(prog);
+			Functions->glUseProgram(prog);
 		}
 
 		inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
 		{
-			glBindFramebuffer(target, framebuffer);
+			Functions->glBindFramebuffer(target, framebuffer);
 		}
 
 		inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 		{
-			glDeleteFramebuffers(n, framebuffers);
+			Functions->glDeleteFramebuffers(n, framebuffers);
 		}
 
 		inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
 		{
-			glGenFramebuffers(n, framebuffers);
+			Functions->glGenFramebuffers(n, framebuffers);
 		}
 
 		inline GLenum irrGlCheckFramebufferStatus(GLenum target)
 		{
-			return glCheckFramebufferStatus(target);
+			return Functions->glCheckFramebufferStatus(target);
 		}
 
 		inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 		{
-			glFramebufferTexture2D(target, attachment, textarget, texture, level);
+			Functions->glFramebufferTexture2D(target, attachment, textarget, texture, level);
 		}
 
 		inline void irrGlGenerateMipmap(GLenum target)
 		{
-			glGenerateMipmap(target);
+			Functions->glGenerateMipmap(target);
 		}
 
 		inline void irrGlActiveStencilFace(GLenum face)
@@ -301,12 +301,12 @@ namespace video
 
 		inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 		{
-			glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+			Functions->glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 		}
 
 		inline void irrGlBlendEquation(GLenum mode)
 		{
-			glBlendEquation(mode);
+			Functions->glBlendEquation(mode);
 		}
 
 		inline void irrGlEnableIndexed(GLenum target, GLuint index)
@@ -339,7 +339,7 @@ namespace video
 
 	protected:
 		COpenGLCoreFeature Feature;
-
+		QOpenGLFunctions*  Functions;
 		u16 Version;
 		u8 MaxAnisotropy;
 		u32 MaxIndices;

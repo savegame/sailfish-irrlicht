@@ -5,7 +5,7 @@
 
 #include "CQGLFunctionsExtensionHandler.h"
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#if defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 
 #include "irrString.h"
 #include "SMaterial.h"
@@ -157,10 +157,10 @@ namespace video
 	};
 
 
-	CQGLFunctionsExtensionHandler::CQGLFunctionsExtensionHandler() :
+	CQGLFunctionsExtensionHandler::CQGLFunctionsExtensionHandler(QOpenGLFunctions *f) :
 			Version(0), MaxAnisotropy(1), MaxIndices(0xffff),
 			MaxTextureSize(1), MaxTextureLODBias(0.f),
-			StencilBuffer(false)
+			StencilBuffer(false), Functions(f)
 	{
 		for (u32 i = 0; i < IRR_OGLES2_Feature_Count; ++i)
 			FeatureAvailable[i] = false;
@@ -239,28 +239,28 @@ namespace video
 		}
 
 		GLint val=0;
-		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &val);
+		Functions->glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &val);
 		Feature.TextureUnit = static_cast<u8>(val);
 
 	#ifdef GL_EXT_texture_filter_anisotropic
 		if (FeatureAvailable[IRR_EXT_texture_filter_anisotropic])
 		{
-			glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &val);
+			Functions->glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &val);
 			MaxAnisotropy = static_cast<u8>(val);
 		}
 	#endif
 	#ifdef GL_MAX_ELEMENTS_INDICES
-		glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &val);
+		Functions->glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &val);
 		MaxIndices=val;
 	#endif
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
+		Functions->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 		MaxTextureSize=static_cast<u32>(val);
 	#ifdef GL_EXT_texture_lod_bias
 		if (FeatureAvailable[IRR_EXT_texture_lod_bias])
-			glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &MaxTextureLODBias);
+			Functions->glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &MaxTextureLODBias);
 	#endif
-		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
-		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, DimAliasedPoint);
+		Functions->glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
+		Functions->glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, DimAliasedPoint);
 
 		Feature.TextureUnit = core::min_(Feature.TextureUnit, static_cast<u8>(MATERIAL_MAX_TEXTURES));
 		Feature.ColorAttachment = 1;
