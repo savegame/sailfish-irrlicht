@@ -274,7 +274,7 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	
 	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid2.vsh";
 	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsLightmapModulate.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
@@ -312,7 +312,7 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SphereMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-    VertexShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.vsh";
+	VertexShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.vsh";
 	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
@@ -441,8 +441,7 @@ bool CQGLFunctionsDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clear
 bool CQGLFunctionsDriver::endScene()
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_END_SCENE);)
-	        
-	        CNullDriver::endScene();
+	CNullDriver::endScene();
 	
 	m_functions->glFlush();
 	
