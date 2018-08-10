@@ -88,6 +88,9 @@
 #if defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) || defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
 #define _IRR_IOS_PLATFORM_
 #define _IRR_COMPILE_WITH_IOS_DEVICE_
+#ifdef NO__IRR_COMPILE_WITH_IOS_DEVICE_
+#undef _IRR_COMPILE_WITH_IOS_DEVICE_
+#endif
 #define NO_IRR_COMPILE_WITH_OPENGL_
 // The application state events and following methods: IrrlichtDevice::isWindowActive, IrrlichtDevice::isWindowFocused,
 // IrrlichtDevice::isWindowMinimized works out of box only if you'll use built-in CIrrDelegateiOS,

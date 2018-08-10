@@ -291,13 +291,13 @@ HEADERS += \
     source/Irrlicht/CImageWriterPSD.h \
     source/Irrlicht/CImageWriterTGA.h \
     source/Irrlicht/CIrrDeviceConsole.h \
-    source/Irrlicht/CIrrDeviceFB.h \
-    source/Irrlicht/CIrrDeviceiOS.h \
+#    source/Irrlicht/CIrrDeviceFB.h \
+#    source/Irrlicht/CIrrDeviceiOS.h \
     source/Irrlicht/CIrrDeviceLinux.h \
 #    source/Irrlicht/CIrrDeviceOSX.h \
-    source/Irrlicht/CIrrDeviceSDL.h \
+#    source/Irrlicht/CIrrDeviceSDL.h \
     source/Irrlicht/CIrrDeviceStub.h \
-    source/Irrlicht/CIrrDeviceWin32.h \
+#    source/Irrlicht/CIrrDeviceWin32.h \
     source/Irrlicht/CIrrMeshFileLoader.h \
     source/Irrlicht/CIrrMeshWriter.h \
     source/Irrlicht/CLightSceneNode.h \
@@ -541,11 +541,11 @@ SOURCES += \
     source/Irrlicht/CImageWriterPSD.cpp \
     source/Irrlicht/CImageWriterTGA.cpp \
     source/Irrlicht/CIrrDeviceConsole.cpp \
-    source/Irrlicht/CIrrDeviceFB.cpp \
-    source/Irrlicht/CIrrDeviceLinux.cpp \
-    source/Irrlicht/CIrrDeviceSDL.cpp \
+#    source/Irrlicht/CIrrDeviceFB.cpp \
+#    source/Irrlicht/CIrrDeviceLinux.cpp \
+#    source/Irrlicht/CIrrDeviceSDL.cpp \
     source/Irrlicht/CIrrDeviceStub.cpp \
-    source/Irrlicht/CIrrDeviceWin32.cpp \
+#    source/Irrlicht/CIrrDeviceWin32.cpp \
     source/Irrlicht/CIrrMeshFileLoader.cpp \
     source/Irrlicht/CIrrMeshWriter.cpp \
     source/Irrlicht/CLightSceneNode.cpp \

@@ -14,13 +14,21 @@ INCLUDEPATH += third_party/wayland
 
 debug: DEFINES += Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
 
-PKGCONFIG += zlib libpng
-LIBS += -lbz2 -Wl,-rpath,/usr/lib -fPIC
-DEFINES += _IRRDIR=\\\"$$PWD\\\"
+!ios: PKGCONFIG += zlib libpng
+ios {
+    CONFIG += staticlib
+    LIBS +=  -Wl,-framework OpenGLES2  -Wl,-framework AppKit
+#    glshaders.path=Contens/iOS
+#    glshaders.files = $$PWD/media/Shaders
+#    QMAKE_BUNDLE_DATA += glshaders
+}
+!ios: LIBS += -lbz2 -Wl,-rpath,/usr/lib -fPIC
+!ios: DEFINES += _IRRDIR=\\\"$$PWD/\\\"
+ios: DEFINES += _IRRDIR=\\\"\\\"
 !x11: DEFINES += NO_IRR_COMPILE_WITH_X11_
 
 DEFINES += _IRR_COMPILE_WITH_QGLFUNCTIONS_
-#DEFINES += _IRR_COMPILE_WITH_FB_DEVICE_
+DEFINES += NO__IRR_COMPILE_WITH_IOS_DEVICE_
 DEFINES -= _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_SAILFISH_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_OGLES2_
@@ -56,10 +64,13 @@ INCLUDEPATH += $$PWD/source/Irrlicht/libjpeg
 
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
+DEFINES += _MEDIA_PATH=\\\"$$PWD/media\\\"
 
 include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)
 include(irrlicht.pri)
+
+include(source/Irrlicht/bzip2/bzip2.pri)
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \

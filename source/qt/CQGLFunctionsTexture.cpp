@@ -4,8 +4,13 @@
 
 #include <COGLESCommon.h>
 #include <CQGLFunctionsDriver.h>
+#include <QOpenGLExtraFunctions>
+#include <QOpenGLFunctions>
+#include <QtOpenGL>
 #include <COpenGLCoreRenderTarget.h>
 #include <COpenGLCoreCacheHandler.h>
+
+//#include <glext.h>
 
 namespace irr {
 namespace video {
@@ -65,10 +70,10 @@ CQGLFunctionsTexture::CQGLFunctionsTexture(const irr::io::path &name, const core
 		else
 			Driver->m_functions->glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
 	}
-	
+#ifdef GL_GENERATE_MIPMAP
 	if (HasMipMaps)
 		Driver->m_functions->glTexParameteri(TextureType, GL_GENERATE_MIPMAP, (AutoGenerateMipMaps) ? GL_TRUE : GL_FALSE);
-	
+#endif
 	for (u32 i = 0; i < (*tmpImage).size(); ++i)
 		uploadTexture(true, i, 0, (*tmpImage)[i]->getData());
 	
