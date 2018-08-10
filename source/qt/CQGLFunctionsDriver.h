@@ -59,7 +59,7 @@ namespace video
 		friend class CQGLFunctionsCacheHandler;
 		
 		friend IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
-	protected: 
+	public: 
 		QOpenGLFunctions *m_functions;
 		QOpenGLExtraFunctions *m_extra;
 	protected:

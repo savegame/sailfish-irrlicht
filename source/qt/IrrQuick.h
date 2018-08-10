@@ -12,7 +12,7 @@
 #include <QQuaternion>
 #include <QVector2D>
 #include <IrrlichtDevice.h>
-#include <CQGLFunctionsDriver.h>
+#include "CQGLFunctionsDriver.h"
 
 using namespace irr;
 using namespace video;
@@ -59,10 +59,17 @@ public:
 	void setViewportSize(const QSize &size);
 	void setWindow(QQuickWindow *window) { m_window = window; }
 	
-	void init();
+	typedef void (GLRenderer::*initFunc)();
+	initFunc init;
+	
 	
 	void createCube();
 	void setCamera();
+	
+protected:
+	void _first_init();
+	void _empty_init() {}
+	
 signals:
 	
 public slots:
@@ -71,18 +78,10 @@ public slots:
 private:
 	qreal                   m_angularSpeed;
 	qreal                   m_t;
-	QQuaternion             m_rotation;
-	QOpenGLShaderProgram   *m_program;
-	QOpenGLTexture         *m_texture;
 	QSize                   m_viewportSize;
 	QQuickWindow           *m_window;
-	QMatrix4x4              m_projection;
-	QOpenGLBuffer          *m_arrayBuf;
-	QOpenGLBuffer          *m_indexBuf;
-	QVector3D               m_rotationAxis;
 	irr::IrrlichtDevice    *m_device;
 	CQGLFunctionsDriver    *m_driver;
-//	CQGLFunctionsTexture
 };
 
 #endif
