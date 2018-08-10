@@ -118,7 +118,7 @@ namespace video
 	class COGLES1Driver;
 	typedef COpenGLCoreTexture<COGLES1Driver> COGLES1Texture;
 	typedef COpenGLCoreRenderTarget<COGLES1Driver, COGLES1Texture> COGLES1RenderTarget;
-	typedef COpenGLCoreCacheHandler<COGLES1Driver, COGLES1Texture> COGLES1CacheHandler;
+//	typedef COpenGLCoreCacheHandler<COGLES1Driver, COGLES1Texture> COGLES1CacheHandler;
 
 }
 }

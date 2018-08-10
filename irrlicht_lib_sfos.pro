@@ -5,7 +5,7 @@ TARGET = irrlicht
 DESTDIR = $$OUT_PWD/../../lib
 
 CONFIG += warn_off qt #staticlib
-QT += core opengl
+QT += core opengl quick
 CONFIG += wayland-compositor link_pkgconfig
 #QT += compositor widgets core quick
 

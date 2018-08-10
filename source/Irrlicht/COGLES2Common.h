@@ -49,6 +49,10 @@ typedef char GLchar;
 
 #define IRR_OPENGL_VERSION 20
 
+#if defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
+#include <CQGLFunctionsTexture.h>
+#endif
+
 namespace irr
 {
 namespace video
@@ -74,9 +78,10 @@ namespace video
 
 #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 	class CQGLFunctionsDriver;
-	typedef COpenGLCoreTexture<CQGLFunctionsDriver> CQGLFunctionsTexture;
+	class CQGLFunctionsTexture;
+//	typedef COpenGLCoreTexture<CQGLFunctionsDriver> CQGLFunctionsTexture;
 	typedef COpenGLCoreRenderTarget<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsRenderTarget;
-	typedef COpenGLCoreCacheHandler<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsCacheHandler;
+//	typedef COpenGLCoreCacheHandler<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsCacheHandler;
 #endif
 }
 }

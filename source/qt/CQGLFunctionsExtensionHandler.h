@@ -25,6 +25,7 @@ namespace video
 
 	class CQGLFunctionsExtensionHandler
 	{
+		friend class CQGLFunctionsTexture;
 	public:
 		enum EOGLES2Features
 		{

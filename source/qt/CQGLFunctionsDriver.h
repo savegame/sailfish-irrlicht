@@ -11,7 +11,6 @@
 
 #include "SIrrCreationParameters.h"
 
-#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 
 #include "CNullDriver.h"
 #include "COpenGLCoreTexture.h"
@@ -22,6 +21,10 @@
 #include "fast_atof.h"
 #include "CQGLFunctionsExtensionHandler.h"
 #include "IContextManager.h"
+#include "CQGLFunctionsTexture.h"
+#include "CQGLFunctionsCacheHandler.h"
+
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 
 #if defined(_IRR_WINDOWS_API_)
 // include windows headers for HWND
@@ -33,6 +36,7 @@
 
 class QOpenGLFunctions;
 class QOpenGLExtraFunctions;
+class QOpenGLContext;
 
 namespace irr
 {
@@ -51,7 +55,9 @@ namespace video
 	class CQGLFunctionsDriver : public CNullDriver, public IMaterialRendererServices, public CQGLFunctionsExtensionHandler
 	{
 		friend class CQGLFunctionsMaterialRenderer;
-		friend class COpenGLCoreTexture<CQGLFunctionsDriver>;
+		friend class CQGLFunctionsTexture;
+		friend class CQGLFunctionsCacheHandler;
+		
 		friend IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
 	protected: 
 		QOpenGLFunctions *m_functions;
@@ -440,5 +446,4 @@ private:
 } // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_QGLFUNCTIONS_
-
 #endif // __C_QGLFUNCTIONS_DRIVER_H_INCLUDED__

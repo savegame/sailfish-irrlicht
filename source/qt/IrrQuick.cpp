@@ -2,15 +2,15 @@
 #include <QQuickWindow>
 #include <irrlicht.h>
 
-GLView::GLView(QQuickItem *parent)
+IrrQuickItem::IrrQuickItem(QQuickItem *parent)
     : QQuickItem(parent)
     , m_t(0)
     , m_renderer(nullptr)
 {
-    connect( this, &QQuickItem::windowChanged, this, &GLView::handleWindowChanged );
+    connect( this, &QQuickItem::windowChanged, this, &IrrQuickItem::handleWindowChanged );
 }
 
-void GLView::setT(qreal t)
+void IrrQuickItem::setT(qreal t)
 {
     if( t == m_t )
         return;
@@ -20,7 +20,7 @@ void GLView::setT(qreal t)
         window()->update();
 }
 
-void GLView::sync()
+void IrrQuickItem::sync()
 {
     if(!m_renderer)
     {
@@ -33,7 +33,7 @@ void GLView::sync()
 
 }
 
-void GLView::cleanup()
+void IrrQuickItem::cleanup()
 {
     if(m_renderer)
     {
@@ -42,17 +42,17 @@ void GLView::cleanup()
     }
 }
 
-void GLView::handleWindowChanged(QQuickWindow *window)
+void IrrQuickItem::handleWindowChanged(QQuickWindow *window)
 {
     if(window)
     {
-        connect(window, &QQuickWindow::beforeSynchronizing, this, &GLView::sync, Qt::DirectConnection );
-        connect(window, &QQuickWindow::sceneGraphInvalidated, this, &GLView::cleanup, Qt::DirectConnection );
+        connect(window, &QQuickWindow::beforeSynchronizing, this, &IrrQuickItem::sync, Qt::DirectConnection );
+        connect(window, &QQuickWindow::sceneGraphInvalidated, this, &IrrQuickItem::cleanup, Qt::DirectConnection );
         window->setClearBeforeRendering(false);
     }
 }
 
-void GLView::touchEvent(QTouchEvent *e)
+void IrrQuickItem::touchEvent(QTouchEvent *e)
 {
     // Save mouse press position
 //    mousePressPosition =
@@ -133,12 +133,12 @@ void GLView::touchEvent(QTouchEvent *e)
     //    }
 }
 
-void GLView::mousePressEvent(QMouseEvent *e)
+void IrrQuickItem::mousePressEvent(QMouseEvent *e)
 {
     m_pressPos = e->localPos();
 }
 
-void GLView::mouseReleaseEvent(QMouseEvent *e)
+void IrrQuickItem::mouseReleaseEvent(QMouseEvent *e)
 {
     // Mouse release position - mouse press position
     QVector2D diff = QVector2D(e->localPos()) - QVector2D(m_pressPos.x(), m_pressPos.y() );
@@ -202,11 +202,6 @@ void GLRenderer::setViewportSize(const QSize &size)
 void GLRenderer::init()
 {
 
-    m_indexBuf = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
-    m_arrayBuf = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-
-    m_arrayBuf->create();
-    m_indexBuf->create();
 }
 
 void GLRenderer::createCube()
