@@ -182,7 +182,7 @@ void GLRenderer::paint()
 {
 	(this->*init)();
 //	reinterpret_cast<CQGLFunctionsDriver*>(m_device)->m_functions = m_window->openglContext()->functions();
-//	m_window->openglContext()->functions()->glUseProgram( 0 );
+//	/*m_window->openglContext()->functions()->*/glUseProgram( 0 );
 	m_device->run();
 	m_device->getVideoDriver()->beginScene(true,true, SColor(255,140,140,200) );
 	m_device->getSceneManager()->drawAll();
