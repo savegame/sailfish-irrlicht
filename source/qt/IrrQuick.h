@@ -84,6 +84,7 @@ protected:
 	
 	void _load_example_1();
 	void _load_example_2();
+	void _load_example_11();
 signals:
 	
 public slots:

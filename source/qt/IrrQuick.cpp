@@ -216,7 +216,7 @@ void GLRenderer::createCube()
 	video::IVideoDriver *driver = m_device->getVideoDriver();
 	scene::ISceneNode *cube = scene->addCubeSceneNode(2);
 	io::path p = _IRRDIR;
-	p += "/../../interfaces/InterfaceQt/resources/textures/roof_0.jpg";
+	p = "media/irrlicht2_lf.jpg";
 	video::ITexture *texture = driver->getTexture(p);
 	if(texture)
 		cube->setMaterialTexture(0,texture);
@@ -252,13 +252,16 @@ void GLRenderer::loadExample(int index)
 	switch (index) {
 	case 1:
 		init = &GLRenderer::_load_example_1;
-		createCube(); // this garantue of two differend materials in scene
 		break;
 	case 2:
 		init = &GLRenderer::_load_example_2;
 		break;
+	case 11:
+		init = &GLRenderer::_load_example_11;
+		break;
 	}
 
+	createCube(); // this garantue of two differend materials in scene
 	// some hack ?while error of shader program not fixed
 
 }
@@ -345,42 +348,10 @@ void GLRenderer::_load_example_1()
 
 void GLRenderer::_load_example_2()
 {
-	/*
-	Get a pointer to the video driver and the SceneManager so that
-	we do not always have to call irr::IrrlichtDevice::getVideoDriver() and
-	irr::IrrlichtDevice::getSceneManager().
-	*/
 	video::IVideoDriver* driver = m_device->getVideoDriver();
 	scene::ISceneManager* smgr = m_device->getSceneManager();
 
-	/*
-	To display the Quake 3 map, we first need to load it. Quake 3 maps
-	are packed into .pk3 files which are nothing else than .zip files.
-	So we add the .pk3 file to our irr::io::IFileSystem. After it was added,
-	we can read from the files in that archive as if they were stored on disk.
-	*/
 	m_device->getFileSystem()->addFileArchive(getExampleMediaPath() + "map-20kdm2.pk3");
-
-	/*
-	Now we can load the mesh by calling	irr::scene::ISceneManager::getMesh().
-	We get a pointer returned to an	irr::scene::IAnimatedMesh. Quake 3 maps are
-	not	really animated, they are only a chunk of static geometry with
-	some materials attached. Hence the IAnimatedMesh consists of only one
-	frame, so we get the "first frame" of the "animation", which is our
-	quake level and create an Octree scene node with it, using
-	irr::scene::ISceneManager::addOctreeSceneNode().
-	The Octree optimizes the scene a little bit, trying to draw only geometry
-	which is currently visible. An alternative to the Octree would be a
-	irr::scene::IMeshSceneNode, which would always draw the complete
-	geometry of the mesh, without optimization. Try it: Use
-	irr::scene::ISceneManager::addMeshSceneNode() instead of
-	addOctreeSceneNode() and compare the primitives drawn by the video
-	driver. (There is a irr::video::IVideoDriver::getPrimitiveCountDrawn()
-	method in the irr::video::IVideoDriver class). Note that this
-	optimization with the Octree is only useful when drawing huge meshes
-	consisting of lots of geometry and if users can't see the whole scene at
-	once.
-	*/
 	scene::IAnimatedMesh* mesh = smgr->getMesh("20kdm2.bsp");
 	scene::ISceneNode* node = 0;
 
@@ -388,29 +359,9 @@ void GLRenderer::_load_example_2()
 		node = smgr->addOctreeSceneNode(mesh->getMesh(0), 0, -1, 1024);
 //		node = smgr->addMeshSceneNode(mesh->getMesh(0));
 
-	/*
-	Because the level was not modeled around the origin (0,0,0), we
-	translate the whole level a little bit. This is done on
-	irr::scene::ISceneNode level using the methods
-	irr::scene::ISceneNode::setPosition() (in this case),
-	irr::scene::ISceneNode::setRotation(), and
-	irr::scene::ISceneNode::setScale().
-	*/
 	if (node)
 		node->setPosition(core::vector3df(-1300,-144,-1249));
 
-	/*
-	Now we need a camera to look at the Quake 3 map.
-	We want to create a user controlled camera. There are some
-	cameras available in the Irrlicht engine. For example the
-	MayaCamera which can be controlled like the camera in Maya:
-	Rotate with left mouse button pressed, Zoom with both buttons pressed,
-	translate with right mouse button pressed. This could be created with
-	irr::scene::ISceneManager::addCameraSceneNodeMaya(). But for this
-	example, we want to create a camera which behaves like the ones in
-	first person shooter games (FPS) and hence use
-	irr::scene::ISceneManager::addCameraSceneNodeFPS().
-	*/
 	smgr->addCameraSceneNodeFPS(0,1.0f);
 
 	/*
@@ -418,6 +369,181 @@ void GLRenderer::_load_example_2()
 	irr::IrrlichtDevice::ICursorControl.
 	*/
 //	m_device->getCursorControl()->setVisible(false);
+
+	/** set epmty fuctions pointer */
+	init = &GLRenderer::_empty_init;
+}
+
+void GLRenderer::_load_example_11()
+{
+	video::IVideoDriver* driver = m_device->getVideoDriver();
+	scene::ISceneManager* smgr = m_device->getSceneManager();
+	gui::IGUIEnvironment* env = m_device->getGUIEnvironment();
+
+	driver->setTextureCreationFlag(video::ETCF_ALWAYS_32_BIT, true);
+
+	const io::path mediaPath = getExampleMediaPath();
+
+	// add irrlicht logo
+	env->addImage(driver->getTexture(mediaPath + "irrlichtlogo3.png"),
+	    core::position2d<s32>(10,10));
+
+	// add camera
+	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS();
+	camera->setPosition(core::vector3df(-200,200,-200));
+
+	// disable mouse cursor
+//	m_device->getCursorControl()->setVisible(false);
+	driver->setFog(video::SColor(0,138,125,81), video::EFT_FOG_LINEAR, 250, 1000, .003f, true, false);
+
+	scene::IAnimatedMesh* roomMesh = smgr->getMesh(mediaPath + "room.3ds");
+	scene::ISceneNode* room = 0;
+	scene::ISceneNode* earth = 0;
+
+	if (roomMesh)
+	{
+		smgr->getMeshManipulator()->makePlanarTextureMapping(
+		        roomMesh->getMesh(0), 0.003f);
+
+		video::ITexture* normalMap =
+		    driver->getTexture(mediaPath + "rockwall_height.bmp");
+
+		if (normalMap)
+			driver->makeNormalMapTexture(normalMap, 9.0f);
+/*
+		// The Normal Map and the displacement map/height map in the alpha channel
+		video::ITexture* normalMap =
+			driver->getTexture(mediaPath + "rockwall_NRM.tga");
+*/
+		scene::IMesh* tangentMesh = smgr->getMeshManipulator()->
+		        createMeshWithTangents(roomMesh->getMesh(0));
+
+		room = smgr->addMeshSceneNode(tangentMesh);
+		room->setMaterialTexture(0,
+		        driver->getTexture(mediaPath + "rockwall.jpg"));
+		room->setMaterialTexture(1, normalMap);
+
+		// Stones don't glitter..
+		room->getMaterial(0).SpecularColor.set(0,0,0,0);
+		room->getMaterial(0).Shininess = 0.f;
+
+		room->setMaterialFlag(video::EMF_FOG_ENABLE, true);
+		room->setMaterialType(video::EMT_PARALLAX_MAP_SOLID);
+		// adjust height for parallax effect
+		room->getMaterial(0).MaterialTypeParam = 1.f / 64.f;
+
+		// drop mesh because we created it with a create.. call.
+		tangentMesh->drop();
+	}
+
+	scene::IAnimatedMesh* earthMesh = smgr->getMesh(mediaPath + "earth.x");
+	if (earthMesh)
+	{
+		//perform various task with the mesh manipulator
+		scene::IMeshManipulator *manipulator = smgr->getMeshManipulator();
+
+		// create mesh copy with tangent information from original earth.x mesh
+		scene::IMesh* tangentSphereMesh =
+		    manipulator->createMeshWithTangents(earthMesh->getMesh(0));
+
+		// set the alpha value of all vertices to 200
+		manipulator->setVertexColorAlpha(tangentSphereMesh, 200);
+
+		// scale the mesh by factor 50
+		core::matrix4 m;
+		m.setScale ( core::vector3df(50,50,50) );
+		manipulator->transform( tangentSphereMesh, m );
+
+		earth = smgr->addMeshSceneNode(tangentSphereMesh);
+
+		earth->setPosition(core::vector3df(-70,130,45));
+
+		// load heightmap, create normal map from it and set it
+		video::ITexture* earthNormalMap = driver->getTexture(mediaPath + "earthbump.jpg");
+		if (earthNormalMap)
+		{
+			driver->makeNormalMapTexture(earthNormalMap, 20.0f);
+			earth->setMaterialTexture(1, earthNormalMap);
+			earth->setMaterialType(video::EMT_NORMAL_MAP_TRANSPARENT_VERTEX_ALPHA);
+		}
+
+		// adjust material settings
+		earth->setMaterialFlag(video::EMF_FOG_ENABLE, true);
+
+		// add rotation animator
+		scene::ISceneNodeAnimator* anim =
+		    smgr->createRotationAnimator(core::vector3df(0,0.1f,0));
+		earth->addAnimator(anim);
+		anim->drop();
+
+		// drop mesh because we created it with a create.. call.
+		tangentSphereMesh->drop();
+	}
+
+	scene::ILightSceneNode* light1 =
+	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
+	    video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 800.0f);
+
+	// add fly circle animator to light 1
+	scene::ISceneNodeAnimator* anim =
+	    smgr->createFlyCircleAnimator (core::vector3df(50,300,0),190.0f, -0.003f);
+	light1->addAnimator(anim);
+	anim->drop();
+
+	// attach billboard to the light
+	scene::IBillboardSceneNode* bill =
+	    smgr->addBillboardSceneNode(light1, core::dimension2d<f32>(60, 60));
+
+	bill->setMaterialFlag(video::EMF_LIGHTING, false);
+	bill->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
+	bill->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
+	bill->setMaterialTexture(0, driver->getTexture(mediaPath + "particlegreen.jpg"));
+
+	// add light 2 (red)
+	scene::ISceneNode* light2 =
+	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
+	    video::SColorf(1.0f, 0.2f, 0.2f, 0.0f), 800.0f);
+
+	// add fly circle animator to light 2
+	anim = smgr->createFlyCircleAnimator(core::vector3df(0,150,0), 200.0f,
+	        0.001f, core::vector3df(0.2f, 0.9f, 0.f));
+	light2->addAnimator(anim);
+	anim->drop();
+
+	// attach billboard to light
+	bill = smgr->addBillboardSceneNode(light2, core::dimension2d<f32>(120, 120));
+	bill->setMaterialFlag(video::EMF_LIGHTING, false);
+	bill->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
+	bill->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
+	bill->setMaterialTexture(0, driver->getTexture(mediaPath + "particlered.bmp"));
+
+	// add particle system
+	scene::IParticleSystemSceneNode* ps =
+	    smgr->addParticleSystemSceneNode(false, light2);
+
+	// create and set emitter
+	scene::IParticleEmitter* em = ps->createBoxEmitter(
+	    core::aabbox3d<f32>(-3,0,-3,3,1,3),
+	    core::vector3df(0.0f,0.03f,0.0f),
+	    80,100,
+	    video::SColor(10,255,255,255), video::SColor(10,255,255,255),
+	    400,1100);
+	em->setMinStartSize(core::dimension2d<f32>(30.0f, 40.0f));
+	em->setMaxStartSize(core::dimension2d<f32>(30.0f, 40.0f));
+
+	ps->setEmitter(em);
+	em->drop();
+
+	// create and set affector
+	scene::IParticleAffector* paf = ps->createFadeOutParticleAffector();
+	ps->addAffector(paf);
+	paf->drop();
+
+	// adjust some material settings
+	ps->setMaterialFlag(video::EMF_LIGHTING, false);
+	ps->setMaterialFlag(video::EMF_ZWRITE_ENABLE, false);
+	ps->setMaterialTexture(0, driver->getTexture(mediaPath + "fireball.bmp"));
+	ps->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
 
 	/** set epmty fuctions pointer */
 	init = &GLRenderer::_empty_init;

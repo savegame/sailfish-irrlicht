@@ -285,9 +285,7 @@ namespace video
 
 		inline void irrGlGenerateMipmap(GLenum target)
 		{
-#if !defined (__IOS_PROHIBITED)
 			Functions->glGenerateMipmap(target);
-#endif
 		}
 
 		inline void irrGlActiveStencilFace(GLenum face)
