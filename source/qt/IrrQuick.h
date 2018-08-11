@@ -27,6 +27,8 @@ public:
 	
 	qreal t() const { return m_t; }
 	void setT(qreal t);
+
+	Q_INVOKABLE void loadExample(int index);
 signals:
 	void tChanged();
 	
@@ -39,6 +41,11 @@ protected:
 	virtual void touchEvent(QTouchEvent *e) override;
 	virtual void mousePressEvent(QMouseEvent *e) override;
 	virtual void mouseReleaseEvent(QMouseEvent *e) override;
+	virtual void keyPressEvent(QKeyEvent *e) override;
+	virtual void keyReleaseEvent(QKeyEvent *e) override;
+
+	void sendKeyEventToIrrlicht( QKeyEvent* event, bool pressedDown );
+
 private:
 	qreal        m_t;
 	QPointF      m_pressPos;
@@ -65,11 +72,18 @@ public:
 	
 	void createCube();
 	void setCamera();
+
+	Q_INVOKABLE void loadExample(int index);
 	
 protected:
 	void _first_init();
 	void _empty_init() {}
+
+	bool clear_scene();
+	const io::path getExampleMediaPath();
 	
+	void _load_example_1();
+	void _load_example_2();
 signals:
 	
 public slots:

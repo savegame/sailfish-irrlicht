@@ -70,7 +70,7 @@ CQGLFunctionsTexture::CQGLFunctionsTexture(const irr::io::path &name, const core
 		else
 			Driver->m_functions->glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
 	}
-#ifdef GL_GENERATE_MIPMAP
+#if defined(GL_GENERATE_MIPMAP) && !defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
 	if (HasMipMaps)
 		Driver->m_functions->glTexParameteri(TextureType, GL_GENERATE_MIPMAP, (AutoGenerateMipMaps) ? GL_TRUE : GL_FALSE);
 #endif

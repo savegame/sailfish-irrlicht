@@ -1,8 +1,7 @@
-//precision mediump float;
+precision mediump float;
 
 /* Uniforms */
 
-uniform float uAlphaRef;
 uniform int uTextureUsage0;
 uniform sampler2D uTextureUnit0;
 uniform int uFogEnable;
@@ -48,13 +47,7 @@ void main()
 	vec4 Color = vVertexColor;
 
 	if (bool(uTextureUsage0))
-	{
 		Color *= texture2D(uTextureUnit0, vTextureCoord0);
-		
-		// TODO: uAlphaRef should rather control sharpness of alpha, don't know how to do that right now and this works in most cases.
-		if (Color.a < uAlphaRef)
-			discard;
-	}
 	Color += vSpecularColor;
 
 	if (bool(uFogEnable))

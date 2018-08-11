@@ -178,11 +178,17 @@ bool CQGLFunctionsDriver::genericDriverInit(const core::dimension2d<u32>& screen
 
 void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const io::path& fragmentShaderName, c8** vertexShaderData, c8** fragmentShaderData)
 {
+#ifdef GLES2_PLATFORM
+	core::stringc add_path = "gles2/";
+#else
+	core::stringc add_path = "desktop/";
+#endif
+
 	io::path vsPath(OGLES2ShaderPath);
-	vsPath += vertexShaderName;
+	vsPath += add_path + vertexShaderName;
 	
 	io::path fsPath(OGLES2ShaderPath);
-	fsPath += fragmentShaderName;
+	fsPath += add_path + fragmentShaderName;
 	
 	*vertexShaderData = 0;
 	*fragmentShaderData = 0;
@@ -261,31 +267,35 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	CQGLFunctionsMaterialOneTextureBlendCB* OneTextureBlendCB = new CQGLFunctionsMaterialOneTextureBlendCB();
 	
 	// Create built-in materials.
-	
-	core::stringc VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid.vsh";
-	core::stringc FragmentShader = OGLES2ShaderPath + "CQGLFunctionsSolid.fsh";
-	
+#ifdef GLES2_PLATFORM
+	core::stringc add_path = "gles2/";
+#else
+	core::stringc add_path = "desktop/";
+#endif
+	core::stringc VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.vsh";
+	core::stringc FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.fsh";
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid2.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsSolid2Layer.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2Layer.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Solid2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid2.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsLightmapModulate.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapModulate.fsh";
 
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsLightmapAdd.fsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapAdd.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapAddCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsLightmapModulate.fsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapModulate.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapM2CB, EMT_SOLID, 0, EGSL_DEFAULT);
@@ -302,52 +312,52 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingM4CB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid2.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsDetailMap.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsDetailMap.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, DetailMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSphereMap.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsSphereMap.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSphereMap.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSphereMap.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SphereMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Reflection2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsSolid.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
 	
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsTransparentAlphaChannel.fsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentAlphaChannel.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
 	
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsTransparentAlphaChannelRef.fsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentAlphaChannelRef.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID, 0, EGSL_DEFAULT);
 	
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsTransparentVertexAlpha.fsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentVertexAlpha.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsReflection2Layer.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentReflection2LayerCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsNormalMap.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsNormalMap.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsNormalMap.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsNormalMap.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
@@ -358,8 +368,8 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsParallaxMap.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsParallaxMap.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsParallaxMap.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsParallaxMap.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
@@ -370,8 +380,8 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
 	
-	VertexShader = OGLES2ShaderPath + "CQGLFunctionsSolid.vsh";
-	FragmentShader = OGLES2ShaderPath + "CQGLFunctionsOneTextureBlend.fsh";
+	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.vsh";
+	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsOneTextureBlend.fsh";
 	
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
 	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND, 0, EGSL_DEFAULT);

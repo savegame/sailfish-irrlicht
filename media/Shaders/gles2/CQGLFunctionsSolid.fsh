@@ -1,11 +1,9 @@
-//precision mediump float;
+precision mediump float;
 
 /* Uniforms */
 
 uniform int uTextureUsage0;
-uniform int uTextureUsage1;
 uniform sampler2D uTextureUnit0;
-uniform sampler2D uTextureUnit1;
 uniform int uFogEnable;
 uniform int uFogType;
 uniform vec4 uFogColor;
@@ -16,7 +14,6 @@ uniform float uFogDensity;
 /* Varyings */
 
 varying vec2 vTextureCoord0;
-varying vec2 vTextureCoord1;
 varying vec4 vVertexColor;
 varying vec4 vSpecularColor;
 varying float vFogCoord;
@@ -47,26 +44,19 @@ float computeFog()
 
 void main()
 {
-	vec4 Color0 = vec4(1.0, 1.0, 1.0, 1.0);
-	vec4 Color1 = vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 Color = vVertexColor;
 
 	if (bool(uTextureUsage0))
-		Color0 = texture2D(uTextureUnit0, vTextureCoord0);
-
-	if (bool(uTextureUsage1))
-		Color1 = texture2D(uTextureUnit1, vTextureCoord1);
-
-	vec4 FinalColor = (Color0 * vVertexColor.a + Color1 * (1.0 - vVertexColor.a)) * vVertexColor;
-	FinalColor += vSpecularColor;
+		Color *= texture2D(uTextureUnit0, vTextureCoord0);
+	Color += vSpecularColor;
 
 	if (bool(uFogEnable))
 	{
 		float FogFactor = computeFog();
 		vec4 FogColor = uFogColor;
 		FogColor.a = 1.0;
-		FinalColor = mix(FogColor, FinalColor, FogFactor);
+		Color = mix(FogColor, Color, FogFactor);
 	}
 
-	gl_FragColor = FinalColor;
-
+	gl_FragColor = Color;
 }

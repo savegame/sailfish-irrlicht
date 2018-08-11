@@ -21,8 +21,9 @@ ios {
 #    glshaders.path=Contens/iOS
 #    glshaders.files = $$PWD/media/Shaders
 #    QMAKE_BUNDLE_DATA += glshaders
+    DEFINES += DISABLE_GL_MAX_ELEMENTS_INDICES
 }
-!ios: LIBS += -lbz2 -Wl,-rpath,/usr/lib -fPIC
+
 !ios: DEFINES += _IRRDIR=\\\"$$PWD/\\\"
 ios: DEFINES += _IRRDIR=\\\"\\\"
 !x11: DEFINES += NO_IRR_COMPILE_WITH_X11_
@@ -41,6 +42,10 @@ DEFINES += NO__IRR_COMPILE_WITH_OSX_DEVICE_
 
 osx: {
     DEFINES += _IRR_OSX_PLATFORM_
+}
+
+ios: {
+    DEFINES += GLES2_PLATFORM=1
 }
 
 DEFINES -= _IRR_OPENGL_USE_EXTPOINTER_

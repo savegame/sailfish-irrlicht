@@ -492,7 +492,7 @@ void irr::video::CQGLFunctionsCacheHandler::getProgram(GLuint &programID) const
 
 void irr::video::CQGLFunctionsCacheHandler::setProgram(GLuint programID)
 {
-	if (ProgramID != programID)
+//	if (ProgramID != programID)
 	{
 		Driver->irrGlUseProgram(programID);
 		ProgramID = programID;

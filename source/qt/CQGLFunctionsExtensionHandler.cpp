@@ -249,9 +249,14 @@ namespace video
 			MaxAnisotropy = static_cast<u8>(val);
 		}
 	#endif
+
 	#ifdef GL_MAX_ELEMENTS_INDICES
+#ifndef DISABLE_GL_MAX_ELEMENTS_INDICES //iOS
 		Functions->glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &val);
-		MaxIndices=val;
+		MaxIndices=15000;//val;
+#else
+		MaxIndices=15000;//val;
+#endif
 	#endif
 		Functions->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 		MaxTextureSize=static_cast<u32>(val);
