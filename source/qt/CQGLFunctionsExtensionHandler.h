@@ -18,6 +18,9 @@
 
 #include "COpenGLCoreFeature.h"
 
+
+// TODO Move all functions to CQGLFunctionsDriver !!!
+
 namespace irr
 {
 namespace video
@@ -170,11 +173,7 @@ namespace video
 		};
 
 		CQGLFunctionsExtensionHandler(QOpenGLFunctions *f);
-
-		void dump() const;
-
-		void initExtensions();
-
+		
 		const COpenGLCoreFeature& getFeature() const;
 
 		bool queryFeature(video::E_VIDEO_DRIVER_FEATURE feature) const
@@ -235,112 +234,9 @@ namespace video
 		{
 			return FeatureAvailable[feature];
 		}
-
-		inline void irrGlActiveTexture(GLenum texture)
-		{
-			Functions->glActiveTexture(texture);
-		}
-
-		inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
-			GLsizei imageSize, const void* data)
-		{
-			Functions->glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
-		}
-
-		inline void irrGlCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
-			GLenum format, GLsizei imageSize, const void* data)
-		{
-			Functions->glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
-		}
-
-		inline void irrGlUseProgram(GLuint prog)
-		{
-			Functions->glUseProgram(prog);
-		}
-
-		inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
-		{
-			Functions->glBindFramebuffer(target, framebuffer);
-		}
-
-		inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
-		{
-			Functions->glDeleteFramebuffers(n, framebuffers);
-		}
-
-		inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
-		{
-			Functions->glGenFramebuffers(n, framebuffers);
-		}
-
-		inline GLenum irrGlCheckFramebufferStatus(GLenum target)
-		{
-			return Functions->glCheckFramebufferStatus(target);
-		}
-
-		inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
-		{
-			Functions->glFramebufferTexture2D(target, attachment, textarget, texture, level);
-		}
-
-		inline void irrGlGenerateMipmap(GLenum target)
-		{
-			Functions->glGenerateMipmap(target);
-		}
-
-		inline void irrGlActiveStencilFace(GLenum face)
-		{
-		}
-
-		inline void irrGlDrawBuffer(GLenum mode)
-		{
-		}
-
-		inline void irrGlDrawBuffers(GLsizei n, const GLenum *bufs)
-		{
-		}
-
-		inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
-		{
-			Functions->glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-		}
-
-		inline void irrGlBlendEquation(GLenum mode)
-		{
-			Functions->glBlendEquation(mode);
-		}
-
-		inline void irrGlEnableIndexed(GLenum target, GLuint index)
-		{
-		}
-
-		inline void irrGlDisableIndexed(GLenum target, GLuint index)
-		{
-		}
-
-		inline void irrGlColorMaskIndexed(GLuint buf, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
-		{
-		}
-
-		inline void irrGlBlendFuncIndexed(GLuint buf, GLenum src, GLenum dst)
-		{
-		}
-
-		inline void irrGlBlendFuncSeparateIndexed(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
-		{
-		}
-
-		inline void irrGlBlendEquationIndexed(GLuint buf, GLenum mode)
-		{
-		}
-
-		inline void irrGlBlendEquationSeparateIndexed(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
-		{
-		}
-
+		
 	protected:
 		COpenGLCoreFeature Feature;
-		QOpenGLFunctions*  Functions;
 		u16 Version;
 		u8 MaxAnisotropy;
 		u32 MaxIndices;

@@ -316,7 +316,8 @@ void CQGLFunctionsTexture::regenerateMipMapLevels(void *data, u32 layer)
 	}
 	else
 	{
-		Driver->irrGlGenerateMipmap(TextureType);
+//		Driver->irrGlGenerateMipmap(TextureType);
+		Driver->m_functions->glGenerateMipmap(TextureType);
 	}
 
 	Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);

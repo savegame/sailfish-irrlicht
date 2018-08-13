@@ -59,6 +59,115 @@ namespace video
 		friend class CQGLFunctionsCacheHandler;
 		
 		friend IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager);
+		
+	public: // CQGLFunctionsExtensionHandler !!!
+		inline void irrGlActiveTexture(GLenum texture)
+		{
+			m_functions->glActiveTexture(texture);
+		}
+
+		inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
+			GLsizei imageSize, const void* data)
+		{
+			m_functions->glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
+		}
+
+		inline void irrGlCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
+			GLenum format, GLsizei imageSize, const void* data)
+		{
+			m_functions->glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+		}
+
+		inline void irrGlUseProgram(GLuint prog)
+		{
+			m_functions->glUseProgram(prog);
+		}
+
+		inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
+		{
+			m_functions->glBindFramebuffer(target, framebuffer);
+		}
+
+		inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
+		{
+			m_functions->glDeleteFramebuffers(n, framebuffers);
+		}
+
+		inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
+		{
+			m_functions->glGenFramebuffers(n, framebuffers);
+		}
+
+		inline GLenum irrGlCheckFramebufferStatus(GLenum target)
+		{
+			return m_functions->glCheckFramebufferStatus(target);
+		}
+
+		inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+		{
+			m_functions->glFramebufferTexture2D(target, attachment, textarget, texture, level);
+		}
+
+		inline void irrGlGenerateMipmap(GLenum target)
+		{
+			m_functions->glGenerateMipmap(target);
+		}
+
+		inline void irrGlActiveStencilFace(GLenum face)
+		{
+		}
+
+		inline void irrGlDrawBuffer(GLenum mode)
+		{
+		}
+
+		inline void irrGlDrawBuffers(GLsizei n, const GLenum *bufs)
+		{
+		}
+
+		inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
+		{
+			m_functions->glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+		}
+
+		inline void irrGlBlendEquation(GLenum mode)
+		{
+			m_functions->glBlendEquation(mode);
+		}
+
+		inline void irrGlEnableIndexed(GLenum target, GLuint index)
+		{
+		}
+
+		inline void irrGlDisableIndexed(GLenum target, GLuint index)
+		{
+		}
+
+		inline void irrGlColorMaskIndexed(GLuint buf, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
+		{
+		}
+
+		inline void irrGlBlendFuncIndexed(GLuint buf, GLenum src, GLenum dst)
+		{
+		}
+
+		inline void irrGlBlendFuncSeparateIndexed(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+		{
+		}
+
+		inline void irrGlBlendEquationIndexed(GLuint buf, GLenum mode)
+		{
+		}
+
+		inline void irrGlBlendEquationSeparateIndexed(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
+		{
+		}
+		
+		void initExtensions();
+		
+		
+		void dump() const;
+		
 	public: 
 		QOpenGLFunctions *m_functions;
 		QOpenGLExtraFunctions *m_extra;
