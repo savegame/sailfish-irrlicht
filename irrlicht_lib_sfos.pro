@@ -69,7 +69,7 @@ INCLUDEPATH += $$PWD/source/Irrlicht/libjpeg
 
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
-DEFINES += _MEDIA_PATH=\\\"$$PWD/media\\\"
+DEFINES += _MEDIA_PATH=\\\"$$PWD/media/\\\"
 
 include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)

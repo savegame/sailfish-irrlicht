@@ -77,10 +77,10 @@ namespace video
 	typedef COpenGLCoreCacheHandler<COGLES2Driver, COGLES2Texture> COGLES2CacheHandler;
 
 #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
-	class CQGLFunctionsDriver;
-	class CQGLFunctionsTexture;
+//	class CQGLFunctionsDriver;
+//	class CQGLFunctionsTexture;
 //	typedef COpenGLCoreTexture<CQGLFunctionsDriver> CQGLFunctionsTexture;
-	typedef COpenGLCoreRenderTarget<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsRenderTarget;
+//	typedef COpenGLCoreRenderTarget<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsRenderTarget;
 //	typedef COpenGLCoreCacheHandler<CQGLFunctionsDriver, CQGLFunctionsTexture> CQGLFunctionsCacheHandler;
 #endif
 }

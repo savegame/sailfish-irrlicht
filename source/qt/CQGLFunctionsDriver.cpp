@@ -18,6 +18,7 @@
 #include "COpenGLCoreCacheHandler.h"
 
 #include "CQGLFunctionsMaterialRenderer.h"
+#include "CQGLFunctionsRenderTarget.h"
 #include "CQGLFunctionsFixedPipelineRenderer.h"
 #include "CQGLFunctionsNormalMapRenderer.h"
 #include "CQGLFunctionsParallaxMapRenderer.h"
@@ -754,7 +755,7 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 	
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_PRIMITIVES);)
 	        
-	        CNullDriver::drawVertexPrimitiveList(vertices, vertexCount, indexList, primitiveCount, vType, pType, iType);
+	CNullDriver::drawVertexPrimitiveList(vertices, vertexCount, indexList, primitiveCount, vType, pType, iType);
 	
 	setRenderStates3DMode();
 	

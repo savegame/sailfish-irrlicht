@@ -215,8 +215,8 @@ void GLRenderer::createCube()
 	scene::ISceneManager *scene = m_device->getSceneManager();
 	video::IVideoDriver *driver = m_device->getVideoDriver();
 	scene::ISceneNode *cube = scene->addCubeSceneNode(2);
-	io::path p = _IRRDIR;
-	p = "media/irrlicht2_lf.jpg";
+	io::path p = _MEDIA_PATH;
+	p += "irrlicht2_lf.jpg";
 	video::ITexture *texture = driver->getTexture(p);
 	if(texture)
 		cube->setMaterialTexture(0,texture);
@@ -300,13 +300,13 @@ bool GLRenderer::clear_scene()
 	if(!m_device)
 		return  false;
 	m_device->getSceneManager()->clear();
+	m_device->getGUIEnvironment()->clear();
 	return true;
 }
 
 const io::path GLRenderer::getExampleMediaPath()
 {
-	io::path p = _IRRDIR;
-	p += "media/";
+	io::path p = _MEDIA_PATH;
 	return  p;
 }
 

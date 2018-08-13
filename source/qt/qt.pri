@@ -8,7 +8,8 @@ HEADERS += \
     $$PWD/CQGLFunctionsRenderer2D.h \
     $$PWD/IrrQuick.h \
     $$PWD/CQGLFunctionsTexture.h \
-    $$PWD/CQGLFunctionsCacheHandler.h
+    $$PWD/CQGLFunctionsCacheHandler.h \
+    $$PWD/CQGLFunctionsRenderTarget.h
 
 SOURCES += \
     $$PWD/CQGLFunctionsDriver.cpp \
@@ -20,7 +21,8 @@ SOURCES += \
     $$PWD/CQGLFunctionsRenderer2D.cpp \
     $$PWD/IrrQuick.cpp \
     $$PWD/CQGLFunctionsTexture.cpp \
-    $$PWD/CQGLFunctionsCacheHandler.cpp
+    $$PWD/CQGLFunctionsCacheHandler.cpp \
+    $$PWD/CQGLFunctionsRenderTarget.cpp
 
 DISTFILES += \
     $$PWD/../../media/Shaders/CQGLFunctionsDetailMap.fsh \
