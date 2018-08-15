@@ -293,7 +293,7 @@ HEADERS += \
     source/Irrlicht/CIrrDeviceConsole.h \
 #    source/Irrlicht/CIrrDeviceFB.h \
 #    source/Irrlicht/CIrrDeviceiOS.h \
-    source/Irrlicht/CIrrDeviceLinux.h \
+#    source/Irrlicht/CIrrDeviceLinux.h \
 #    source/Irrlicht/CIrrDeviceOSX.h \
 #    source/Irrlicht/CIrrDeviceSDL.h \
     source/Irrlicht/CIrrDeviceStub.h \

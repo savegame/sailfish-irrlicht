@@ -5,7 +5,7 @@ TARGET = irrlicht
 DESTDIR = $$OUT_PWD/../../lib
 
 CONFIG += warn_off qt #staticlib
-QT += core opengl quick
+QT += core quick
 CONFIG += wayland-compositor link_pkgconfig
 #QT += compositor widgets core quick
 
@@ -14,7 +14,7 @@ INCLUDEPATH += third_party/wayland
 
 debug: DEFINES += Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
 
-!ios: PKGCONFIG += zlib libpng
+!ios: !android : PKGCONFIG += zlib 
 ios {
     CONFIG += staticlib
     LIBS +=  -Wl,-framework OpenGLES2  -Wl,-framework AppKit
@@ -39,18 +39,17 @@ DEFINES += NO_IRR_COMPILE_WITH_X11_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_SDL_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_OPENGL_
 DEFINES += NO__IRR_COMPILE_WITH_OSX_DEVICE_
+DEFINES += NO_IRR_COMPILE_WITH_ANDROID_DEVICE_
+DEFINES -= _IRR_OPENGL_USE_EXTPOINTER_
+DEFINES += NO_IRR_OPENGL_USE_EXTPOINTER_
+DEFINES += NO_IRR_COMPILE_WITH_GLX_MANAGER_
 
 osx: {
     DEFINES += _IRR_OSX_PLATFORM_
 }
-
 ios: {
     DEFINES += GLES2_PLATFORM=1
 }
-
-DEFINES -= _IRR_OPENGL_USE_EXTPOINTER_
-DEFINES += NO_IRR_OPENGL_USE_EXTPOINTER_
-DEFINES += NO_IRR_COMPILE_WITH_GLX_MANAGER_
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/source/Irrlicht
@@ -69,10 +68,16 @@ INCLUDEPATH += $$PWD/source/Irrlicht/libjpeg
 
 debug: DEFINES += _DEBUG
 debug: DEFINES += _OUT_PWD_PATH=\\\"$$OUT_PWD\\\"
-DEFINES += _MEDIA_PATH=\\\"$$PWD/media/\\\"
+android : {
+    DEFINES += _MEDIA_PATH=\\\"media/\\\"
+}
+else {
+    DEFINES += _MEDIA_PATH=\\\"$$PWD/media/\\\"
+}
 
 include(source/qt/qt.pri )
 include(source/Irrlicht/jpeglib/jpeglib.pri)
+include(source/Irrlicht/libpng/libpng.pri)
 include(irrlicht.pri)
 
 include(source/Irrlicht/bzip2/bzip2.pri)

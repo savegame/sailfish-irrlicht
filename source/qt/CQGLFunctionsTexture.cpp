@@ -6,7 +6,7 @@
 #include <CQGLFunctionsDriver.h>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFunctions>
-#include <QtOpenGL>
+//#include <QtOpenGL>
 #include <COpenGLCoreRenderTarget.h>
 #include <COpenGLCoreCacheHandler.h>
 
