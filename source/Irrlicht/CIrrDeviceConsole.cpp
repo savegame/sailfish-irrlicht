@@ -162,7 +162,7 @@ CIrrDeviceConsole::CIrrDeviceConsole(const SIrrlichtCreationParameters& params)
 	}
 
 
-#ifdef _IRR_WINDOWS_NT_CONSOLE_
+#if defined(_IRR_WINDOWS_NT_CONSOLE_) || defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 	CursorControl = new CCursorControl(CreationParams.WindowSize);
 #endif
 

@@ -32,6 +32,7 @@ CSceneNodeAnimatorCameraFPS::CSceneNodeAnimatorCameraFPS(gui::ICursorControl* cu
 	setDebugName("CCameraSceneNodeAnimatorFPS");
 	#endif
 
+	isTouchPressed = false;
 	if (CursorControl)
 		CursorControl->grab();
 
@@ -97,7 +98,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
-#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+
 	case EET_TOUCH_INPUT_EVENT:
 		if(evt.TouchInput.Event == ETIE_PRESSED_DOWN && !isTouchPressed)
 		{
@@ -123,7 +124,7 @@ bool CSceneNodeAnimatorCameraFPS::OnEvent(const SEvent& evt)
 			return false;
 		}
 		break;
-#endif
+
 	default:
 		break;
 	}
@@ -138,7 +139,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 		return;
 
 	ICameraSceneNode* camera = static_cast<ICameraSceneNode*>(node);
-#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+#if !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_) && !defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 	if (firstUpdate)
 	{
 		camera->updateAbsolutePosition();
@@ -173,7 +174,7 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 	f32 timeDiff = (f32) ( timeMs - LastAnimationTime );
 	LastAnimationTime = timeMs;
 
-#ifndef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+#if  !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_) && !defined(_IRR_COMPILE_WITH_QGLFUNCTIONS_)
 	// update position
 	core::vector3df pos = camera->getPosition();
 
@@ -245,11 +246,14 @@ void CSceneNodeAnimatorCameraFPS::animateNode(ISceneNode* node, u32 timeMs)
 	core::position2df rLastTouchPos, rTouchPos;
 
 	// make touch pos realitive to screen
-	CursorControl->setPosition(s32(TouchPos.X),s32(TouchPos.Y));
-	rTouchPos = CursorControl->getRelativePosition();
+	if(CursorControl)
+	{
+		CursorControl->setPosition(s32(TouchPos.X),s32(TouchPos.Y));
+		rTouchPos = CursorControl->getRelativePosition();
 
-	CursorControl->setPosition(s32(LastTouchPos.X),s32(LastTouchPos.Y));
-	rLastTouchPos = CursorControl->getRelativePosition();
+		CursorControl->setPosition(s32(LastTouchPos.X),s32(LastTouchPos.Y));
+		rLastTouchPos = CursorControl->getRelativePosition();
+	}
 
 	//simple compute rotation
 	relativeRotation.Y -= (rLastTouchPos.X - rTouchPos.X) * RotateSpeed;

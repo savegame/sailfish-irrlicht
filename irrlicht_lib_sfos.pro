@@ -44,7 +44,7 @@ osx: {
     DEFINES += _IRR_OSX_PLATFORM_
 }
 
-ios: {
+ios | sailfish: {
     DEFINES += GLES2_PLATFORM=1
 }
 

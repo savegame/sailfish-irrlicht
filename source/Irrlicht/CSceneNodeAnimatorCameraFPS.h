@@ -137,13 +137,10 @@ namespace scene
 		bool firstUpdate;
 		bool firstInput;
 		
-#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		core::vector2df   TouchPos;
 		core::vector2df   LastTouchPos;
 		size_t            TouchID;
 		bool              isTouchPressed;
-#endif
-
 	};
 
 } // end namespace scene
