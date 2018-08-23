@@ -478,6 +478,7 @@ void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const
 
 void CQGLFunctionsDriver::createMaterialRenderers()
 {
+	CNullDriver::deleteMaterialRenders();
 	// Create callbacks.
 	
 	CQGLFunctionsMaterialSolidCB* SolidCB = new CQGLFunctionsMaterialSolidCB();

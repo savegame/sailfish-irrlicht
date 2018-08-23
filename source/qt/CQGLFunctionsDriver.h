@@ -482,9 +482,10 @@ namespace video
 				u32 vertexCount, const void* indexList, u32 primitiveCount,
 				E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType,
 				E_INDEX_TYPE iType, bool is3D);
-
+public:
 		void createMaterialRenderers();
-
+		inline void deleteAllMaterialRenderers() { CNullDriver::deleteMaterialRenders(); }
+protected:
 		void loadShaderData(const io::path& vertexShaderName, const io::path& fragmentShaderName, c8** vertexShaderData, c8** fragmentShaderData);
 
 		bool setMaterialTexture(irr::u32 layerIdx, const irr::video::ITexture* texture);
