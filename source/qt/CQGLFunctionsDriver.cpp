@@ -187,7 +187,7 @@ void CQGLFunctionsDriver::initExtensions()
 	Version = 0;
 	s32 multiplier = 100;
 
-	core::stringc version(glGetString(GL_VERSION));
+    core::stringc version(m_functions->glGetString(GL_VERSION));
 
 	for (u32 i = 0; i < version.size(); ++i)
 	{
@@ -205,7 +205,7 @@ void CQGLFunctionsDriver::initExtensions()
 		}
 	}
 
-	core::stringc extensions = glGetString(GL_EXTENSIONS);
+    core::stringc extensions = m_functions->glGetString(GL_EXTENSIONS);
 	os::Printer::log(extensions.c_str());
 
 	// typo in the simulator (note the postfixed s)
@@ -352,11 +352,11 @@ CQGLFunctionsDriver::~CQGLFunctionsDriver()
 
 bool CQGLFunctionsDriver::genericDriverInit(const core::dimension2d<u32>& screenSize, bool stencilBuffer)
 {
-	Name = glGetString(GL_VERSION);
+    Name = m_functions->glGetString(GL_VERSION);
 	printVersion();
 	
 	// print renderer information
-	VendorName = glGetString(GL_VENDOR);
+    VendorName = m_functions->glGetString(GL_VENDOR);
 	os::Printer::log(VendorName.c_str(), ELL_INFORMATION);
 	
 	// load extensions

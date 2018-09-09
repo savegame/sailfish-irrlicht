@@ -4,7 +4,8 @@ TEMPLATE = lib
 TARGET = irrlicht
 DESTDIR = $$OUT_PWD/../../lib
 
-CONFIG += warn_off qt #staticlib
+CONFIG += warn_off qt
+#staticlib
 QT += core quick
 CONFIG += wayland-compositor link_pkgconfig
 #QT += compositor widgets core quick
@@ -14,7 +15,7 @@ INCLUDEPATH += third_party/wayland
 
 debug: DEFINES += Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
 
-!ios: !android : PKGCONFIG += zlib 
+!ios: !android: !win32: PKGCONFIG += zlib
 ios {
     CONFIG += staticlib
     LIBS +=  -Wl,-framework OpenGLES2  -Wl,-framework AppKit
@@ -29,8 +30,10 @@ ios: DEFINES += _IRRDIR=\\\"\\\"
 !x11: DEFINES += NO_IRR_COMPILE_WITH_X11_
 
 DEFINES += _IRR_COMPILE_WITH_QGLFUNCTIONS_
+win32: DEFINES += _IRR_WINDOWS_API_ _IRR_WINDOWS_
 DEFINES += NO__IRR_COMPILE_WITH_IOS_DEVICE_
 DEFINES -= _IRR_COMPILE_WITH_SAILFISH_DEVICE_
+DEFINES -= _IRR_COMPILE_WITH_WINDOWS_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_SAILFISH_DEVICE_
 DEFINES += NO_IRR_COMPILE_WITH_OGLES2_
 DEFINES += NO_IRR_COMPILE_WITH_OGLES1_
@@ -82,6 +85,8 @@ include(source/Irrlicht/libpng/libpng.pri)
 include(irrlicht.pri)
 
 include(source/Irrlicht/bzip2/bzip2.pri)
+win32: include(source/Irrlicht/zlib/zlib.pri)
+DEFINES += IRRLICHT_EXPORTS
 
 #SOURCES += main.cpp
 #SOURCES +=  examples/02.Quake3Map/main.cpp \
