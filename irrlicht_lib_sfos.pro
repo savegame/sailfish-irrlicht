@@ -15,7 +15,7 @@ INCLUDEPATH += third_party/wayland
 
 debug: DEFINES += Q_ENABLE_OPENGL_FUNCTIONS_DEBUG
 
-!ios: !android: !win32: PKGCONFIG += zlib
+#!ios: !android: !win32: PKGCONFIG += zlib
 ios {
     CONFIG += staticlib
     LIBS +=  -Wl,-framework OpenGLES2  -Wl,-framework AppKit
@@ -85,7 +85,7 @@ include(source/Irrlicht/libpng/libpng.pri)
 include(irrlicht.pri)
 
 include(source/Irrlicht/bzip2/bzip2.pri)
-win32: include(source/Irrlicht/zlib/zlib.pri)
+include(source/Irrlicht/zlib/zlib.pri)
 DEFINES += IRRLICHT_EXPORTS
 
 #SOURCES += main.cpp
