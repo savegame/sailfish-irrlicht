@@ -2,7 +2,6 @@
 // Copyright (C) 2009-2010 Amundis
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
-#include <QOpenGLFunctions>
 
 #include "CQGLFunctionsDriver.h"
 #include "CNullDriver.h"
@@ -10,6 +9,7 @@
 
 #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
 
+#include <QOpenGLFunctions>
 #include "ILogger.h"
 #include "dimension2d.h"
 
@@ -31,10 +31,13 @@
 #include "IProfiler.h"
 
 #ifdef _IRR_COMPILE_WITH_ANDROID_DEVICE_
-#include "android_native_app_glue.h"
+	#include "android_native_app_glue.h"
 #endif
 
 #include <QOpenGLContext>
+#include <QByteArray>
+#include <QString>
+#include <QFile>
 
 
 namespace irr
@@ -187,7 +190,7 @@ void CQGLFunctionsDriver::initExtensions()
 	Version = 0;
 	s32 multiplier = 100;
 
-    core::stringc version(m_functions->glGetString(GL_VERSION));
+	core::stringc version(m_functions->glGetString(GL_VERSION));
 
 	for (u32 i = 0; i < version.size(); ++i)
 	{
@@ -205,13 +208,13 @@ void CQGLFunctionsDriver::initExtensions()
 		}
 	}
 
-    core::stringc extensions = m_functions->glGetString(GL_EXTENSIONS);
+	core::stringc extensions = m_functions->glGetString(GL_EXTENSIONS);
 	os::Printer::log(extensions.c_str());
 
 	// typo in the simulator (note the postfixed s)
 	if (extensions.find("GL_IMG_user_clip_planes"))
 		FeatureAvailable[IRR_IMG_user_clip_plane] = true;
-	
+
 	{
 		const u32 size = extensions.size() + 1;
 		c8* str = new c8[size];
@@ -219,13 +222,13 @@ void CQGLFunctionsDriver::initExtensions()
 		str[extensions.size()] = ' ';
 		c8* p = str;
 
-		for (u32 i=0; i<size; ++i)
+		for (u32 i = 0; i < size; ++i)
 		{
 			if (str[i] == ' ')
 			{
 				str[i] = 0;
 				if (*p)
-					for (u32 j=0; j<IRR_OGLES2_Feature_Count; ++j)
+					for (u32 j = 0; j < IRR_OGLES2_Feature_Count; ++j)
 					{
 						if (!strcmp(OGLES2FeatureStrings[j], p))
 						{
@@ -241,7 +244,7 @@ void CQGLFunctionsDriver::initExtensions()
 		delete [] str;
 	}
 
-	GLint val=0;
+	GLint val = 0;
 	m_functions->glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &val);
 	Feature.TextureUnit = static_cast<u8>(val);
 
@@ -256,13 +259,13 @@ void CQGLFunctionsDriver::initExtensions()
 #ifdef GL_MAX_ELEMENTS_INDICES
 #ifndef DISABLE_GL_MAX_ELEMENTS_INDICES //iOS
 	m_functions->glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &val);
-	MaxIndices=15000;//val;
+	MaxIndices = 15000; //val;
 #else
-	MaxIndices=15000;//val;
+	MaxIndices = 15000; //val;
 #endif
 #endif
 	m_functions->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
-	MaxTextureSize=static_cast<u32>(val);
+	MaxTextureSize = static_cast<u32>(val);
 #ifdef GL_EXT_texture_lod_bias
 	if (FeatureAvailable[IRR_EXT_texture_lod_bias])
 		m_functions->glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &MaxTextureLODBias);
@@ -281,22 +284,21 @@ void CQGLFunctionsDriver::dump() const
 }
 
 CQGLFunctionsDriver::CQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager) :
-    CNullDriver(io, params.WindowSize), CQGLFunctionsExtensionHandler(params.qOpenGLFunctions), CacheHandler(0),
-    MaterialRenderer2DActive(0), MaterialRenderer2DTexture(0), MaterialRenderer2DNoTexture(0),
-    CurrentRenderMode(ERM_NONE), ResetRenderStates(true), LockRenderStateMode(false), Transformation3DChanged(true), AntiAlias(params.AntiAlias),
-    m_functions(params.qOpenGLFunctions), OGLES2ShaderPath(params.OGLES2ShaderPath),
-    ColorFormat(ECF_R8G8B8), Params(params), ContextManager(contextManager)
+	CNullDriver(io, params.WindowSize), CQGLFunctionsExtensionHandler(params.qOpenGLFunctions), CacheHandler(0),
+	MaterialRenderer2DActive(0), MaterialRenderer2DTexture(0), MaterialRenderer2DNoTexture(0),
+	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), LockRenderStateMode(false), Transformation3DChanged(true), AntiAlias(params.AntiAlias),
+	m_functions(params.qOpenGLFunctions), OGLES2ShaderPath(params.OGLES2ShaderPath),
+	ColorFormat(ECF_R8G8B8), Params(params), ContextManager(contextManager)
 {
 #ifdef _DEBUG
 	setDebugName("CQGLFunctionsDriver");
 #endif
-	
 	IRR_PROFILE(
-	            static bool initProfile = false;
-	        if (!initProfile )
-	{
-		initProfile = true;
-		getProfiler().add(EPID_ES2_END_SCENE, L"endScene", L"ES2");
+	    static bool initProfile = false;
+	    if (!initProfile )
+{
+	initProfile = true;
+	getProfiler().add(EPID_ES2_END_SCENE, L"endScene", L"ES2");
 		getProfiler().add(EPID_ES2_BEGIN_SCENE, L"beginScene", L"ES2");
 		getProfiler().add(EPID_ES2_UPDATE_VERTEX_HW_BUF, L"upVertBuf", L"ES2");
 		getProfiler().add(EPID_ES2_UPDATE_INDEX_HW_BUF, L"upIdxBuf", L"ES2");
@@ -316,7 +318,7 @@ CQGLFunctionsDriver::CQGLFunctionsDriver(const SIrrlichtCreationParameters& para
 	return;
 	if (!ContextManager)
 		return;
-	
+
 	ContextManager->grab();
 	ContextManager->generateSurface();
 	ContextManager->generateContext();
@@ -327,20 +329,20 @@ CQGLFunctionsDriver::CQGLFunctionsDriver(const SIrrlichtCreationParameters& para
 CQGLFunctionsDriver::~CQGLFunctionsDriver()
 {
 	RequestedLights.clear();
-	
+
 	deleteMaterialRenders();
-	
+
 	CacheHandler->getTextureCache().clear();
-	
+
 	removeAllRenderTargets();
 	deleteAllTextures();
 	removeAllOcclusionQueries();
 	removeAllHardwareBuffers();
-	
+
 	delete MaterialRenderer2DTexture;
 	delete MaterialRenderer2DNoTexture;
 	delete CacheHandler;
-	
+
 	if (ContextManager)
 	{
 		ContextManager->destroyContext();
@@ -352,22 +354,22 @@ CQGLFunctionsDriver::~CQGLFunctionsDriver()
 
 bool CQGLFunctionsDriver::genericDriverInit(const core::dimension2d<u32>& screenSize, bool stencilBuffer)
 {
-    Name = m_functions->glGetString(GL_VERSION);
+	Name = m_functions->glGetString(GL_VERSION);
 	printVersion();
-	
+
 	// print renderer information
-    VendorName = m_functions->glGetString(GL_VENDOR);
+	VendorName = m_functions->glGetString(GL_VENDOR);
 	os::Printer::log(VendorName.c_str(), ELL_INFORMATION);
-	
+
 	// load extensions
 	initExtensions();
-	
+
 	// reset cache handler
 	delete CacheHandler;
 	CacheHandler = new CQGLFunctionsCacheHandler(this);
-	
+
 	StencilBuffer = stencilBuffer;
-	
+
 	DriverAttributes->setAttribute("MaxTextures", (s32)Feature.TextureUnit);
 	DriverAttributes->setAttribute("MaxSupportedTextures", (s32)Feature.TextureUnit);
 	//		DriverAttributes->setAttribute("MaxLights", MaxLights);
@@ -380,43 +382,44 @@ bool CQGLFunctionsDriver::genericDriverInit(const core::dimension2d<u32>& screen
 	DriverAttributes->setAttribute("MaxTextureLODBias", MaxTextureLODBias);
 	DriverAttributes->setAttribute("Version", Version);
 	DriverAttributes->setAttribute("AntiAlias", AntiAlias);
-	
+
 	m_functions->glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	
+
 	UserClipPlane.reallocate(0);
-	
+
 	for (s32 i = 0; i < ETS_COUNT; ++i)
 		setTransform(static_cast<E_TRANSFORMATION_STATE>(i), core::IdentityMatrix);
-	
+
 	setAmbientLight(SColorf(0.0f, 0.0f, 0.0f, 0.0f));
 	m_functions->glClearDepthf(1.0f);
-	
+
 	m_functions->glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 	m_functions->glFrontFace(GL_CW);
-	
+
 	// create material renderers
 	createMaterialRenderers();
-	
+
 	// set the renderstates
 	setRenderStates3DMode();
-	
+
 	// set fog mode
 	setFog(FogColor, FogType, FogStart, FogEnd, FogDensity, PixelFog, RangeFog);
-	
+
 	// create matrix for flipping textures
 	TextureFlipMatrix.buildTextureTransform(0.0f, core::vector2df(0, 0), core::vector2df(0, 1.0f), core::vector2df(1.0f, -1.0f));
-	
+
 	// We need to reset once more at the beginning of the first rendering.
 	// This fixes problems with intermediate changes to the material during texture load.
 	ResetRenderStates = true;
-	
+
 	testGLError(__LINE__);
-	
+
 	return true;
 }
 
 void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const io::path& fragmentShaderName, c8** vertexShaderData, c8** fragmentShaderData)
 {
+	OGLES2ShaderPath = "media/Shaders/";
 #ifdef GLES2_PLATFORM
 	core::stringc add_path = "gles2/";
 #else
@@ -425,15 +428,16 @@ void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const
 
 	io::path vsPath(OGLES2ShaderPath);
 	vsPath += add_path + vertexShaderName;
-	
+
 	io::path fsPath(OGLES2ShaderPath);
 	fsPath += add_path + fragmentShaderName;
-	
+
 	*vertexShaderData = 0;
 	*fragmentShaderData = 0;
-	
-	io::IReadFile* vsFile = FileSystem->createAndOpenFile(vsPath);
-	if ( !vsFile )
+
+	io::IReadFile* vsFile = 0; //FileSystem->createAndOpenFile(vsPath);
+	QByteArray vertex = createReadFile(vsPath);
+	if ( vertex.isEmpty() )
 	{
 		core::stringw warning(L"Warning: Missing shader files needed to simulate fixed function materials:\n");
 		warning += core::stringw(vsPath) + L"\n";
@@ -441,9 +445,11 @@ void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const
 		os::Printer::log(warning.c_str(), ELL_WARNING);
 		return;
 	}
-	
-	io::IReadFile* fsFile = FileSystem->createAndOpenFile(fsPath);
-	if ( !fsFile )
+	vsFile = FileSystem->createMemoryReadFile( (void*)vertex.data(), vertex.size(), vsPath.c_str(), false);
+
+	io::IReadFile* fsFile = 0;//FileSystem->createAndOpenFile(fsPath);
+	QByteArray fragment = createReadFile(fsPath);
+	if ( fragment.isEmpty() )
 	{
 		core::stringw warning(L"Warning: Missing shader files needed to simulate fixed function materials:\n");
 		warning += core::stringw(fsPath) + L"\n";
@@ -451,27 +457,28 @@ void CQGLFunctionsDriver::loadShaderData(const io::path& vertexShaderName, const
 		os::Printer::log(warning.c_str(), ELL_WARNING);
 		return;
 	}
-	
+	fsFile = FileSystem->createMemoryReadFile( (void*)fragment.data(), fragment.size(), fsPath.c_str(), false);
+
 	long size = vsFile->getSize();
 	if (size)
 	{
-		*vertexShaderData = new c8[size+1];
+		*vertexShaderData = new c8[size + 1];
 		vsFile->read(*vertexShaderData, size);
 		(*vertexShaderData)[size] = 0;
 	}
-	
+
 	size = fsFile->getSize();
 	if (size)
 	{
 		// if both handles are the same we must reset the file
 		if (fsFile == vsFile)
 			fsFile->seek(0);
-		
-		*fragmentShaderData = new c8[size+1];
+
+		*fragmentShaderData = new c8[size + 1];
 		fsFile->read(*fragmentShaderData, size);
 		(*fragmentShaderData)[size] = 0;
 	}
-	
+
 	vsFile->drop();
 	fsFile->drop();
 }
@@ -480,7 +487,7 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 {
 	CNullDriver::deleteMaterialRenders();
 	// Create callbacks.
-	
+
 	CQGLFunctionsMaterialSolidCB* SolidCB = new CQGLFunctionsMaterialSolidCB();
 	CQGLFunctionsMaterialSolid2CB* Solid2LayerCB = new CQGLFunctionsMaterialSolid2CB();
 	CQGLFunctionsMaterialLightmapCB* LightmapCB = new CQGLFunctionsMaterialLightmapCB(1.f);
@@ -505,8 +512,9 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	CQGLFunctionsMaterialParallaxMapCB* ParallaxMapAddColorCB = new CQGLFunctionsMaterialParallaxMapCB();
 	CQGLFunctionsMaterialParallaxMapCB* ParallaxMapVertexAlphaCB = new CQGLFunctionsMaterialParallaxMapCB();
 	CQGLFunctionsMaterialOneTextureBlendCB* OneTextureBlendCB = new CQGLFunctionsMaterialOneTextureBlendCB();
-	
+
 	// Create built-in materials.
+	OGLES2ShaderPath = ":/media/Shaders/";
 #ifdef GLES2_PLATFORM
 	core::stringc add_path = "gles2/";
 #else
@@ -516,118 +524,118 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	core::stringc FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.fsh";
 
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2Layer.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Solid2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Solid2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapModulate.fsh";
 
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapAdd.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapAddCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapAddCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsLightmapModulate.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapM2CB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapM2CB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapM4CB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapM4CB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingM2CB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingM2CB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingM4CB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, LightmapLightingM4CB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid2.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsDetailMap.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, DetailMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, DetailMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSphereMap.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSphereMap.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SphereMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SphereMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Reflection2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Reflection2LayerCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
+
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentAlphaChannel.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
+
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentAlphaChannelRef.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsTransparentVertexAlpha.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsReflection2Layer.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentReflection2LayerCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentReflection2LayerCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsNormalMap.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsNormalMap.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, NormalMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsParallaxMap.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsParallaxMap.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapCB, EMT_SOLID, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapAddColorCB, EMT_TRANSPARENT_ADD_COLOR, 0, EGSL_DEFAULT);
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, ParallaxMapVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0, EGSL_DEFAULT);
+
 	VertexShader = OGLES2ShaderPath + add_path + "CQGLFunctionsSolid.vsh";
 	FragmentShader = OGLES2ShaderPath + add_path + "CQGLFunctionsOneTextureBlend.fsh";
-	
+
 	addHighLevelShaderMaterialFromFiles(VertexShader, "main", EVST_VS_2_0, FragmentShader, "main", EPST_PS_2_0, "", "main",
-	                                    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND, 0, EGSL_DEFAULT);
-	
+	    EGST_GS_4_0, scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND, 0, EGSL_DEFAULT);
+
 	// Drop callbacks.
-	
+
 	SolidCB->drop();
 	Solid2LayerCB->drop();
 	LightmapCB->drop();
@@ -652,9 +660,9 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	ParallaxMapAddColorCB->drop();
 	ParallaxMapVertexAlphaCB->drop();
 	OneTextureBlendCB->drop();
-	
+
 	// Create 2D material renderers
-	
+
 	c8* vs2DData = 0;
 	c8* fs2DData = 0;
 	loadShaderData(io::path("CQGLFunctionsRenderer2D.vsh"), io::path("CQGLFunctionsRenderer2D.fsh"), &vs2DData, &fs2DData);
@@ -663,7 +671,7 @@ void CQGLFunctionsDriver::createMaterialRenderers()
 	delete[] fs2DData;
 	vs2DData = 0;
 	fs2DData = 0;
-	
+
 	loadShaderData(io::path("CQGLFunctionsRenderer2D.vsh"), io::path("CQGLFunctionsRenderer2D_noTex.fsh"), &vs2DData, &fs2DData);
 	MaterialRenderer2DNoTexture = new CQGLFunctionsRenderer2D(vs2DData, fs2DData, this, false);
 	delete[] vs2DData;
@@ -679,14 +687,14 @@ bool CQGLFunctionsDriver::setMaterialTexture(irr::u32 layerIdx, const irr::video
 bool CQGLFunctionsDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, const SExposedVideoData& videoData, core::rect<s32>* sourceRect)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_BEGIN_SCENE);)
-	        
-	        CNullDriver::beginScene(clearFlag, clearColor, clearDepth, clearStencil, videoData, sourceRect);
-	
+
+	CNullDriver::beginScene(clearFlag, clearColor, clearDepth, clearStencil, videoData, sourceRect);
+
 	if (ContextManager)
 		ContextManager->activateContext(videoData);
-	
+
 	clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
-	
+
 	return true;
 }
 
@@ -694,12 +702,12 @@ bool CQGLFunctionsDriver::endScene()
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_END_SCENE);)
 	CNullDriver::endScene();
-	
+
 	m_functions->glFlush();
-	
+
 	if (ContextManager)
 		return ContextManager->swapBuffers();
-	
+
 	return false;
 }
 
@@ -723,19 +731,19 @@ bool CQGLFunctionsDriver::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuf
 {
 	if (!HWBuffer)
 		return false;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_UPDATE_VERTEX_HW_BUF);)
-	        
-	        const scene::IMeshBuffer* mb = HWBuffer->MeshBuffer;
+
+	const scene::IMeshBuffer* mb = HWBuffer->MeshBuffer;
 	const void* vertices = mb->getVertices();
 	const u32 vertexCount = mb->getVertexCount();
 	const E_VERTEX_TYPE vType = mb->getVertexType();
 	const u32 vertexSize = getVertexPitchFromType(vType);
-	
+
 	//buffer vertex data, and convert colours...
 	core::array<c8> buffer(vertexSize * vertexCount);
 	memcpy(buffer.pointer(), vertices, vertexSize * vertexCount);
-	
+
 	//get or create buffer
 	bool newBuffer = false;
 	if (!HWBuffer->vbo_verticesID)
@@ -744,28 +752,28 @@ bool CQGLFunctionsDriver::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuf
 		if (!HWBuffer->vbo_verticesID) return false;
 		newBuffer = true;
 	}
-	else if (HWBuffer->vbo_verticesSize < vertexCount*vertexSize)
+	else if (HWBuffer->vbo_verticesSize < vertexCount * vertexSize)
 	{
 		newBuffer = true;
 	}
-	
+
 	m_functions->glBindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
-	
+
 	// copy data to graphics card
 	if (!newBuffer)
 		m_functions->glBufferSubData(GL_ARRAY_BUFFER, 0, vertexCount * vertexSize, buffer.const_pointer());
 	else
 	{
 		HWBuffer->vbo_verticesSize = vertexCount * vertexSize;
-		
+
 		if (HWBuffer->Mapped_Vertex == scene::EHM_STATIC)
 			m_functions->glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSize, buffer.const_pointer(), GL_STATIC_DRAW);
 		else
 			m_functions->glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSize, buffer.const_pointer(), GL_DYNAMIC_DRAW);
 	}
-	
+
 	m_functions->glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	return (!testGLError(__LINE__));
 }
 
@@ -774,23 +782,23 @@ bool CQGLFunctionsDriver::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 {
 	if (!HWBuffer)
 		return false;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_UPDATE_INDEX_HW_BUF);)
-	        
-	        const scene::IMeshBuffer* mb = HWBuffer->MeshBuffer;
-	
+
+	const scene::IMeshBuffer* mb = HWBuffer->MeshBuffer;
+
 	const void* indices = mb->getIndices();
 	u32 indexCount = mb->getIndexCount();
-	
+
 	GLenum indexSize;
 	switch (mb->getIndexType())
 	{
-	case(EIT_16BIT):
+	case (EIT_16BIT):
 	{
 		indexSize = sizeof(u16);
 		break;
 	}
-	case(EIT_32BIT):
+	case (EIT_32BIT):
 	{
 		indexSize = sizeof(u32);
 		break;
@@ -800,7 +808,7 @@ bool CQGLFunctionsDriver::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 		return false;
 	}
 	}
-	
+
 	//get or create buffer
 	bool newBuffer = false;
 	if (!HWBuffer->vbo_indicesID)
@@ -809,28 +817,28 @@ bool CQGLFunctionsDriver::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 		if (!HWBuffer->vbo_indicesID) return false;
 		newBuffer = true;
 	}
-	else if (HWBuffer->vbo_indicesSize < indexCount*indexSize)
+	else if (HWBuffer->vbo_indicesSize < indexCount * indexSize)
 	{
 		newBuffer = true;
 	}
-	
+
 	m_functions->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
-	
+
 	// copy data to graphics card
 	if (!newBuffer)
 		m_functions->glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexCount * indexSize, indices);
 	else
 	{
 		HWBuffer->vbo_indicesSize = indexCount * indexSize;
-		
+
 		if (HWBuffer->Mapped_Index == scene::EHM_STATIC)
 			m_functions->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * indexSize, indices, GL_STATIC_DRAW);
 		else
 			m_functions->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * indexSize, indices, GL_DYNAMIC_DRAW);
 	}
-	
+
 	m_functions->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
+
 	return (!testGLError(__LINE__));
 }
 
@@ -840,33 +848,33 @@ bool CQGLFunctionsDriver::updateHardwareBuffer(SHWBufferLink *HWBuffer)
 {
 	if (!HWBuffer)
 		return false;
-	
+
 	if (HWBuffer->Mapped_Vertex != scene::EHM_NEVER)
 	{
 		if (HWBuffer->ChangedID_Vertex != HWBuffer->MeshBuffer->getChangedID_Vertex()
-		        || !static_cast<SHWBufferLink_opengl*>(HWBuffer)->vbo_verticesID)
+		    || !static_cast<SHWBufferLink_opengl*>(HWBuffer)->vbo_verticesID)
 		{
-			
+
 			HWBuffer->ChangedID_Vertex = HWBuffer->MeshBuffer->getChangedID_Vertex();
-			
+
 			if (!updateVertexHardwareBuffer(static_cast<SHWBufferLink_opengl*>(HWBuffer)))
 				return false;
 		}
 	}
-	
+
 	if (HWBuffer->Mapped_Index != scene::EHM_NEVER)
 	{
 		if (HWBuffer->ChangedID_Index != HWBuffer->MeshBuffer->getChangedID_Index()
-		        || !static_cast<SHWBufferLink_opengl*>(HWBuffer)->vbo_indicesID)
+		    || !static_cast<SHWBufferLink_opengl*>(HWBuffer)->vbo_indicesID)
 		{
-			
+
 			HWBuffer->ChangedID_Index = HWBuffer->MeshBuffer->getChangedID_Index();
-			
+
 			if (!updateIndexHardwareBuffer((SHWBufferLink_opengl*)HWBuffer))
 				return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -876,12 +884,12 @@ CQGLFunctionsDriver::SHWBufferLink *CQGLFunctionsDriver::createHardwareBuffer(co
 {
 	if (!mb || (mb->getHardwareMappingHint_Index() == scene::EHM_NEVER && mb->getHardwareMappingHint_Vertex() == scene::EHM_NEVER))
 		return 0;
-	
+
 	SHWBufferLink_opengl *HWBuffer = new SHWBufferLink_opengl(mb);
-	
+
 	//add to map
 	HWBufferMap.insert(HWBuffer->MeshBuffer, HWBuffer);
-	
+
 	HWBuffer->ChangedID_Vertex = HWBuffer->MeshBuffer->getChangedID_Vertex();
 	HWBuffer->ChangedID_Index = HWBuffer->MeshBuffer->getChangedID_Index();
 	HWBuffer->Mapped_Vertex = mb->getHardwareMappingHint_Vertex();
@@ -891,13 +899,13 @@ CQGLFunctionsDriver::SHWBufferLink *CQGLFunctionsDriver::createHardwareBuffer(co
 	HWBuffer->vbo_indicesID = 0;
 	HWBuffer->vbo_verticesSize = 0;
 	HWBuffer->vbo_indicesSize = 0;
-	
+
 	if (!updateHardwareBuffer(HWBuffer))
 	{
 		deleteHardwareBuffer(HWBuffer);
 		return 0;
 	}
-	
+
 	return HWBuffer;
 }
 
@@ -906,7 +914,7 @@ void CQGLFunctionsDriver::deleteHardwareBuffer(SHWBufferLink *_HWBuffer)
 {
 	if (!_HWBuffer)
 		return;
-	
+
 	SHWBufferLink_opengl *HWBuffer = static_cast<SHWBufferLink_opengl*>(_HWBuffer);
 	if (HWBuffer->vbo_verticesID)
 	{
@@ -918,7 +926,7 @@ void CQGLFunctionsDriver::deleteHardwareBuffer(SHWBufferLink *_HWBuffer)
 		m_functions->glDeleteBuffers(1, &HWBuffer->vbo_indicesID);
 		HWBuffer->vbo_indicesID = 0;
 	}
-	
+
 	CNullDriver::deleteHardwareBuffer(_HWBuffer);
 }
 
@@ -928,38 +936,38 @@ void CQGLFunctionsDriver::drawHardwareBuffer(SHWBufferLink *_HWBuffer)
 {
 	if (!_HWBuffer)
 		return;
-	
+
 	SHWBufferLink_opengl *HWBuffer = static_cast<SHWBufferLink_opengl*>(_HWBuffer);
-	
+
 	updateHardwareBuffer(HWBuffer); //check if update is needed
-	
+
 	HWBuffer->LastUsed = 0;//reset count
-	
+
 	const scene::IMeshBuffer* mb = HWBuffer->MeshBuffer;
 	const void *vertices = mb->getVertices();
 	const void *indexList = mb->getIndices();
-	
+
 	if (HWBuffer->Mapped_Vertex != scene::EHM_NEVER)
 	{
 		m_functions->glBindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
 		vertices = 0;
 	}
-	
+
 	if (HWBuffer->Mapped_Index != scene::EHM_NEVER)
 	{
 		m_functions->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
 		indexList = 0;
 	}
-	
-	
+
+
 	drawVertexPrimitiveList(vertices, mb->getVertexCount(),
-	                        indexList, mb->getPrimitiveCount(),
-	                        mb->getVertexType(), mb->getPrimitiveType(),
-	                        mb->getIndexType());
-	
+	    indexList, mb->getPrimitiveCount(),
+	    mb->getVertexType(), mb->getPrimitiveType(),
+	    mb->getIndexType());
+
 	if (HWBuffer->Mapped_Vertex != scene::EHM_NEVER)
 		m_functions->glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	if (HWBuffer->Mapped_Index != scene::EHM_NEVER)
 		m_functions->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -969,7 +977,7 @@ IRenderTarget* CQGLFunctionsDriver::addRenderTarget()
 {
 	CQGLFunctionsRenderTarget* renderTarget = new CQGLFunctionsRenderTarget(this);
 	RenderTargets.push_back(renderTarget);
-	
+
 	return renderTarget;
 }
 
@@ -983,26 +991,26 @@ static inline u8* buffer_offset(const long offset)
 
 //! draws a vertex primitive list
 void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
-                                            const void* indexList, u32 primitiveCount,
-                                            E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+    const void* indexList, u32 primitiveCount,
+    E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	if (!primitiveCount || !vertexCount)
 		return;
-	
+
 	if (!checkPrimitiveCount(primitiveCount))
 		return;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_PRIMITIVES);)
-	        
+
 	CNullDriver::drawVertexPrimitiveList(vertices, vertexCount, indexList, primitiveCount, vType, pType, iType);
-	
+
 	setRenderStates3DMode();
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glEnableVertexAttribArray(EVA_NORMAL);
 	m_functions->glEnableVertexAttribArray(EVA_TCOORD0);
-	
+
 	switch (vType)
 	{
 	case EVT_STANDARD:
@@ -1020,11 +1028,11 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 			m_functions->glVertexAttribPointer(EVA_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof(S3DVertex), buffer_offset(24));
 			m_functions->glVertexAttribPointer(EVA_TCOORD0, 2, GL_FLOAT, false, sizeof(S3DVertex), buffer_offset(28));
 		}
-		
+
 		break;
 	case EVT_2TCOORDS:
 		m_functions->glEnableVertexAttribArray(EVA_TCOORD1);
-		
+
 		if (vertices)
 		{
 			m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex2TCoords), &(static_cast<const S3DVertex2TCoords*>(vertices))[0].Pos);
@@ -1045,7 +1053,7 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 	case EVT_TANGENTS:
 		m_functions->glEnableVertexAttribArray(EVA_TANGENT);
 		m_functions->glEnableVertexAttribArray(EVA_BINORMAL);
-		
+
 		if (vertices)
 		{
 			m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertexTangents), &(static_cast<const S3DVertexTangents*>(vertices))[0].Pos);
@@ -1066,17 +1074,17 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 		}
 		break;
 	}
-	
+
 	GLenum indexSize = 0;
-	
+
 	switch (iType)
 	{
-	case(EIT_16BIT):
+	case (EIT_16BIT):
 	{
 		indexSize = GL_UNSIGNED_SHORT;
 		break;
 	}
-	case(EIT_32BIT):
+	case (EIT_32BIT):
 	{
 #ifdef GL_OES_element_index_uint
 #ifndef GL_UNSIGNED_INT
@@ -1090,7 +1098,7 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 		break;
 	}
 	}
-	
+
 	switch (pType)
 	{
 	case scene::EPT_POINTS:
@@ -1104,7 +1112,7 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 		m_functions->glDrawElements(GL_LINE_LOOP, primitiveCount, indexSize, indexList);
 		break;
 	case scene::EPT_LINES:
-		m_functions->glDrawElements(GL_LINES, primitiveCount*2, indexSize, indexList);
+		m_functions->glDrawElements(GL_LINES, primitiveCount * 2, indexSize, indexList);
 		break;
 	case scene::EPT_TRIANGLE_STRIP:
 		m_functions->glDrawElements(GL_TRIANGLE_STRIP, primitiveCount + 2, indexSize, indexList);
@@ -1113,12 +1121,12 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 		m_functions->glDrawElements(GL_TRIANGLE_FAN, primitiveCount + 2, indexSize, indexList);
 		break;
 	case scene::EPT_TRIANGLES:
-		m_functions->glDrawElements((LastMaterial.Wireframe) ? GL_LINES : (LastMaterial.PointCloud) ? GL_POINTS : GL_TRIANGLES, primitiveCount*3, indexSize, indexList);
+		m_functions->glDrawElements((LastMaterial.Wireframe) ? GL_LINES : (LastMaterial.PointCloud) ? GL_POINTS : GL_TRIANGLES, primitiveCount * 3, indexSize, indexList);
 		break;
 	default:
 		break;
 	}
-	
+
 	switch (vType)
 	{
 	case EVT_2TCOORDS:
@@ -1131,7 +1139,7 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 	default:
 		break;
 	}
-	
+
 	m_functions->glDisableVertexAttribArray(EVA_POSITION);
 	m_functions->glDisableVertexAttribArray(EVA_NORMAL);
 	m_functions->glDisableVertexAttribArray(EVA_COLOR);
@@ -1140,18 +1148,18 @@ void CQGLFunctionsDriver::drawVertexPrimitiveList(const void* vertices, u32 vert
 
 
 void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos,
-                                const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect, SColor color,
-                                bool useAlphaChannelOfTexture)
+    const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect, SColor color,
+    bool useAlphaChannelOfTexture)
 {
 	if (!texture)
 		return;
-	
+
 	if (!sourceRect.isValid())
 		return;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DIMAGE);)
-	        
-	        core::position2d<s32> targetPos(destPos);
+
+	core::position2d<s32> targetPos(destPos);
 	core::position2d<s32> sourcePos(sourceRect.UpperLeftCorner);
 	core::dimension2d<s32> sourceSize(sourceRect.getSize());
 	if (clipRect)
@@ -1161,28 +1169,28 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core
 			sourceSize.Width += targetPos.X - clipRect->UpperLeftCorner.X;
 			if (sourceSize.Width <= 0)
 				return;
-			
+
 			sourcePos.X -= targetPos.X - clipRect->UpperLeftCorner.X;
 			targetPos.X = clipRect->UpperLeftCorner.X;
 		}
-		
+
 		if (targetPos.X + sourceSize.Width > clipRect->LowerRightCorner.X)
 		{
 			sourceSize.Width -= (targetPos.X + sourceSize.Width) - clipRect->LowerRightCorner.X;
 			if (sourceSize.Width <= 0)
 				return;
 		}
-		
+
 		if (targetPos.Y < clipRect->UpperLeftCorner.Y)
 		{
 			sourceSize.Height += targetPos.Y - clipRect->UpperLeftCorner.Y;
 			if (sourceSize.Height <= 0)
 				return;
-			
+
 			sourcePos.Y -= targetPos.Y - clipRect->UpperLeftCorner.Y;
 			targetPos.Y = clipRect->UpperLeftCorner.Y;
 		}
-		
+
 		if (targetPos.Y + sourceSize.Height > clipRect->LowerRightCorner.Y)
 		{
 			sourceSize.Height -= (targetPos.Y + sourceSize.Height) - clipRect->LowerRightCorner.Y;
@@ -1190,79 +1198,79 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core
 				return;
 		}
 	}
-	
+
 	// clip these coordinates
-	
+
 	if (targetPos.X < 0)
 	{
 		sourceSize.Width += targetPos.X;
 		if (sourceSize.Width <= 0)
 			return;
-		
+
 		sourcePos.X -= targetPos.X;
 		targetPos.X = 0;
 	}
-	
+
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-	
+
 	if (targetPos.X + sourceSize.Width > (s32)renderTargetSize.Width)
 	{
 		sourceSize.Width -= (targetPos.X + sourceSize.Width) - renderTargetSize.Width;
 		if (sourceSize.Width <= 0)
 			return;
 	}
-	
+
 	if (targetPos.Y < 0)
 	{
 		sourceSize.Height += targetPos.Y;
 		if (sourceSize.Height <= 0)
 			return;
-		
+
 		sourcePos.Y -= targetPos.Y;
 		targetPos.Y = 0;
 	}
-	
+
 	if (targetPos.Y + sourceSize.Height > (s32)renderTargetSize.Height)
 	{
 		sourceSize.Height -= (targetPos.Y + sourceSize.Height) - renderTargetSize.Height;
 		if (sourceSize.Height <= 0)
 			return;
 	}
-	
+
 	// ok, we've clipped everything.
 	// now draw it.
-	
+
 	// texcoords need to be flipped horizontally for RTTs
 	const bool isRTT = texture->isRenderTarget();
 	const core::dimension2d<u32>& ss = texture->getOriginalSize();
 	const f32 invW = 1.f / static_cast<f32>(ss.Width);
 	const f32 invH = 1.f / static_cast<f32>(ss.Height);
 	const core::rect<f32> tcoords(
-	            sourcePos.X * invW,
-	            (isRTT ? (sourcePos.Y + sourceSize.Height) : sourcePos.Y) * invH,
-	            (sourcePos.X + sourceSize.Width) * invW,
-	            (isRTT ? sourcePos.Y : (sourcePos.Y + sourceSize.Height)) * invH);
-	
+	    sourcePos.X * invW,
+	    (isRTT ? (sourcePos.Y + sourceSize.Height) : sourcePos.Y) * invH,
+	    (sourcePos.X + sourceSize.Width) * invW,
+	    (isRTT ? sourcePos.Y : (sourcePos.Y + sourceSize.Height)) * invH);
+
 	const core::rect<s32> poss(targetPos, sourceSize);
-	
+
 	chooseMaterial2D();
 	if (!setMaterialTexture(0, texture ))
 		return;
-	
+
 	setRenderStates2DMode(color.getAlpha() < 255, true, useAlphaChannelOfTexture);
-	
+
 	f32 left = (f32)poss.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 right = (f32)poss.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 down = 2.f - (f32)poss.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 	f32 top = 2.f - (f32)poss.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-	
+
 	u16 indices[] = {0, 1, 2, 3};
 	S3DVertex vertices[4];
 	vertices[0] = S3DVertex(left, top, 0, 0, 0, 1, color, tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
 	vertices[1] = S3DVertex(right, top, 0, 0, 0, 1, color, tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
 	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, color, tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
 	vertices[3] = S3DVertex(left, down, 0, 0, 0, 1, color, tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glEnableVertexAttribArray(EVA_TCOORD0);
@@ -1277,67 +1285,67 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core
 
 
 void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect,
-                                const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect,
-                                const video::SColor* const colors, bool useAlphaChannelOfTexture)
+    const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect,
+    const video::SColor* const colors, bool useAlphaChannelOfTexture)
 {
 	if (!texture)
 		return;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DIMAGE);)
-	        
-	        // texcoords need to be flipped horizontally for RTTs
-	        const bool isRTT = texture->isRenderTarget();
+
+	// texcoords need to be flipped horizontally for RTTs
+	const bool isRTT = texture->isRenderTarget();
 	const core::dimension2du& ss = texture->getOriginalSize();
 	const f32 invW = 1.f / static_cast<f32>(ss.Width);
 	const f32 invH = 1.f / static_cast<f32>(ss.Height);
 	const core::rect<f32> tcoords(
-	            sourceRect.UpperLeftCorner.X * invW,
-	            (isRTT ? sourceRect.LowerRightCorner.Y : sourceRect.UpperLeftCorner.Y) * invH,
-	            sourceRect.LowerRightCorner.X * invW,
-	            (isRTT ? sourceRect.UpperLeftCorner.Y : sourceRect.LowerRightCorner.Y) *invH);
-	
+	    sourceRect.UpperLeftCorner.X * invW,
+	    (isRTT ? sourceRect.LowerRightCorner.Y : sourceRect.UpperLeftCorner.Y) * invH,
+	    sourceRect.LowerRightCorner.X * invW,
+	    (isRTT ? sourceRect.UpperLeftCorner.Y : sourceRect.LowerRightCorner.Y) *invH);
+
 	const video::SColor temp[4] =
 	{
-	    0xFFFFFFFF,
-	    0xFFFFFFFF,
-	    0xFFFFFFFF,
-	    0xFFFFFFFF
+		0xFFFFFFFF,
+		0xFFFFFFFF,
+		0xFFFFFFFF,
+		0xFFFFFFFF
 	};
-	
+
 	const video::SColor* const useColor = colors ? colors : temp;
-	
+
 	chooseMaterial2D();
 	if (!setMaterialTexture(0, texture ))
 		return;
-	
+
 	setRenderStates2DMode(useColor[0].getAlpha() < 255 || useColor[1].getAlpha() < 255 ||
-	        useColor[2].getAlpha() < 255 || useColor[3].getAlpha() < 255,
-	        true, useAlphaChannelOfTexture);
-	
+	    useColor[2].getAlpha() < 255 || useColor[3].getAlpha() < 255,
+	    true, useAlphaChannelOfTexture);
+
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-	
+
 	if (clipRect)
 	{
 		if (!clipRect->isValid())
 			return;
-		
+
 		m_functions->glEnable(GL_SCISSOR_TEST);
 		m_functions->glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
-		          clipRect->getWidth(), clipRect->getHeight());
+		    clipRect->getWidth(), clipRect->getHeight());
 	}
-	
+
 	f32 left = (f32)destRect.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 right = (f32)destRect.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 down = 2.f - (f32)destRect.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 	f32 top = 2.f - (f32)destRect.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-	
+
 	u16 indices[] = { 0, 1, 2, 3 };
 	S3DVertex vertices[4];
 	vertices[0] = S3DVertex(left, top, 0, 0, 0, 1, useColor[0], tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
 	vertices[1] = S3DVertex(right, top, 0, 0, 0, 1, useColor[3], tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
 	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, useColor[2], tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
 	vertices[3] = S3DVertex(left, down, 0, 0, 0, 1, useColor[1], tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glEnableVertexAttribArray(EVA_TCOORD0);
@@ -1348,10 +1356,10 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, const core
 	m_functions->glDisableVertexAttribArray(EVA_TCOORD0);
 	m_functions->glDisableVertexAttribArray(EVA_COLOR);
 	m_functions->glDisableVertexAttribArray(EVA_POSITION);
-	
+
 	if (clipRect)
 		m_functions->glDisable(GL_SCISSOR_TEST);
-	
+
 	testGLError(__LINE__);
 }
 
@@ -1359,33 +1367,33 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, u32 layer,
 {
 	if (!texture)
 		return;
-	
+
 	chooseMaterial2D();
 	if (!setMaterialTexture(0, texture ))
 		return;
-	
+
 	setRenderStates2DMode(false, true, true);
-	
+
 	u16 quad2DIndices[] = { 0, 1, 2, 3 };
 	S3DVertex quad2DVertices[4];
-	
+
 	quad2DVertices[0].Pos = core::vector3df(-1.f, 1.f, 0.f);
 	quad2DVertices[1].Pos = core::vector3df(1.f, 1.f, 0.f);
 	quad2DVertices[2].Pos = core::vector3df(1.f, -1.f, 0.f);
 	quad2DVertices[3].Pos = core::vector3df(-1.f, -1.f, 0.f);
-	
+
 	f32 modificator = (flip) ? 1.f : 0.f;
-	
+
 	quad2DVertices[0].TCoords = core::vector2df(0.f, 0.f + modificator);
 	quad2DVertices[1].TCoords = core::vector2df(1.f, 0.f + modificator);
 	quad2DVertices[2].TCoords = core::vector2df(1.f, 1.f - modificator);
 	quad2DVertices[3].TCoords = core::vector2df(0.f, 1.f - modificator);
-	
+
 	quad2DVertices[0].Color = SColor(0xFFFFFFFF);
 	quad2DVertices[1].Color = SColor(0xFFFFFFFF);
 	quad2DVertices[2].Color = SColor(0xFFFFFFFF);
 	quad2DVertices[3].Color = SColor(0xFFFFFFFF);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glEnableVertexAttribArray(EVA_TCOORD0);
@@ -1400,28 +1408,28 @@ void CQGLFunctionsDriver::draw2DImage(const video::ITexture* texture, u32 layer,
 
 
 void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
-                                     const core::array<core::position2d<s32> >& positions,
-                                     const core::array<core::rect<s32> >& sourceRects,
-                                     const core::rect<s32>* clipRect,
-                                     SColor color, bool useAlphaChannelOfTexture)
+    const core::array<core::position2d<s32> >& positions,
+    const core::array<core::rect<s32> >& sourceRects,
+    const core::rect<s32>* clipRect,
+    SColor color, bool useAlphaChannelOfTexture)
 {
 	if (!texture)
 		return;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DIMAGE_BATCH);)
-	        
-	        const irr::u32 drawCount = core::min_<u32>(positions.size(), sourceRects.size());
-	
+
+	const irr::u32 drawCount = core::min_<u32>(positions.size(), sourceRects.size());
+
 	core::array<S3DVertex> vtx(drawCount * 4);
 	core::array<u16> indices(drawCount * 6);
-	
+
 	for (u32 i = 0; i < drawCount; i++)
 	{
 		core::position2d<s32> targetPos = positions[i];
 		core::position2d<s32> sourcePos = sourceRects[i].UpperLeftCorner;
 		// This needs to be signed as it may go negative.
 		core::dimension2d<s32> sourceSize(sourceRects[i].getSize());
-		
+
 		if (clipRect)
 		{
 			if (targetPos.X < clipRect->UpperLeftCorner.X)
@@ -1429,28 +1437,28 @@ void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
 				sourceSize.Width += targetPos.X - clipRect->UpperLeftCorner.X;
 				if (sourceSize.Width <= 0)
 					continue;
-				
+
 				sourcePos.X -= targetPos.X - clipRect->UpperLeftCorner.X;
 				targetPos.X = clipRect->UpperLeftCorner.X;
 			}
-			
+
 			if (targetPos.X + (s32)sourceSize.Width > clipRect->LowerRightCorner.X)
 			{
 				sourceSize.Width -= (targetPos.X + sourceSize.Width) - clipRect->LowerRightCorner.X;
 				if (sourceSize.Width <= 0)
 					continue;
 			}
-			
+
 			if (targetPos.Y < clipRect->UpperLeftCorner.Y)
 			{
 				sourceSize.Height += targetPos.Y - clipRect->UpperLeftCorner.Y;
 				if (sourceSize.Height <= 0)
 					continue;
-				
+
 				sourcePos.Y -= targetPos.Y - clipRect->UpperLeftCorner.Y;
 				targetPos.Y = clipRect->UpperLeftCorner.Y;
 			}
-			
+
 			if (targetPos.Y + (s32)sourceSize.Height > clipRect->LowerRightCorner.Y)
 			{
 				sourceSize.Height -= (targetPos.Y + sourceSize.Height) - clipRect->LowerRightCorner.Y;
@@ -1458,90 +1466,90 @@ void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
 					continue;
 			}
 		}
-		
+
 		// clip these coordinates
-		
+
 		if (targetPos.X < 0)
 		{
 			sourceSize.Width += targetPos.X;
 			if (sourceSize.Width <= 0)
 				continue;
-			
+
 			sourcePos.X -= targetPos.X;
 			targetPos.X = 0;
 		}
-		
+
 		const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-		
+
 		if (targetPos.X + sourceSize.Width > (s32)renderTargetSize.Width)
 		{
 			sourceSize.Width -= (targetPos.X + sourceSize.Width) - renderTargetSize.Width;
 			if (sourceSize.Width <= 0)
 				continue;
 		}
-		
+
 		if (targetPos.Y < 0)
 		{
 			sourceSize.Height += targetPos.Y;
 			if (sourceSize.Height <= 0)
 				continue;
-			
+
 			sourcePos.Y -= targetPos.Y;
 			targetPos.Y = 0;
 		}
-		
+
 		if (targetPos.Y + sourceSize.Height > (s32)renderTargetSize.Height)
 		{
 			sourceSize.Height -= (targetPos.Y + sourceSize.Height) - renderTargetSize.Height;
 			if (sourceSize.Height <= 0)
 				continue;
 		}
-		
+
 		// ok, we've clipped everything.
 		// now draw it.
-		
+
 		core::rect<f32> tcoords;
 		tcoords.UpperLeftCorner.X = (((f32)sourcePos.X)) / texture->getOriginalSize().Width ;
 		tcoords.UpperLeftCorner.Y = (((f32)sourcePos.Y)) / texture->getOriginalSize().Height;
 		tcoords.LowerRightCorner.X = tcoords.UpperLeftCorner.X + ((f32)(sourceSize.Width) / texture->getOriginalSize().Width);
 		tcoords.LowerRightCorner.Y = tcoords.UpperLeftCorner.Y + ((f32)(sourceSize.Height) / texture->getOriginalSize().Height);
-		
+
 		const core::rect<s32> poss(targetPos, sourceSize);
-		
+
 		chooseMaterial2D();
 		if (!setMaterialTexture(0, texture))
 			return;
-		
+
 		setRenderStates2DMode(color.getAlpha() < 255, true, useAlphaChannelOfTexture);
-		
+
 		f32 left = (f32)poss.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 right = (f32)poss.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 down = 2.f - (f32)poss.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 		f32 top = 2.f - (f32)poss.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-		
+
 		vtx.push_back(S3DVertex(left, top, 0.0f,
-		                        0.0f, 0.0f, 0.0f, color,
-		                        tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y));
+		        0.0f, 0.0f, 0.0f, color,
+		        tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y));
 		vtx.push_back(S3DVertex(right, top, 0.0f,
-		                        0.0f, 0.0f, 0.0f, color,
-		                        tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y));
+		        0.0f, 0.0f, 0.0f, color,
+		        tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y));
 		vtx.push_back(S3DVertex(right, down, 0.0f,
-		                        0.0f, 0.0f, 0.0f, color,
-		                        tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y));
+		        0.0f, 0.0f, 0.0f, color,
+		        tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y));
 		vtx.push_back(S3DVertex(left, down, 0.0f,
-		                        0.0f, 0.0f, 0.0f, color,
-		                        tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y));
-		
+		        0.0f, 0.0f, 0.0f, color,
+		        tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y));
+
 		const u32 curPos = vtx.size() - 4;
 		indices.push_back(0 + curPos);
 		indices.push_back(1 + curPos);
 		indices.push_back(2 + curPos);
-		
+
 		indices.push_back(0 + curPos);
 		indices.push_back(2 + curPos);
 		indices.push_back(3 + curPos);
 	}
-	
+
 	if (vtx.size())
 	{
 		m_functions->glEnableVertexAttribArray(EVA_POSITION);
@@ -1560,81 +1568,81 @@ void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
 
 //! draws a set of 2d images, using a color and the alpha channel
 void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
-                                     const core::position2d<s32>& pos,
-                                     const core::array<core::rect<s32> >& sourceRects,
-                                     const core::array<s32>& indices, s32 kerningWidth,
-                                     const core::rect<s32>* clipRect, SColor color,
-                                     bool useAlphaChannelOfTexture)
+    const core::position2d<s32>& pos,
+    const core::array<core::rect<s32> >& sourceRects,
+    const core::array<s32>& indices, s32 kerningWidth,
+    const core::rect<s32>* clipRect, SColor color,
+    bool useAlphaChannelOfTexture)
 {
 	if (!texture)
 		return;
-	
+
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DIMAGE_BATCH);)
-	        
-	        chooseMaterial2D();
+
+	chooseMaterial2D();
 	if (!setMaterialTexture(0, texture))
 		return;
-	
+
 	setRenderStates2DMode(color.getAlpha() < 255, true, useAlphaChannelOfTexture);
-	
+
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-	
+
 	if (clipRect)
 	{
 		if (!clipRect->isValid())
 			return;
-		
+
 		m_functions->glEnable(GL_SCISSOR_TEST);
 		m_functions->glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
-		          clipRect->getWidth(), clipRect->getHeight());
+		    clipRect->getWidth(), clipRect->getHeight());
 	}
-	
+
 	const core::dimension2du& ss = texture->getOriginalSize();
 	core::position2d<s32> targetPos(pos);
 	// texcoords need to be flipped horizontally for RTTs
 	const bool isRTT = texture->isRenderTarget();
 	const f32 invW = 1.f / static_cast<f32>(ss.Width);
 	const f32 invH = 1.f / static_cast<f32>(ss.Height);
-	
+
 	core::array<S3DVertex> vertices;
 	core::array<u16> quadIndices;
-	vertices.reallocate(indices.size()*4);
-	quadIndices.reallocate(indices.size()*3);
-	
+	vertices.reallocate(indices.size() * 4);
+	quadIndices.reallocate(indices.size() * 3);
+
 	for (u32 i = 0; i < indices.size(); ++i)
 	{
 		const s32 currentIndex = indices[i];
 		if (!sourceRects[currentIndex].isValid())
 			break;
-		
+
 		const core::rect<f32> tcoords(
-		            sourceRects[currentIndex].UpperLeftCorner.X * invW,
-		            (isRTT ? sourceRects[currentIndex].LowerRightCorner.Y : sourceRects[currentIndex].UpperLeftCorner.Y) * invH,
-		            sourceRects[currentIndex].LowerRightCorner.X * invW,
-		            (isRTT ? sourceRects[currentIndex].UpperLeftCorner.Y : sourceRects[currentIndex].LowerRightCorner.Y) * invH);
-		
+		    sourceRects[currentIndex].UpperLeftCorner.X * invW,
+		    (isRTT ? sourceRects[currentIndex].LowerRightCorner.Y : sourceRects[currentIndex].UpperLeftCorner.Y) * invH,
+		    sourceRects[currentIndex].LowerRightCorner.X * invW,
+		    (isRTT ? sourceRects[currentIndex].UpperLeftCorner.Y : sourceRects[currentIndex].LowerRightCorner.Y) * invH);
+
 		const core::rect<s32> poss(targetPos, sourceRects[currentIndex].getSize());
-		
+
 		f32 left = (f32)poss.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 right = (f32)poss.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 down = 2.f - (f32)poss.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 		f32 top = 2.f - (f32)poss.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-		
+
 		const u32 vstart = vertices.size();
 		vertices.push_back(S3DVertex(left, top, 0, 0, 0, 1, color, tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y));
 		vertices.push_back(S3DVertex(right, top, 0, 0, 0, 1, color, tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y));
 		vertices.push_back(S3DVertex(right, down, 0, 0, 0, 1, color, tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y));
 		vertices.push_back(S3DVertex(left, down, 0, 0, 0, 1, color, tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y));
 		quadIndices.push_back(vstart);
-		quadIndices.push_back(vstart+1);
-		quadIndices.push_back(vstart+2);
+		quadIndices.push_back(vstart + 1);
+		quadIndices.push_back(vstart + 2);
 		quadIndices.push_back(vstart);
-		quadIndices.push_back(vstart+2);
-		quadIndices.push_back(vstart+3);
-		
+		quadIndices.push_back(vstart + 2);
+		quadIndices.push_back(vstart + 3);
+
 		targetPos.X += sourceRects[currentIndex].getWidth();
 	}
-	
+
 	if (vertices.size())
 	{
 		m_functions->glEnableVertexAttribArray(EVA_POSITION);
@@ -1648,48 +1656,48 @@ void CQGLFunctionsDriver::draw2DImageBatch(const video::ITexture* texture,
 		m_functions->glDisableVertexAttribArray(EVA_COLOR);
 		m_functions->glDisableVertexAttribArray(EVA_POSITION);
 	}
-	
+
 	if (clipRect)
 		m_functions->glDisable(GL_SCISSOR_TEST);
-	
+
 	testGLError(__LINE__);
 }
 
 
 //! draw a 2d rectangle
 void CQGLFunctionsDriver::draw2DRectangle(SColor color,
-                                    const core::rect<s32>& position,
-                                    const core::rect<s32>* clip)
+    const core::rect<s32>& position,
+    const core::rect<s32>* clip)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DRECTANGLE);)
-	        
-	        chooseMaterial2D();
+
+	chooseMaterial2D();
 	setMaterialTexture(0, 0);
-	
+
 	setRenderStates2DMode(color.getAlpha() < 255, false, false);
-	
+
 	core::rect<s32> pos = position;
-	
+
 	if (clip)
 		pos.clipAgainst(*clip);
-	
+
 	if (!pos.isValid())
 		return;
-	
+
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-	
+
 	f32 left = (f32)pos.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 right = (f32)pos.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 down = 2.f - (f32)pos.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 	f32 top = 2.f - (f32)pos.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-	
+
 	u16 indices[] = {0, 1, 2, 3};
 	S3DVertex vertices[4];
 	vertices[0] = S3DVertex(left, top, 0, 0, 0, 1, color, 0, 0);
 	vertices[1] = S3DVertex(right, top, 0, 0, 0, 1, color, 0, 0);
 	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, color, 0, 0);
 	vertices[3] = S3DVertex(left, down, 0, 0, 0, 1, color, 0, 0);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -1702,42 +1710,42 @@ void CQGLFunctionsDriver::draw2DRectangle(SColor color,
 
 //! draw an 2d rectangle
 void CQGLFunctionsDriver::draw2DRectangle(const core::rect<s32>& position,
-                                    SColor colorLeftUp, SColor colorRightUp,
-                                    SColor colorLeftDown, SColor colorRightDown,
-                                    const core::rect<s32>* clip)
+    SColor colorLeftUp, SColor colorRightUp,
+    SColor colorLeftDown, SColor colorRightDown,
+    const core::rect<s32>* clip)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DRECTANGLE);)
-	        
-	        core::rect<s32> pos = position;
-	
+
+	core::rect<s32> pos = position;
+
 	if (clip)
 		pos.clipAgainst(*clip);
-	
+
 	if (!pos.isValid())
 		return;
-	
+
 	chooseMaterial2D();
 	setMaterialTexture(0, 0);
-	
+
 	setRenderStates2DMode(colorLeftUp.getAlpha() < 255 ||
-	                      colorRightUp.getAlpha() < 255 ||
-	                      colorLeftDown.getAlpha() < 255 ||
-	                      colorRightDown.getAlpha() < 255, false, false);
-	
+	    colorRightUp.getAlpha() < 255 ||
+	    colorLeftDown.getAlpha() < 255 ||
+	    colorRightDown.getAlpha() < 255, false, false);
+
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-	
+
 	f32 left = (f32)pos.UpperLeftCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 right = (f32)pos.LowerRightCorner.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 down = 2.f - (f32)pos.LowerRightCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 	f32 top = 2.f - (f32)pos.UpperLeftCorner.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-	
+
 	u16 indices[] = {0, 1, 2, 3};
 	S3DVertex vertices[4];
 	vertices[0] = S3DVertex(left, top, 0, 0, 0, 1, colorLeftUp, 0, 0);
 	vertices[1] = S3DVertex(right, top, 0, 0, 0, 1, colorRightUp, 0, 0);
 	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, colorRightDown, 0, 0);
 	vertices[3] = S3DVertex(left, down, 0, 0, 0, 1, colorLeftDown, 0, 0);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -1750,31 +1758,31 @@ void CQGLFunctionsDriver::draw2DRectangle(const core::rect<s32>& position,
 
 //! Draws a 2d line.
 void CQGLFunctionsDriver::draw2DLine(const core::position2d<s32>& start,
-                               const core::position2d<s32>& end, SColor color)
+    const core::position2d<s32>& end, SColor color)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_2DLINE);)
-	        
-	        if (start==end)
-	        drawPixel(start.X, start.Y, color);
+
+	if (start == end)
+		drawPixel(start.X, start.Y, color);
 	else
 	{
 		chooseMaterial2D();
 		setMaterialTexture(0, 0);
-		
+
 		setRenderStates2DMode(color.getAlpha() < 255, false, false);
-		
+
 		const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
-		
+
 		f32 startX = (f32)start.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 endX = (f32)end.X / (f32)renderTargetSize.Width * 2.f - 1.f;
 		f32 startY = 2.f - (f32)start.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
 		f32 endY = 2.f - (f32)end.Y / (f32)renderTargetSize.Height * 2.f - 1.f;
-		
+
 		u16 indices[] = {0, 1};
 		S3DVertex vertices[2];
 		vertices[0] = S3DVertex(startX, startY, 0, 0, 0, 1, color, 0, 0);
 		vertices[1] = S3DVertex(endX, endY, 0, 0, 0, 1, color, 1, 1);
-		
+
 		m_functions->glEnableVertexAttribArray(EVA_POSITION);
 		m_functions->glEnableVertexAttribArray(EVA_COLOR);
 		m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -1792,18 +1800,18 @@ void CQGLFunctionsDriver::drawPixel(u32 x, u32 y, const SColor &color)
 	const core::dimension2d<u32>& renderTargetSize = getCurrentRenderTargetSize();
 	if (x > (u32)renderTargetSize.Width || y > (u32)renderTargetSize.Height)
 		return;
-	
+
 	chooseMaterial2D();
 	setMaterialTexture(0, 0);
-	
+
 	setRenderStates2DMode(color.getAlpha() < 255, false, false);
-	
+
 	f32 X = (f32)x / (f32)renderTargetSize.Width * 2.f - 1.f;
 	f32 Y = 2.f - (f32)y / (f32)renderTargetSize.Height * 2.f - 1.f;
-	
+
 	S3DVertex vertices[1];
 	vertices[0] = S3DVertex(X, Y, 0, 0, 0, 1, color, 0, 0);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -1817,16 +1825,16 @@ ITexture* CQGLFunctionsDriver::createDeviceDependentTexture(const io::path& name
 {
 	core::array<IImage*> imageArray(1);
 	imageArray.push_back(image);
-	
+
 	CQGLFunctionsTexture* texture = new CQGLFunctionsTexture(name, imageArray, ETT_2D, this);
-	
+
 	return texture;
 }
 
 ITexture* CQGLFunctionsDriver::createDeviceDependentTextureCubemap(const io::path& name, const core::array<IImage*>& image)
 {
 	CQGLFunctionsTexture* texture = new CQGLFunctionsTexture(name, image, ETT_CUBEMAP, this);
-	
+
 	return texture;
 }
 
@@ -1835,7 +1843,7 @@ void CQGLFunctionsDriver::setMaterial(const SMaterial& material)
 {
 	Material = material;
 	OverrideMaterial.apply(Material);
-	
+
 	for (u32 i = 0; i < Feature.TextureUnit; ++i)
 	{
 		CacheHandler->getTextureCache().set(i, material.getTexture(i));
@@ -1933,23 +1941,23 @@ bool CQGLFunctionsDriver::testEGLError()
 void CQGLFunctionsDriver::setRenderStates3DMode()
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_SET_RENDERSTATE_3D);)
-	        
-	        if ( LockRenderStateMode )
-	        return;
-	
+
+	if ( LockRenderStateMode )
+		return;
+
 	if (CurrentRenderMode != ERM_3D)
 	{
 		// Reset Texture Stages
 		CacheHandler->setBlend(false);
 		CacheHandler->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		ResetRenderStates = true;
 	}
-	
+
 	if (ResetRenderStates || LastMaterial != Material)
 	{
 		// unset old material
-		
+
 		// unset last 3d material
 		if (CurrentRenderMode == ERM_2D && MaterialRenderer2DActive)
 		{
@@ -1957,21 +1965,21 @@ void CQGLFunctionsDriver::setRenderStates3DMode()
 			MaterialRenderer2DActive = 0;
 		}
 		else if (LastMaterial.MaterialType != Material.MaterialType &&
-		         static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
+		    static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
-		
+
 		// set new material.
 		if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[Material.MaterialType].Renderer->OnSetMaterial(
-			            Material, LastMaterial, ResetRenderStates, this);
-		
+			    Material, LastMaterial, ResetRenderStates, this);
+
 		LastMaterial = Material;
 		ResetRenderStates = false;
 	}
-	
+
 	if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 		MaterialRenderers[Material.MaterialType].Renderer->OnRender(this, video::EVT_STANDARD);
-	
+
 	CurrentRenderMode = ERM_3D;
 }
 
@@ -1979,49 +1987,49 @@ void CQGLFunctionsDriver::setRenderStates3DMode()
 void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const SMaterial& lastmaterial, bool resetAllRenderStates)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_SET_RENDERSTATE_BASIC);)
-	        
-	        // ZBuffer
-	        switch (material.ZBuffer)
+
+	// ZBuffer
+	switch (material.ZBuffer)
 	{
-		case ECFN_DISABLED:
-			CacheHandler->setDepthTest(false);
-			break;
-		case ECFN_LESSEQUAL:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_LEQUAL);
-			break;
-		case ECFN_EQUAL:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_EQUAL);
-			break;
-		case ECFN_LESS:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_LESS);
-			break;
-		case ECFN_NOTEQUAL:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_NOTEQUAL);
-			break;
-		case ECFN_GREATEREQUAL:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_GEQUAL);
-			break;
-		case ECFN_GREATER:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_GREATER);
-			break;
-		case ECFN_ALWAYS:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_ALWAYS);
-			break;
-		case ECFN_NEVER:
-			CacheHandler->setDepthTest(true);
-			CacheHandler->setDepthFunc(GL_NEVER);
-			break;
-		default:
-			break;
+	case ECFN_DISABLED:
+		CacheHandler->setDepthTest(false);
+		break;
+	case ECFN_LESSEQUAL:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_LEQUAL);
+		break;
+	case ECFN_EQUAL:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_EQUAL);
+		break;
+	case ECFN_LESS:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_LESS);
+		break;
+	case ECFN_NOTEQUAL:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_NOTEQUAL);
+		break;
+	case ECFN_GREATEREQUAL:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_GEQUAL);
+		break;
+	case ECFN_GREATER:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_GREATER);
+		break;
+	case ECFN_ALWAYS:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_ALWAYS);
+		break;
+	case ECFN_NEVER:
+		CacheHandler->setDepthTest(true);
+		CacheHandler->setDepthFunc(GL_NEVER);
+		break;
+	default:
+		break;
 	}
-	
+
 	// ZWrite
 	if (getWriteZBuffer(material))
 	{
@@ -2031,7 +2039,7 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 	{
 		CacheHandler->setDepthMask(false);
 	}
-	
+
 	// Back face culling
 	if ((material.FrontfaceCulling) && (material.BackfaceCulling))
 	{
@@ -2052,17 +2060,17 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 	{
 		CacheHandler->setCullFace(false);
 	}
-	
+
 	// Color Mask
 	CacheHandler->setColorMask(material.ColorMask);
-	
+
 	// Blend Equation
 	if (material.BlendOperation == EBO_NONE)
 		CacheHandler->setBlend(false);
 	else
 	{
 		CacheHandler->setBlend(true);
-		
+
 		switch (material.BlendOperation)
 		{
 		case EBO_ADD:
@@ -2078,7 +2086,7 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 			break;
 		}
 	}
-	
+
 	// Blend Factor
 	if (IR(material.BlendFactor) & 0xFFFFFFFF)
 	{
@@ -2088,16 +2096,16 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 		E_BLEND_FACTOR dstAlphaFact = EBF_ZERO;
 		E_MODULATE_FUNC modulo = EMFN_MODULATE_1X;
 		u32 alphaSource = 0;
-		
+
 		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo, alphaSource, material.BlendFactor);
-		
+
 		CacheHandler->setBlendFuncSeparate(getGLBlend(srcRGBFact), getGLBlend(dstRGBFact),
-		                                   getGLBlend(srcAlphaFact), getGLBlend(dstAlphaFact));
+		    getGLBlend(srcAlphaFact), getGLBlend(dstAlphaFact));
 	}
-	
+
 	if (resetAllRenderStates || lastmaterial.Thickness != material.Thickness)
 		m_functions->glLineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), DimAliasedLine[0], DimAliasedLine[1]));
-	
+
 	// Anti aliasing
 	if (resetAllRenderStates || lastmaterial.AntiAliasing != material.AntiAliasing)
 	{
@@ -2106,7 +2114,7 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 		else if (lastmaterial.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
 			m_functions->glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 	}
-	
+
 	// Texture parameters
 	setTextureRenderStates(material, resetAllRenderStates);
 }
@@ -2115,43 +2123,43 @@ void CQGLFunctionsDriver::setBasicRenderStates(const SMaterial& material, const 
 void CQGLFunctionsDriver::setTextureRenderStates(const SMaterial& material, bool resetAllRenderstates)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_SET_RENDERSTATE_TEXTURE);)
-	        
-	        // Set textures to TU/TIU and apply filters to them
-	        
-	        for (s32 i = Feature.TextureUnit - 1; i >= 0; --i)
+
+	// Set textures to TU/TIU and apply filters to them
+
+	for (s32 i = Feature.TextureUnit - 1; i >= 0; --i)
 	{
 		const CQGLFunctionsTexture* tmpTexture = CacheHandler->getTextureCache()[i];
-		
+
 		if (!tmpTexture)
 			continue;
-		
+
 		GLenum tmpTextureType = tmpTexture->getOpenGLTextureType();
-		
+
 		CacheHandler->setActiveTexture(GL_TEXTURE0 + i);
-		
+
 		if (resetAllRenderstates)
 			tmpTexture->getStatesCache().IsCached = false;
-		
+
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].BilinearFilter != tmpTexture->getStatesCache().BilinearFilter ||
-		        material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter)
+		    material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter)
 		{
 			m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_MAG_FILTER,
-			                (material.TextureLayer[i].BilinearFilter || material.TextureLayer[i].TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
-			
+			    (material.TextureLayer[i].BilinearFilter || material.TextureLayer[i].TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
+
 			tmpTexture->getStatesCache().BilinearFilter = material.TextureLayer[i].BilinearFilter;
 			tmpTexture->getStatesCache().TrilinearFilter = material.TextureLayer[i].TrilinearFilter;
 		}
-		
+
 		if (material.UseMipMaps && tmpTexture->hasMipMaps())
 		{
 			if (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].BilinearFilter != tmpTexture->getStatesCache().BilinearFilter ||
-			        material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter || !tmpTexture->getStatesCache().MipMapStatus)
+			    material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter || !tmpTexture->getStatesCache().MipMapStatus)
 			{
 				m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-				                material.TextureLayer[i].TrilinearFilter ? GL_LINEAR_MIPMAP_LINEAR :
-				                                                           material.TextureLayer[i].BilinearFilter ? GL_LINEAR_MIPMAP_NEAREST :
-				                                                                                                     GL_NEAREST_MIPMAP_NEAREST);
-				
+				    material.TextureLayer[i].TrilinearFilter ? GL_LINEAR_MIPMAP_LINEAR :
+				    material.TextureLayer[i].BilinearFilter ? GL_LINEAR_MIPMAP_NEAREST :
+				    GL_NEAREST_MIPMAP_NEAREST);
+
 				tmpTexture->getStatesCache().BilinearFilter = material.TextureLayer[i].BilinearFilter;
 				tmpTexture->getStatesCache().TrilinearFilter = material.TextureLayer[i].TrilinearFilter;
 				tmpTexture->getStatesCache().MipMapStatus = true;
@@ -2160,40 +2168,40 @@ void CQGLFunctionsDriver::setTextureRenderStates(const SMaterial& material, bool
 		else
 		{
 			if (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].BilinearFilter != tmpTexture->getStatesCache().BilinearFilter ||
-			        material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter || tmpTexture->getStatesCache().MipMapStatus)
+			    material.TextureLayer[i].TrilinearFilter != tmpTexture->getStatesCache().TrilinearFilter || tmpTexture->getStatesCache().MipMapStatus)
 			{
 				m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-				                (material.TextureLayer[i].BilinearFilter || material.TextureLayer[i].TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
-				
+				    (material.TextureLayer[i].BilinearFilter || material.TextureLayer[i].TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
+
 				tmpTexture->getStatesCache().BilinearFilter = material.TextureLayer[i].BilinearFilter;
 				tmpTexture->getStatesCache().TrilinearFilter = material.TextureLayer[i].TrilinearFilter;
 				tmpTexture->getStatesCache().MipMapStatus = false;
 			}
 		}
-		
+
 #ifdef GL_EXT_texture_filter_anisotropic
 		if (FeatureAvailable[IRR_EXT_texture_filter_anisotropic] &&
-		        (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].AnisotropicFilter != tmpTexture->getStatesCache().AnisotropicFilter))
+		    (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].AnisotropicFilter != tmpTexture->getStatesCache().AnisotropicFilter))
 		{
 			m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-			                material.TextureLayer[i].AnisotropicFilter>1 ? core::min_(MaxAnisotropy, material.TextureLayer[i].AnisotropicFilter) : 1);
-			
+			    material.TextureLayer[i].AnisotropicFilter > 1 ? core::min_(MaxAnisotropy, material.TextureLayer[i].AnisotropicFilter) : 1);
+
 			tmpTexture->getStatesCache().AnisotropicFilter = material.TextureLayer[i].AnisotropicFilter;
 		}
 #endif
-		
+
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].TextureWrapU != tmpTexture->getStatesCache().WrapU)
 		{
 			m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, getTextureWrapMode(material.TextureLayer[i].TextureWrapU));
 			tmpTexture->getStatesCache().WrapU = material.TextureLayer[i].TextureWrapU;
 		}
-		
+
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayer[i].TextureWrapV != tmpTexture->getStatesCache().WrapV)
 		{
 			m_functions->glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, getTextureWrapMode(material.TextureLayer[i].TextureWrapV));
 			tmpTexture->getStatesCache().WrapV = material.TextureLayer[i].TextureWrapV;
 		}
-		
+
 		tmpTexture->getStatesCache().IsCached = true;
 	}
 }
@@ -2220,12 +2228,12 @@ GLint CQGLFunctionsDriver::getTextureWrapMode(u8 clamp) const
 void CQGLFunctionsDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaChannel)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_SET_RENDERSTATE_2D);)
-	        
-	        if ( LockRenderStateMode )
-	        return;
-	
+
+	if ( LockRenderStateMode )
+		return;
+
 	CQGLFunctionsRenderer2D* nextActiveRenderer = texture ? MaterialRenderer2DTexture : MaterialRenderer2DNoTexture;
-	
+
 	if (CurrentRenderMode != ERM_2D)
 	{
 		// unset last 3d material
@@ -2234,22 +2242,22 @@ void CQGLFunctionsDriver::setRenderStates2DMode(bool alpha, bool texture, bool a
 			if (static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
 				MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
 		}
-		
+
 		CurrentRenderMode = ERM_2D;
 	}
 	else if ( MaterialRenderer2DActive && MaterialRenderer2DActive != nextActiveRenderer)
 	{
 		MaterialRenderer2DActive->OnUnsetMaterial();
 	}
-	
+
 	MaterialRenderer2DActive = nextActiveRenderer;
-	
+
 	MaterialRenderer2DActive->OnSetMaterial(Material, LastMaterial, true, 0);
 	LastMaterial = Material;
-	
+
 	// no alphaChannel without texture
 	alphaChannel &= texture;
-	
+
 	if (alphaChannel || alpha)
 	{
 		CacheHandler->setBlend(true);
@@ -2257,10 +2265,10 @@ void CQGLFunctionsDriver::setRenderStates2DMode(bool alpha, bool texture, bool a
 	}
 	else
 		CacheHandler->setBlend(false);
-	
+
 	Material.setTexture(0, const_cast<CQGLFunctionsTexture*>(CacheHandler->getTextureCache().get(0)));
 	setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
-	
+
 	if (texture)
 	{
 		if (OverrideMaterial2DEnabled)
@@ -2268,7 +2276,7 @@ void CQGLFunctionsDriver::setRenderStates2DMode(bool alpha, bool texture, bool a
 		else
 			setTextureRenderStates(InitMaterial2D, false);
 	}
-	
+
 	MaterialRenderer2DActive->OnRender(this, video::EVT_STANDARD);
 }
 
@@ -2277,14 +2285,14 @@ void CQGLFunctionsDriver::chooseMaterial2D()
 {
 	if (!OverrideMaterial2DEnabled)
 		Material = InitMaterial2D;
-	
+
 	if (OverrideMaterial2DEnabled)
 	{
-		OverrideMaterial2D.Lighting=false;
-		OverrideMaterial2D.ZWriteEnable=false;
-		OverrideMaterial2D.ZBuffer=ECFN_DISABLED; // it will be ECFN_DISABLED after merge
-		OverrideMaterial2D.Lighting=false;
-		
+		OverrideMaterial2D.Lighting = false;
+		OverrideMaterial2D.ZWriteEnable = false;
+		OverrideMaterial2D.ZBuffer = ECFN_DISABLED; // it will be ECFN_DISABLED after merge
+		OverrideMaterial2D.Lighting = false;
+
 		Material = OverrideMaterial2D;
 	}
 }
@@ -2309,11 +2317,11 @@ void CQGLFunctionsDriver::deleteAllDynamicLights()
 s32 CQGLFunctionsDriver::addDynamicLight(const SLight& light)
 {
 	CNullDriver::addDynamicLight(light);
-	
+
 	RequestedLights.push_back(RequestedLight(light));
-	
+
 	u32 newLightIndex = RequestedLights.size() - 1;
-	
+
 	return (s32)newLightIndex;
 }
 
@@ -2324,7 +2332,7 @@ void CQGLFunctionsDriver::turnLightOn(s32 lightIndex, bool turnOn)
 {
 	if (lightIndex < 0 || lightIndex >= (s32)RequestedLights.size())
 		return;
-	
+
 	RequestedLight & requestedLight = RequestedLights[lightIndex];
 	requestedLight.DesireToBeOn = turnOn;
 }
@@ -2341,10 +2349,10 @@ void CQGLFunctionsDriver::setViewPort(const core::rect<s32>& area)
 	core::rect<s32> vp = area;
 	core::rect<s32> rendert(0, 0, getCurrentRenderTargetSize().Width, getCurrentRenderTargetSize().Height);
 	vp.clipAgainst(rendert);
-	
+
 	if (vp.getHeight() > 0 && vp.getWidth() > 0)
 		CacheHandler->setViewport(vp.UpperLeftCorner.X, getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight(), vp.getWidth(), vp.getHeight());
-	
+
 	ViewPort = vp;
 }
 
@@ -2353,40 +2361,40 @@ void CQGLFunctionsDriver::setViewPort(const core::rect<s32>& area)
 void CQGLFunctionsDriver::drawStencilShadowVolume(const core::array<core::vector3df>& triangles, bool zfail, u32 debugDataVisible)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_SHADOW);)
-	        
-	        const u32 count=triangles.size();
+
+	const u32 count = triangles.size();
 	if (!StencilBuffer || !count)
 		return;
-	
+
 	bool fog = Material.FogEnable;
 	bool lighting = Material.Lighting;
 	E_MATERIAL_TYPE materialType = Material.MaterialType;
-	
+
 	Material.FogEnable = false;
 	Material.Lighting = false;
 	Material.MaterialType = EMT_SOLID; // Dedicated material in future.
-	
+
 	setRenderStates3DMode();
-	
+
 	CacheHandler->setDepthTest(true);
 	CacheHandler->setDepthFunc(GL_LESS);
 	CacheHandler->setDepthMask(false);
-	
-	if (!(debugDataVisible & (scene::EDS_SKELETON|scene::EDS_MESH_WIRE_OVERLAY)))
+
+	if (!(debugDataVisible & (scene::EDS_SKELETON | scene::EDS_MESH_WIRE_OVERLAY)))
 	{
 		CacheHandler->setColorMask(ECP_NONE);
 		m_functions->glEnable(GL_STENCIL_TEST);
 	}
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(core::vector3df), triangles.const_pointer());
-	
+
 	m_functions->glStencilMask(~0);
 	m_functions->glStencilFunc(GL_ALWAYS, 0, ~0);
-	
+
 	GLenum decr = GL_DECR;
 	GLenum incr = GL_INCR;
-	
+
 #if defined(GL_OES_stencil_wrap)
 	if (FeatureAvailable[IRR_OES_stencil_wrap])
 	{
@@ -2394,15 +2402,15 @@ void CQGLFunctionsDriver::drawStencilShadowVolume(const core::array<core::vector
 		incr = GL_INCR_WRAP_OES;
 	}
 #endif
-	
+
 	CacheHandler->setCullFace(true);
-	
+
 	if (zfail)
 	{
 		CacheHandler->setCullFaceFunc(GL_FRONT);
 		m_functions->glStencilOp(GL_KEEP, incr, GL_KEEP);
 		m_functions->glDrawArrays(GL_TRIANGLES, 0, count);
-		
+
 		CacheHandler->setCullFaceFunc(GL_BACK);
 		m_functions->glStencilOp(GL_KEEP, decr, GL_KEEP);
 		m_functions->glDrawArrays(GL_TRIANGLES, 0, count);
@@ -2412,16 +2420,16 @@ void CQGLFunctionsDriver::drawStencilShadowVolume(const core::array<core::vector
 		CacheHandler->setCullFaceFunc(GL_BACK);
 		m_functions->glStencilOp(GL_KEEP, GL_KEEP, incr);
 		m_functions->glDrawArrays(GL_TRIANGLES, 0, count);
-		
+
 		CacheHandler->setCullFaceFunc(GL_FRONT);
 		m_functions->glStencilOp(GL_KEEP, GL_KEEP, decr);
 		m_functions->glDrawArrays(GL_TRIANGLES, 0, count);
 	}
-	
+
 	m_functions->glDisableVertexAttribArray(EVA_POSITION);
-	
+
 	m_functions->glDisable(GL_STENCIL_TEST);
-	
+
 	Material.FogEnable = fog;
 	Material.Lighting = lighting;
 	Material.MaterialType = materialType;
@@ -2429,36 +2437,36 @@ void CQGLFunctionsDriver::drawStencilShadowVolume(const core::array<core::vector
 
 
 void CQGLFunctionsDriver::drawStencilShadow(bool clearStencilBuffer,
-                                      video::SColor leftUpEdge, video::SColor rightUpEdge,
-                                      video::SColor leftDownEdge, video::SColor rightDownEdge)
+    video::SColor leftUpEdge, video::SColor rightUpEdge,
+    video::SColor leftDownEdge, video::SColor rightDownEdge)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_SHADOW);)
-	        
-	        if (!StencilBuffer)
-	        return;
-	
+
+	if (!StencilBuffer)
+		return;
+
 	chooseMaterial2D();
 	setMaterialTexture(0, 0);
-	
+
 	setRenderStates2DMode(true, false, false);
-	
+
 	CacheHandler->setDepthMask(false);
 	CacheHandler->setColorMask(ECP_ALL);
-	
+
 	CacheHandler->setBlend(true);
 	CacheHandler->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	m_functions->glEnable(GL_STENCIL_TEST);
 	m_functions->glStencilFunc(GL_NOTEQUAL, 0, ~0);
 	m_functions->glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	
+
 	u16 indices[] = {0, 1, 2, 3};
 	S3DVertex vertices[4];
 	vertices[0] = S3DVertex(-1.f, 1.f, 0.9f, 0, 0, 1, leftDownEdge, 0, 0);
 	vertices[1] = S3DVertex(1.f, 1.f, 0.9f, 0, 0, 1, leftUpEdge, 0, 0);
 	vertices[2] = S3DVertex(1.f, -1.f, 0.9f, 0, 0, 1, rightUpEdge, 0, 0);
 	vertices[3] = S3DVertex(-1.f, -1.f, 0.9f, 0, 0, 1, rightDownEdge, 0, 0);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -2466,27 +2474,27 @@ void CQGLFunctionsDriver::drawStencilShadow(bool clearStencilBuffer,
 	m_functions->glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, indices);
 	m_functions->glDisableVertexAttribArray(EVA_COLOR);
 	m_functions->glDisableVertexAttribArray(EVA_POSITION);
-	
+
 	if (clearStencilBuffer)
 		m_functions->glClear(GL_STENCIL_BUFFER_BIT);
-	
+
 	m_functions->glDisable(GL_STENCIL_TEST);
 }
 
 
 //! Draws a 3d line.
 void CQGLFunctionsDriver::draw3DLine(const core::vector3df& start,
-                               const core::vector3df& end, SColor color)
+    const core::vector3df& end, SColor color)
 {
 	IRR_PROFILE(CProfileScope p1(EPID_ES2_DRAW_3DLINE);)
-	        
-	        setRenderStates3DMode();
-	
+
+	setRenderStates3DMode();
+
 	u16 indices[] = {0, 1};
 	S3DVertex vertices[2];
 	vertices[0] = S3DVertex(start.X, start.Y, start.Z, 0, 0, 1, color, 0, 0);
 	vertices[1] = S3DVertex(end.X, end.Y, end.Z, 0, 0, 1, color, 0, 0);
-	
+
 	m_functions->glEnableVertexAttribArray(EVA_POSITION);
 	m_functions->glEnableVertexAttribArray(EVA_COLOR);
 	m_functions->glVertexAttribPointer(EVA_POSITION, 3, GL_FLOAT, false, sizeof(S3DVertex), &(static_cast<const S3DVertex*>(vertices))[0].Pos);
@@ -2577,9 +2585,9 @@ bool CQGLFunctionsDriver::setPixelShaderConstant(s32 index, const s32* ints, int
 //! Adds a new material renderer to the VideoDriver, using pixel and/or
 //! vertex shaders to render geometry.
 s32 CQGLFunctionsDriver::addShaderMaterial(const c8* vertexShaderProgram,
-                                     const c8* pixelShaderProgram,
-                                     IShaderConstantSetCallBack* callback,
-                                     E_MATERIAL_TYPE baseMaterial, s32 userData)
+    const c8* pixelShaderProgram,
+    IShaderConstantSetCallBack* callback,
+    E_MATERIAL_TYPE baseMaterial, s32 userData)
 {
 	os::Printer::log("No shader support.");
 	return -1;
@@ -2588,30 +2596,138 @@ s32 CQGLFunctionsDriver::addShaderMaterial(const c8* vertexShaderProgram,
 
 //! Adds a new material renderer to the VideoDriver, using GLSL to render geometry.
 s32 CQGLFunctionsDriver::addHighLevelShaderMaterial(
-        const c8* vertexShaderProgram,
-        const c8* vertexShaderEntryPointName,
-        E_VERTEX_SHADER_TYPE vsCompileTarget,
-        const c8* pixelShaderProgram,
-        const c8* pixelShaderEntryPointName,
-        E_PIXEL_SHADER_TYPE psCompileTarget,
-        const c8* geometryShaderProgram,
-        const c8* geometryShaderEntryPointName,
-        E_GEOMETRY_SHADER_TYPE gsCompileTarget,
-        scene::E_PRIMITIVE_TYPE inType,
-        scene::E_PRIMITIVE_TYPE outType,
-        u32 verticesOut,
-        IShaderConstantSetCallBack* callback,
-        E_MATERIAL_TYPE baseMaterial,
-        s32 userData, E_GPU_SHADING_LANGUAGE shadingLang)
+    const c8* vertexShaderProgram,
+    const c8* vertexShaderEntryPointName,
+    E_VERTEX_SHADER_TYPE vsCompileTarget,
+    const c8* pixelShaderProgram,
+    const c8* pixelShaderEntryPointName,
+    E_PIXEL_SHADER_TYPE psCompileTarget,
+    const c8* geometryShaderProgram,
+    const c8* geometryShaderEntryPointName,
+    E_GEOMETRY_SHADER_TYPE gsCompileTarget,
+    scene::E_PRIMITIVE_TYPE inType,
+    scene::E_PRIMITIVE_TYPE outType,
+    u32 verticesOut,
+    IShaderConstantSetCallBack* callback,
+    E_MATERIAL_TYPE baseMaterial,
+    s32 userData, E_GPU_SHADING_LANGUAGE shadingLang)
 {
 	s32 nr = -1;
 	CQGLFunctionsMaterialRenderer* r = new CQGLFunctionsMaterialRenderer(
-	            this, nr, vertexShaderProgram,
-	            pixelShaderProgram,
-	            callback, baseMaterial, userData);
-	
+	    this, nr, vertexShaderProgram,
+	    pixelShaderProgram,
+	    callback, baseMaterial, userData);
+
 	r->drop();
 	return nr;
+}
+
+#define byteArray2ReadFile(ba, path) FileSystem->createMemoryReadFile( (void*)ba.data(), ba.size(),path, false);
+QByteArray CQGLFunctionsDriver::createReadFile(const io::path &path)
+{
+	QString qpath = QString::fromUtf8(path.c_str());
+
+	QFile file( qpath );
+	bool ok = false;
+	if ( qpath.indexOf(":/") == -1 )
+	{
+		ok = file.open(QIODevice::ReadOnly); //try load from file system
+		if (!ok)
+		{
+			qpath = QString(":/") + qpath;
+		}
+	}
+
+	if (!ok)
+	{
+		file.setFileName(qpath);
+		ok = file.open(QIODevice::ReadOnly);
+	}
+	if ( !ok )
+	{
+		os::Printer::log("IrrlichtQrcResources::createReadFile",
+		    QString("Resource \"%0\" not found!.").arg(path.c_str()).toLocal8Bit().data()
+		    , irr::ELL_WARNING );
+		return QByteArray();
+	}
+
+	return file.readAll();
+}
+
+//! Like IGPUProgrammingServices::addShaderMaterial() (look there for a detailed description),
+//! but tries to load the programs from files.
+//!  + add Loading from Qt qrc resources
+s32 CQGLFunctionsDriver::addHighLevelShaderMaterialFromFiles(
+    const io::path& vertexShaderProgramFileName,
+    const c8* vertexShaderEntryPointName,
+    E_VERTEX_SHADER_TYPE vsCompileTarget,
+    const io::path& pixelShaderProgramFileName,
+    const c8* pixelShaderEntryPointName,
+    E_PIXEL_SHADER_TYPE psCompileTarget,
+    const io::path& geometryShaderProgramFileName,
+    const c8* geometryShaderEntryPointName,
+    E_GEOMETRY_SHADER_TYPE gsCompileTarget,
+    scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
+    u32 verticesOut,
+    IShaderConstantSetCallBack* callback,
+    E_MATERIAL_TYPE baseMaterial,
+    s32 userData, E_GPU_SHADING_LANGUAGE shadingLang)
+{
+	QByteArray vertex = createReadFile(vertexShaderProgramFileName);
+	QByteArray pixel = createReadFile(pixelShaderProgramFileName);
+	QByteArray geometry = createReadFile(geometryShaderProgramFileName);
+
+	io::IReadFile* vsfile = 0;
+	io::IReadFile* psfile = 0;
+	io::IReadFile* gsfile = 0;
+
+	if ( !vertex.isEmpty() )
+	{
+		vsfile = byteArray2ReadFile(vertex, vertexShaderProgramFileName.c_str());
+		if (!vsfile)
+		{
+			os::Printer::log("Could not open vertex shader program file",
+			    vertexShaderProgramFileName, ELL_WARNING);
+		}
+	}
+
+	if ( !pixel.isEmpty() )
+	{
+		psfile = byteArray2ReadFile(pixel, pixelShaderProgramFileName.c_str());
+		if (!psfile)
+		{
+			os::Printer::log("Could not open pixel shader program file",
+			    pixelShaderProgramFileName, ELL_WARNING);
+		}
+	}
+
+	if ( !geometry.isEmpty() )
+	{
+		gsfile = byteArray2ReadFile(geometry, geometryShaderProgramFileName.c_str());
+		if (!gsfile)
+		{
+			os::Printer::log("Could not open geometry shader program file",
+			    geometryShaderProgramFileName, ELL_WARNING);
+		}
+	}
+
+	s32 result = CNullDriver::addHighLevelShaderMaterialFromFiles(
+	        vsfile, vertexShaderEntryPointName, vsCompileTarget,
+	        psfile, pixelShaderEntryPointName, psCompileTarget,
+	        gsfile, geometryShaderEntryPointName, gsCompileTarget,
+	        inType, outType, verticesOut,
+	        callback, baseMaterial, userData, shadingLang);
+
+	if (psfile)
+		psfile->drop();
+
+	if (vsfile)
+		vsfile->drop();
+
+	if (gsfile)
+		gsfile->drop();
+
+	return result;
 }
 
 //! Returns a pointer to the IVideoDriver interface. (Implementation for
@@ -2629,19 +2745,19 @@ IGPUProgrammingServices* CQGLFunctionsDriver::getGPUProgrammingServices()
 }
 
 ITexture* CQGLFunctionsDriver::addRenderTargetTexture(const core::dimension2d<u32>& size,
-                                                const io::path& name, const ECOLOR_FORMAT format)
+    const io::path& name, const ECOLOR_FORMAT format)
 {
 	//disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
-	
+
 	CQGLFunctionsTexture* renderTargetTexture = new CQGLFunctionsTexture(name, size, format, this);
 	addTexture(renderTargetTexture);
 	renderTargetTexture->drop();
-	
+
 	//restore mip-mapping
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, generateMipLevels);
-	
+
 	return renderTargetTexture;
 }
 
@@ -2659,40 +2775,40 @@ bool CQGLFunctionsDriver::setRenderTargetEx(IRenderTarget* target, u16 clearFlag
 		os::Printer::log("Fatal Error: Tried to set a render target not owned by OGLES2 driver.", ELL_ERROR);
 		return false;
 	}
-	
+
 	core::dimension2d<u32> destRenderTargetSize(0, 0);
-	
+
 	if (target)
 	{
 		CQGLFunctionsRenderTarget* renderTarget = static_cast<CQGLFunctionsRenderTarget*>(target);
-		
+
 		CacheHandler->setFBO(renderTarget->getBufferID());
 		renderTarget->update();
-		
+
 		destRenderTargetSize = renderTarget->getSize();
-		
+
 		CacheHandler->setViewport(0, 0, destRenderTargetSize.Width, destRenderTargetSize.Height);
 	}
 	else
 	{
 		CacheHandler->setFBO(0);
-		
+
 		destRenderTargetSize = core::dimension2d<u32>(0, 0);
-		
+
 		CacheHandler->setViewport(0, 0, ScreenSize.Width, ScreenSize.Height);
 	}
-	
+
 	if (CurrentRenderTargetSize != destRenderTargetSize)
 	{
 		CurrentRenderTargetSize = destRenderTargetSize;
-		
+
 		Transformation3DChanged = true;
 	}
-	
+
 	CurrentRenderTarget = target;
-	
+
 	clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
-	
+
 	return true;
 }
 
@@ -2701,37 +2817,37 @@ void CQGLFunctionsDriver::clearBuffers(u16 flag, SColor color, f32 depth, u8 ste
 	GLbitfield mask = 0;
 	u8 colorMask = 0;
 	bool depthMask = false;
-	
+
 	CacheHandler->getColorMask(colorMask);
 	CacheHandler->getDepthMask(depthMask);
-	
+
 	if (flag & ECBF_COLOR)
 	{
 		CacheHandler->setColorMask(ECP_ALL);
-		
+
 		const f32 inv = 1.0f / 255.0f;
 		m_functions->glClearColor(color.getRed() * inv, color.getGreen() * inv,
-		             color.getBlue() * inv, color.getAlpha() * inv);
-		
+		    color.getBlue() * inv, color.getAlpha() * inv);
+
 		mask |= GL_COLOR_BUFFER_BIT;
 	}
-	
+
 	if (flag & ECBF_DEPTH)
 	{
 		CacheHandler->setDepthMask(true);
 		m_functions->glClearDepthf(depth);
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
-	
+
 	if (flag & ECBF_STENCIL)
 	{
 		m_functions->glClearStencil(stencil);
 		mask |= GL_STENCIL_BUFFER_BIT;
 	}
-	
+
 	if (mask)
 		m_functions->glClear(mask);
-	
+
 	CacheHandler->setColorMask(colorMask);
 	CacheHandler->setDepthMask(depthMask);
 }
@@ -2743,9 +2859,9 @@ void CQGLFunctionsDriver::clearBuffers(u16 flag, SColor color, f32 depth, u8 ste
 // outside of the render loop only.
 IImage* CQGLFunctionsDriver::createScreenShot(video::ECOLOR_FORMAT format, video::E_RENDER_TARGET target)
 {
-	if (target==video::ERT_MULTI_RENDER_TEXTURES || target==video::ERT_RENDER_TEXTURE || target==video::ERT_STEREO_BOTH_BUFFERS)
+	if (target == video::ERT_MULTI_RENDER_TEXTURES || target == video::ERT_RENDER_TEXTURE || target == video::ERT_STEREO_BOTH_BUFFERS)
 		return 0;
-	
+
 	GLint internalformat = GL_RGBA;
 	GLint type = GL_UNSIGNED_BYTE;
 	{
@@ -2758,7 +2874,7 @@ IImage* CQGLFunctionsDriver::createScreenShot(video::ECOLOR_FORMAT format, video
 			type = GL_UNSIGNED_BYTE;
 		}
 	}
-	
+
 	IImage* newImage = 0;
 	if (GL_RGBA == internalformat)
 	{
@@ -2774,20 +2890,20 @@ IImage* CQGLFunctionsDriver::createScreenShot(video::ECOLOR_FORMAT format, video
 		else
 			newImage = new CImage(ECF_R5G6B5, ScreenSize);
 	}
-	
+
 	if (!newImage)
 		return 0;
-	
+
 	u8* pixels = static_cast<u8*>(newImage->getData());
 	if (!pixels)
 	{
 		newImage->drop();
 		return 0;
 	}
-	
+
 	m_functions->glReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, internalformat, type, pixels);
 	testGLError(__LINE__);
-	
+
 	// opengl images are horizontally flipped, so we have to fix that here.
 	const s32 pitch = newImage->getPitch();
 	u8* p2 = pixels + (ScreenSize.Height - 1) * pitch;
@@ -2801,7 +2917,7 @@ IImage* CQGLFunctionsDriver::createScreenShot(video::ECOLOR_FORMAT format, video
 		p2 -= pitch;
 	}
 	delete [] tmpBuffer;
-	
+
 	if (testGLError(__LINE__))
 	{
 		newImage->drop();
@@ -2815,7 +2931,7 @@ void CQGLFunctionsDriver::removeTexture(ITexture* texture)
 {
 	if (!texture)
 		return;
-	
+
 	CNullDriver::removeTexture(texture);
 }
 
@@ -2824,7 +2940,7 @@ bool CQGLFunctionsDriver::setClipPlane(u32 index, const core::plane3df& plane, b
 {
 	if (index >= UserClipPlane.size())
 		UserClipPlane.push_back(SUserClipPlane());
-	
+
 	UserClipPlane[index].Plane = plane;
 	UserClipPlane[index].Enabled = enable;
 	return true;
@@ -2849,7 +2965,7 @@ const core::plane3df& CQGLFunctionsDriver::getClipPlane(irr::u32 index) const
 	else
 	{
 		_IRR_DEBUG_BREAK_IF(true)	// invalid index
-		        static const core::plane3df dummy;
+		static const core::plane3df dummy;
 		return dummy;
 	}
 }
@@ -2863,26 +2979,26 @@ GLenum CQGLFunctionsDriver::getGLBlend(E_BLEND_FACTOR factor) const
 {
 	static GLenum const blendTable[] =
 	{
-	    GL_ZERO,
-	    GL_ONE,
-	    GL_DST_COLOR,
-	    GL_ONE_MINUS_DST_COLOR,
-	    GL_SRC_COLOR,
-	    GL_ONE_MINUS_SRC_COLOR,
-	    GL_SRC_ALPHA,
-	    GL_ONE_MINUS_SRC_ALPHA,
-	    GL_DST_ALPHA,
-	    GL_ONE_MINUS_DST_ALPHA,
-	    GL_SRC_ALPHA_SATURATE
+		GL_ZERO,
+		GL_ONE,
+		GL_DST_COLOR,
+		GL_ONE_MINUS_DST_COLOR,
+		GL_SRC_COLOR,
+		GL_ONE_MINUS_SRC_COLOR,
+		GL_SRC_ALPHA,
+		GL_ONE_MINUS_SRC_ALPHA,
+		GL_DST_ALPHA,
+		GL_ONE_MINUS_DST_ALPHA,
+		GL_SRC_ALPHA_SATURATE
 	};
-	
+
 	return blendTable[factor];
 }
 
 GLenum CQGLFunctionsDriver::getZBufferBits() const
 {
 	GLenum bits = 0;
-	
+
 	switch (Params.ZBufferBits)
 	{
 	case 24:
@@ -2905,17 +3021,17 @@ GLenum CQGLFunctionsDriver::getZBufferBits() const
 		bits = GL_DEPTH_COMPONENT16;
 		break;
 	}
-	
+
 	return bits;
 }
 
 void CQGLFunctionsDriver::getColorFormatParameters(ECOLOR_FORMAT format, GLint& internalFormat, GLenum& pixelFormat,
-                                             GLenum& pixelType, void(**converter)(const void*, s32, void*))
+    GLenum& pixelType, void(**converter)(const void*, s32, void*))
 {
 	pixelFormat = GL_RGBA;
 	pixelType = GL_UNSIGNED_BYTE;
 	*converter = 0;
-	
+
 	switch (format)
 	{
 	case ECF_A1R5G5B5:
@@ -2933,8 +3049,8 @@ void CQGLFunctionsDriver::getColorFormatParameters(ECOLOR_FORMAT format, GLint& 
 		break;
 	case ECF_A8R8G8B8:
 		if (queryOpenGLFeature(CQGLFunctionsExtensionHandler::IRR_IMG_texture_format_BGRA8888) ||
-		        queryOpenGLFeature(CQGLFunctionsExtensionHandler::IRR_EXT_texture_format_BGRA8888) ||
-		        queryOpenGLFeature(CQGLFunctionsExtensionHandler::IRR_APPLE_texture_format_BGRA8888))
+		    queryOpenGLFeature(CQGLFunctionsExtensionHandler::IRR_EXT_texture_format_BGRA8888) ||
+		    queryOpenGLFeature(CQGLFunctionsExtensionHandler::IRR_APPLE_texture_format_BGRA8888))
 		{
 			pixelFormat = GL_BGRA;
 		}
@@ -3079,13 +3195,13 @@ void CQGLFunctionsDriver::getColorFormatParameters(ECOLOR_FORMAT format, GLint& 
 		os::Printer::log("Unsupported texture format", ELL_ERROR);
 		break;
 	}
-	
+
 	// ES 2.0 says internalFormat must match pixelFormat (chapter 3.7.1 in Spec).
 	// Doesn't mention if "match" means "equal" or some other way of matching, but
 	// some bug on Emscripten and browsing discussions by others lead me to believe
 	// it means they have to be equal. Note that this was different in OpenGL.
 	internalFormat = pixelFormat;
-	
+
 #ifdef _IRR_IOS_PLATFORM_
 	if (internalFormat == GL_BGRA)
 		internalFormat = GL_RGBA;
@@ -3114,20 +3230,20 @@ namespace video
 {
 
 #ifndef _IRR_COMPILE_WITH_QGLFUNCTIONS_
-class IVideoDriver;
-class IContextManager;
+	class IVideoDriver;
+	class IContextManager;
 #endif
 
-    IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager)
-	{
-    #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
-		CQGLFunctionsDriver* driver = new CQGLFunctionsDriver(params, io, contextManager);
-		driver->genericDriverInit(params.WindowSize, params.Stencilbuffer);	// don't call in constructor, it uses virtual function calls of driver
-		return driver;
-    #else
-		return 0;
-    #endif //  _IRR_COMPILE_WITH_QGLFUNCTIONS_
-	}
+IVideoDriver* createQGLFunctionsDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io, IContextManager* contextManager)
+{
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+	CQGLFunctionsDriver* driver = new CQGLFunctionsDriver(params, io, contextManager);
+	driver->genericDriverInit(params.WindowSize, params.Stencilbuffer);	// don't call in constructor, it uses virtual function calls of driver
+	return driver;
+#else
+	return 0;
+#endif //  _IRR_COMPILE_WITH_QGLFUNCTIONS_
+}
 
 } // end namespace
 } // end namespace

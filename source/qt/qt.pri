@@ -9,7 +9,8 @@ HEADERS += \
     $$PWD/IrrQuick.h \
     $$PWD/CQGLFunctionsTexture.h \
     $$PWD/CQGLFunctionsCacheHandler.h \
-    $$PWD/CQGLFunctionsRenderTarget.h
+    $$PWD/CQGLFunctionsRenderTarget.h \
+    $$PWD/CQrcFileSystem.h
 
 SOURCES += \
     $$PWD/CQGLFunctionsDriver.cpp \
@@ -22,7 +23,8 @@ SOURCES += \
     $$PWD/IrrQuick.cpp \
     $$PWD/CQGLFunctionsTexture.cpp \
     $$PWD/CQGLFunctionsCacheHandler.cpp \
-    $$PWD/CQGLFunctionsRenderTarget.cpp
+    $$PWD/CQGLFunctionsRenderTarget.cpp \
+    $$PWD/CQrcFileSystem.cpp
 
 DISTFILES += \
     $$PWD/../../media/Shaders/CQGLFunctionsDetailMap.fsh \
@@ -47,5 +49,3 @@ DISTFILES += \
     $$PWD/../../media/Shaders/CQGLFunctionsSolid.vsh \
     $$PWD/../../media/Shaders/CQGLFunctionsSolid2.vsh \
     $$PWD/../../media/Shaders/CQGLFunctionsSphereMap.vsh
-
-

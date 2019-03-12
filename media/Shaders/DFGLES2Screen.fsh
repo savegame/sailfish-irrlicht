@@ -1,15 +1,18 @@
-uniform sampler2D Texture0;
-uniform sampler2D Texture1;
-uniform lowp int  inScreenOrientation;
-uniform lowp vec2 inResolution;
-uniform lowp vec2 inDepthNear;
-uniform lowp vec2 inDepthFar;
-uniform bool inIsUseDepth;
-varying highp vec2 TexCoord0;
-varying highp vec2 ScreenPos;
-
+#ifdef GLES2
 precision lowp    float;
 precision lowp    int;
+precision lowp    vec2;
+#endif
+
+uniform sampler2D Texture0;
+uniform sampler2D Texture1;
+uniform int  inScreenOrientation;
+uniform vec2 inResolution;
+uniform vec2 inDepthNear;
+uniform vec2 inDepthFar;
+uniform bool inIsUseDepth;
+varying vec2 TexCoord0;
+varying vec2 ScreenPos;
 
 //const lowp int OrientationNormal    = 0;
 //const lowp int OrientationRotate90  = 1;
@@ -33,16 +36,20 @@ vec4 gaussianBlur(in sampler2D texture, in vec2 uv, in float radius, in vec2 res
 void main(void)
 {
     //OrientationRotate270 - default for SailfishOS
-    highp vec2 nTexCoord = vec2(-ScreenPos.y, ScreenPos.x);
+    vec2 nTexCoord = vec2(-ScreenPos.y, ScreenPos.x);
     if( inScreenOrientation == /*OrientationRotate90*/1 )
         nTexCoord = vec2(ScreenPos.y, -ScreenPos.x);
     // no transformations? draw as is
     else if (inScreenOrientation == /*OrientationNormal*/0)
         nTexCoord = ScreenPos.xy;
+    else if (inScreenOrientation == /*OrientationRotate180*/2)
+        nTexCoord = vec2(-ScreenPos.x,-ScreenPos.y);
+    else if (inScreenOrientation == /*OrientationRotate270*/3)
+        nTexCoord = vec2(-ScreenPos.y,-ScreenPos.x);
 
-    lowp float depth = texture2D(Texture1,nTexCoord).r;
+    float depth = texture2D(Texture1,nTexCoord).r;
     //lowp float blur  = 0.0;
-    lowp float strength = 5.0;
+    float strength = 5.0;
     bool isUseDepth = false;
     if( depth >= inDepthFar.x && isUseDepth == true)
     {// far depth zone

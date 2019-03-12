@@ -17,26 +17,26 @@ irr::CIrrDeviceConsole *DeviceToClose;
 // Callback for Windows
 BOOL WINAPI ConsoleHandler(DWORD CEvent)
 {
-    switch(CEvent)
-    {
-    case CTRL_C_EVENT:
+	switch (CEvent)
+	{
+	case CTRL_C_EVENT:
 		irr::os::Printer::log("Closing console device", "CTRL+C");
 		break;
 	case CTRL_BREAK_EVENT:
 		irr::os::Printer::log("Closing console device", "CTRL+Break");
 		break;
-    case CTRL_CLOSE_EVENT:
+	case CTRL_CLOSE_EVENT:
 		irr::os::Printer::log("Closing console device", "User closed console");
 		break;
-    case CTRL_LOGOFF_EVENT:
+	case CTRL_LOGOFF_EVENT:
 		irr::os::Printer::log("Closing console device", "User is logging off");
 		break;
-    case CTRL_SHUTDOWN_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
 		irr::os::Printer::log("Closing console device", "Computer shutting down");
 		break;
-    }
+	}
 	DeviceToClose->closeDevice();
-    return TRUE;
+	return TRUE;
 }
 #elif defined(_IRR_POSIX_API_)
 // sigterm handler
@@ -64,7 +64,7 @@ const u16 ASCIIArtCharsCount = 32;
 
 //! constructor
 CIrrDeviceConsole::CIrrDeviceConsole(const SIrrlichtCreationParameters& params)
-  : CIrrDeviceStub(params), IsWindowFocused(true), ConsoleFont(0), OutFile(stdout)
+	: CIrrDeviceStub(params), IsWindowFocused(true), ConsoleFont(0), OutFile(stdout)
 {
 	DeviceToClose = this;
 
@@ -118,19 +118,19 @@ CIrrDeviceConsole::CIrrDeviceConsole(const SIrrlichtCreationParameters& params)
 	switch (params.DriverType)
 	{
 	case video::EDT_SOFTWARE:
-		#ifdef _IRR_COMPILE_WITH_SOFTWARE_
+#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 		VideoDriver = video::createSoftwareDriver(CreationParams.WindowSize, CreationParams.Fullscreen, FileSystem, this);
-		#else
+#else
 		os::Printer::log("Software driver was not compiled in.", ELL_ERROR);
-		#endif
+#endif
 		break;
 
 	case video::EDT_BURNINGSVIDEO:
-		#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 		VideoDriver = video::createBurningVideoDriver(CreationParams, FileSystem, this);
-		#else
+#else
 		os::Printer::log("Burning's Video driver was not compiled in.", ELL_ERROR);
-		#endif
+#endif
 		break;
 	case video::EDT_QOGLDUNCTIONS:
 #ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
@@ -152,11 +152,11 @@ CIrrDeviceConsole::CIrrDeviceConsole(const SIrrlichtCreationParameters& params)
 	}
 
 	// set up output buffer
-	for (u32 y=0; y<CreationParams.WindowSize.Height; ++y)
+	for (u32 y = 0; y < CreationParams.WindowSize.Height; ++y)
 	{
 		core::stringc str;
 		str.reserve(CreationParams.WindowSize.Width);
-		for (u32 x=0; x<CreationParams.WindowSize.Width; ++x)
+		for (u32 x = 0; x < CreationParams.WindowSize.Width; ++x)
 			str += " ";
 		OutputBuffer.push_back(str);
 	}
@@ -176,7 +176,7 @@ CIrrDeviceConsole::CIrrDeviceConsole(const SIrrlichtCreationParameters& params)
 			gui::IGUISkin *skin = GUIEnvironment->getSkin();
 			if (skin)
 			{
-				for (u32 i=0; i < gui::EGDF_COUNT; ++i)
+				for (u32 i = 0; i < gui::EGDF_COUNT; ++i)
 					skin->setFont(ConsoleFont, gui::EGUI_DEFAULT_FONT(i));
 			}
 		}
@@ -227,7 +227,7 @@ bool CIrrDeviceConsole::run()
 	while (count)
 	{
 		ReadConsoleInput(WindowsSTDIn, &in, 1, &waste );
-		switch(in.EventType)
+		switch (in.EventType)
 		{
 		case KEY_EVENT:
 		{
@@ -249,11 +249,11 @@ bool CIrrDeviceConsole::run()
 			e.MouseInput.Y     = in.Event.MouseEvent.dwMousePosition.Y;
 			e.MouseInput.Wheel = 0.f;
 			e.MouseInput.ButtonStates =
-				( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) ? EMBSM_LEFT   : 0 ) |
-				( (in.Event.MouseEvent.dwButtonState & RIGHTMOST_BUTTON_PRESSED)     ? EMBSM_RIGHT  : 0 ) |
-				( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_2ND_BUTTON_PRESSED) ? EMBSM_MIDDLE : 0 ) |
-				( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_3RD_BUTTON_PRESSED) ? EMBSM_EXTRA1 : 0 ) |
-				( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_4TH_BUTTON_PRESSED) ? EMBSM_EXTRA2 : 0 );
+			    ( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) ? EMBSM_LEFT   : 0 ) |
+			    ( (in.Event.MouseEvent.dwButtonState & RIGHTMOST_BUTTON_PRESSED)     ? EMBSM_RIGHT  : 0 ) |
+			    ( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_2ND_BUTTON_PRESSED) ? EMBSM_MIDDLE : 0 ) |
+			    ( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_3RD_BUTTON_PRESSED) ? EMBSM_EXTRA1 : 0 ) |
+			    ( (in.Event.MouseEvent.dwButtonState & FROM_LEFT_4TH_BUTTON_PRESSED) ? EMBSM_EXTRA2 : 0 );
 
 			if (in.Event.MouseEvent.dwEventFlags & MOUSE_MOVED)
 			{
@@ -296,8 +296,8 @@ bool CIrrDeviceConsole::run()
 		}
 		case WINDOW_BUFFER_SIZE_EVENT:
 			VideoDriver->OnResize(
-				core::dimension2d<u32>(in.Event.WindowBufferSizeEvent.dwSize.X,
-				                       in.Event.WindowBufferSizeEvent.dwSize.Y));
+			    core::dimension2d<u32>(in.Event.WindowBufferSizeEvent.dwSize.X,
+			        in.Event.WindowBufferSizeEvent.dwSize.Y));
 			break;
 		case FOCUS_EVENT:
 			IsWindowFocused = (in.Event.FocusEvent.bSetFocus == TRUE);
@@ -324,7 +324,7 @@ void CIrrDeviceConsole::yield()
 #ifdef _IRR_WINDOWS_API_
 	Sleep(1);
 #else
-	struct timespec ts = {0,0};
+	struct timespec ts = {0, 0};
 	nanosleep(&ts, NULL);
 #endif
 }
@@ -384,34 +384,34 @@ bool CIrrDeviceConsole::present(video::IImage* surface, void* windowId, core::re
 
 	if (surface)
 	{
-		for (u32 y=0; y < surface->getDimension().Height; ++y)
+		for (u32 y = 0; y < surface->getDimension().Height; ++y)
 		{
-			for (u32 x=0; x< surface->getDimension().Width; ++x)
+			for (u32 x = 0; x < surface->getDimension().Width; ++x)
 			{
 				// get average pixel
-				u32 avg = surface->getPixel(x,y).getAverage() * (ASCIIArtCharsCount-1);
+				u32 avg = surface->getPixel(x, y).getAverage() * (ASCIIArtCharsCount - 1);
 				avg /= 255;
 				OutputBuffer[y] [x] = ASCIIArtChars[avg];
 			}
 		}
 	}
 #ifdef _IRR_USE_CONSOLE_FONT_
-	for (u32 i=0; i< Text.size(); ++i)
+	for (u32 i = 0; i < Text.size(); ++i)
 	{
 		s32 y = Text[i].Pos.Y;
 
 		if ( y < (s32)OutputBuffer.size() && y > 0)
-			for (u32 c=0; c < Text[i].Text.size() && c + Text[i].Pos.X < OutputBuffer[y].size(); ++c)
+			for (u32 c = 0; c < Text[i].Text.size() && c + Text[i].Pos.X < OutputBuffer[y].size(); ++c)
 				//if (Text[i].Text[c] != ' ')
-				OutputBuffer[y] [c+Text[i].Pos.X] = Text[i].Text[c];
+				OutputBuffer[y] [c + Text[i].Pos.X] = Text[i].Text[c];
 	}
 	Text.clear();
 #endif
 
 	// draw output
-	for (u32 y=0; y<OutputBuffer.size(); ++y)
+	for (u32 y = 0; y < OutputBuffer.size(); ++y)
 	{
-		setTextCursorPos(0,y);
+		setTextCursorPos(0, y);
 		fprintf(OutFile, "%s", OutputBuffer[y].c_str());
 	}
 	return surface != 0;
@@ -458,9 +458,9 @@ void CIrrDeviceConsole::setTextCursorPos(s16 x, s16 y)
 #ifdef _IRR_WINDOWS_NT_CONSOLE_
 	// move WinNT cursor
 	COORD Position;
-    Position.X = x;
-    Position.Y = y;
-    SetConsoleCursorPosition(WindowsSTDOut, Position);
+	Position.X = x;
+	Position.Y = y;
+	SetConsoleCursorPosition(WindowsSTDOut, Position);
 #elif defined(_IRR_VT100_CONSOLE_)
 	// send escape code
 	fprintf(OutFile, "%c[%d;%dH", 27, y, x);
