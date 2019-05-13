@@ -631,7 +631,14 @@ io::path CFileSystem::getAbsolutePath(const io::path& filename) const
 	c8* p = 0;
 	c8 fpath[4096];
 	fpath[0] = 0;
-	p = realpath(filename.c_str(), fpath);
+#ifdef _IRR_COMPILE_WITH_QGLFUNCTIONS_
+	if ( filename[0] == ':' ) // i'ts look like file from qrc resources
+	{
+		return io::path(filename);
+	}
+	else
+#endif
+		p = realpath(filename.c_str(), fpath);
 	if (!p)
 	{
 		// content in fpath is unclear at this point

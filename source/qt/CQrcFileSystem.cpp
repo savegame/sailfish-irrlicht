@@ -10,10 +10,14 @@ namespace io
 
 
 CQrcReadFile::CQrcReadFile(const io::path &fileName, CQrcFileSystem *fileSystem)
-	: IReadFile()
+	: CReadFile(fileName)
 	, ReadFile(NULL)
 	, FileSystem(fileSystem)
 {
+	// check, if irrlicht allready loda this file
+	if (isOpen())
+		return;
+
 	QString qpath = QString::fromUtf8(fileName.c_str());
 
 	QFile file( qpath );
@@ -34,9 +38,7 @@ CQrcReadFile::CQrcReadFile(const io::path &fileName, CQrcFileSystem *fileSystem)
 	}
 	if ( !ok )
 	{
-//		os::Printer::log("IrrlichtQrcResources::createReadFile",
-//		    QString("Resource \"%0\" not found!.").arg(path.c_str()).toLocal8Bit().data()
-//		    , irr::ELL_WARNING );
+		// noop
 		return;
 	}
 	ByteArray = file.readAll();
@@ -45,7 +47,8 @@ CQrcReadFile::CQrcReadFile(const io::path &fileName, CQrcFileSystem *fileSystem)
 
 CQrcReadFile::~CQrcReadFile()
 {
-	ReadFile->drop();
+	if (ReadFile)
+		ReadFile->drop();
 }
 
 size_t CQrcReadFile::read(void *buffer, size_t sizeToRead)
@@ -95,7 +98,7 @@ irr::io::IReadFile *irr::io::CQrcFileSystem::createAndOpenFile(const irr::io::pa
 	if ( f->getSize() > 0 )
 		return f;
 	f->drop();
-	return NULL;
+	return CFileSystem::createAndOpenFile(filename);
 }
 
 

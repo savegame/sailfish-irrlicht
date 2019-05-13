@@ -12,7 +12,7 @@ namespace io
 {
 class CQrcFileSystem;
 
-class CQrcReadFile : public IReadFile
+class CQrcReadFile : public CReadFile
 {
 public:
 	CQrcReadFile(const io::path& fileName, CQrcFileSystem *fileSystem);
