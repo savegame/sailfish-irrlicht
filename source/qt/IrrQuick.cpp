@@ -9,32 +9,33 @@ using namespace video;
 using namespace core;
 
 IrrQuickItem::IrrQuickItem(QQuickItem *parent)
-    : QQuickItem(parent)
-    , m_t(0)
-    , m_renderer(nullptr)
+	: QQuickItem(parent)
+	, m_t(0)
+	, m_renderer(nullptr)
 {
+	Q_INIT_RESOURCE(resources);
 	connect( this, &QQuickItem::windowChanged, this, &IrrQuickItem::handleWindowChanged );
 }
 
 void IrrQuickItem::setT(qreal t)
 {
-	if( t == m_t )
+	if ( t == m_t )
 		return;
 	m_t = t;
 	emit tChanged();
-	if(window())
+	if (window())
 		window()->update();
 }
 
 void IrrQuickItem::loadExample(int index)
 {
-	if(m_renderer)
+	if (m_renderer)
 		m_renderer->loadExample(index);
 }
 
 void IrrQuickItem::sync()
 {
-	if(!m_renderer)
+	if (!m_renderer)
 	{
 		m_renderer = new GLRenderer();
 		connect( window(), &QQuickWindow::beforeRendering, m_renderer, &GLRenderer::paint, Qt::DirectConnection );
@@ -46,7 +47,7 @@ void IrrQuickItem::sync()
 
 void IrrQuickItem::cleanup()
 {
-	if(m_renderer)
+	if (m_renderer)
 	{
 		delete m_renderer;
 		m_renderer = nullptr;
@@ -55,7 +56,7 @@ void IrrQuickItem::cleanup()
 
 void IrrQuickItem::handleWindowChanged(QQuickWindow *window)
 {
-	if(window)
+	if (window)
 	{
 		connect(window, &QQuickWindow::beforeSynchronizing, this, &IrrQuickItem::sync, Qt::DirectConnection );
 		connect(window, &QQuickWindow::sceneGraphInvalidated, this, &IrrQuickItem::cleanup, Qt::DirectConnection );
@@ -67,29 +68,29 @@ void IrrQuickItem::touchEvent(QTouchEvent *e)
 {
 	// Save mouse press position
 	//    mousePressPosition =
-	if(!m_renderer)
+	if (!m_renderer)
 		return;
-	
+
 	const QList<QTouchEvent::TouchPoint> points = e->touchPoints();
-	
+
 	int count = points.size();
-	if(count = 1)
+	if (count = 1)
 	{
 		QTouchEvent::TouchPoint current = *points.begin();
-		
+
 		//        m_renderer->m_angularSpeed
-		switch(current.state())
+		switch (current.state())
 		{
 		case Qt::TouchPointPressed:
 			m_pressPos = current.pos();
 			break;
 		case Qt::TouchPointMoved:
-			
+
 			break;
 		case Qt::TouchPointStationary:
 			break;
 		case Qt::TouchPointReleased:
-			
+
 			break;
 		}
 	}
@@ -102,7 +103,7 @@ void IrrQuickItem::mousePressEvent(QMouseEvent *e)
 
 void IrrQuickItem::mouseReleaseEvent(QMouseEvent *e)
 {
-	
+
 }
 
 void IrrQuickItem::keyPressEvent(QKeyEvent *e)
@@ -136,7 +137,7 @@ SIrrlichtKey convertToIrrlichtKey( int key )
 	else
 
 		// Dang, map keys individually
-		switch( key )
+		switch ( key )
 		{
 		case Qt::Key_Up:
 			irrKey.code = irr::KEY_UP;
@@ -173,7 +174,7 @@ void IrrQuickItem::sendKeyEventToIrrlicht(QKeyEvent *event, bool pressedDown)
 	irrEvent.KeyInput.Char = irrKey.ch;
 	irrEvent.KeyInput.PressedDown = pressedDown;
 
-	if(m_renderer && m_renderer->m_device)
+	if (m_renderer && m_renderer->m_device)
 		m_renderer->m_device->postEventFromUser( irrEvent );
 }
 
@@ -184,10 +185,10 @@ struct VertexData
 };
 
 GLRenderer::GLRenderer(QObject *parent)
-    : QObject(parent)
-    , m_t(0)
-    , m_device(nullptr)
-    , m_driver(nullptr)
+	: QObject(parent)
+	, m_t(0)
+	, m_device(nullptr)
+	, m_driver(nullptr)
 {
 	init = &GLRenderer::_first_init;
 	//    m_rotation = 0;
@@ -202,15 +203,15 @@ void GLRenderer::setViewportSize(const QSize &size)
 {
 	//	return;
 	m_viewportSize = size;
-	if(!m_device)
+	if (!m_device)
 		return;
-	if(m_device->getSceneManager()->getActiveCamera())
-		m_device->getSceneManager()->getActiveCamera()->setAspectRatio((float)size.width()/(float)size.height());
+	if (m_device->getSceneManager()->getActiveCamera())
+		m_device->getSceneManager()->getActiveCamera()->setAspectRatio((float)size.width() / (float)size.height());
 }
 
 void GLRenderer::createCube()
 {
-	if(!m_device)
+	if (!m_device)
 		return;
 	scene::ISceneManager *scene = m_device->getSceneManager();
 	video::IVideoDriver *driver = m_device->getVideoDriver();
@@ -218,38 +219,40 @@ void GLRenderer::createCube()
 	io::path p = _MEDIA_PATH;
 	p += "irrlicht2_lf.jpg";
 	video::ITexture *texture = driver->getTexture(p);
-	if(texture)
-		cube->setMaterialTexture(0,texture);
+	if (texture)
+		cube->setMaterialTexture(0, texture);
 
-	if(scene->getActiveCamera() == NULL)
+	if (scene->getActiveCamera() == NULL)
 	{
 		scene::ICameraSceneNode *cam = scene->addCameraSceneNode();
-		cam->setPosition( core::vector3df(-5,0,0) );
+		cam->setPosition( core::vector3df(-5, 0, 0) );
 		cam->setTarget(cube->getPosition());
 	}
-	
-	scene::ISceneNodeAnimator *anim = scene->createRotationAnimator( core::vector3df(1.0,1.0,0) );
+
+	scene::ISceneNodeAnimator *anim = scene->createRotationAnimator( core::vector3df(1.0, 1.0, 0) );
 	cube->addAnimator(anim);
 	anim->drop();
 
-	cube = scene->addBillboardSceneNode(NULL, core::dimension2df(3,3) );
+	cube = scene->addBillboardSceneNode(NULL, core::dimension2df(3, 3) );
 	cube->setMaterialType(EMT_TRANSPARENT_ALPHA_CHANNEL);
-	cube->setMaterialTexture(0,texture);
+	cube->setMaterialTexture(0, texture);
 }
 
 void GLRenderer::setCamera()
 {
-	
+
 }
 
 void GLRenderer::loadExample(int index)
 {
-	if(!clear_scene()) {
+	if (!clear_scene())
+	{
 		init = &GLRenderer::_empty_init;
 		return;
 	}
 
-	switch (index) {
+	switch (index)
+	{
 	case 1:
 		init = &GLRenderer::_load_example_1;
 		break;
@@ -270,7 +273,7 @@ void GLRenderer::_first_init()
 {
 	initializeOpenGLFunctions();
 	irr::SIrrlichtCreationParameters params;
-	
+
 	params.DriverType = EDT_QOGLDUNCTIONS;//driverType;
 	params.DeviceType = EIDT_CONSOLE;
 	params.WindowId = NULL;
@@ -287,17 +290,17 @@ void GLRenderer::_first_init()
 	params.OGLES2ShaderPath += "media/Shaders/";
 	params.Vsync = false;
 	params.qOpenGLFunctions = this;
-	
+
 	m_device = createDeviceEx(params);
 	m_driver = (CQGLFunctionsDriver*)m_device->getVideoDriver();
 	createCube();
-	
+
 	init = &GLRenderer::_empty_init;
 }
 
 bool GLRenderer::clear_scene()
 {
-	if(!m_device)
+	if (!m_device)
 		return  false;
 	m_device->getSceneManager()->clear();
 	m_device->getGUIEnvironment()->clear();
@@ -318,7 +321,7 @@ void GLRenderer::_load_example_1()
 	IGUIEnvironment* guienv = m_device->getGUIEnvironment();
 
 	guienv->addStaticText(L"Hello World! This is Irrlicht with the burnings software renderer!",
-	    rect<s32>(10,10,260,22), true);
+	    rect<s32>(10, 10, 260, 22), true);
 
 	const io::path mediaPath =  getExampleMediaPath();
 
@@ -339,7 +342,7 @@ void GLRenderer::_load_example_1()
 		node->setMaterialTexture( 0, driver->getTexture(mediaPath + "sydney.bmp") );
 	}
 
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+	smgr->addCameraSceneNode(0, vector3df(0, 30, -40), vector3df(0, 5, 0));
 	/** end example 1 */
 
 	/** set epmty fuctions pointer */
@@ -360,9 +363,9 @@ void GLRenderer::_load_example_2()
 //		node = smgr->addMeshSceneNode(mesh->getMesh(0));
 
 	if (node)
-		node->setPosition(core::vector3df(-1300,-144,-1249));
+		node->setPosition(core::vector3df(-1300, -144, -1249));
 
-	smgr->addCameraSceneNodeFPS(0,1.0f);
+	smgr->addCameraSceneNodeFPS(0, 1.0f);
 
 	/*
 	The mouse cursor needs not be visible, so we hide it via the
@@ -386,15 +389,15 @@ void GLRenderer::_load_example_11()
 
 	// add irrlicht logo
 	env->addImage(driver->getTexture(mediaPath + "irrlichtlogo3.png"),
-	    core::position2d<s32>(10,10));
+	    core::position2d<s32>(10, 10));
 
 	// add camera
 	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS();
-	camera->setPosition(core::vector3df(-200,200,-200));
+	camera->setPosition(core::vector3df(-200, 200, -200));
 
 	// disable mouse cursor
 //	m_device->getCursorControl()->setVisible(false);
-	driver->setFog(video::SColor(0,138,125,81), video::EFT_FOG_LINEAR, 250, 1000, .003f, true, false);
+	driver->setFog(video::SColor(0, 138, 125, 81), video::EFT_FOG_LINEAR, 250, 1000, .003f, true, false);
 
 	scene::IAnimatedMesh* roomMesh = smgr->getMesh(mediaPath + "room.3ds");
 	scene::ISceneNode* room = 0;
@@ -403,28 +406,28 @@ void GLRenderer::_load_example_11()
 	if (roomMesh)
 	{
 		smgr->getMeshManipulator()->makePlanarTextureMapping(
-		        roomMesh->getMesh(0), 0.003f);
+		    roomMesh->getMesh(0), 0.003f);
 
 		video::ITexture* normalMap =
 		    driver->getTexture(mediaPath + "rockwall_height.bmp");
 
 		if (normalMap)
 			driver->makeNormalMapTexture(normalMap, 9.0f);
-/*
-		// The Normal Map and the displacement map/height map in the alpha channel
-		video::ITexture* normalMap =
-			driver->getTexture(mediaPath + "rockwall_NRM.tga");
-*/
+		/*
+				// The Normal Map and the displacement map/height map in the alpha channel
+				video::ITexture* normalMap =
+					driver->getTexture(mediaPath + "rockwall_NRM.tga");
+		*/
 		scene::IMesh* tangentMesh = smgr->getMeshManipulator()->
-		        createMeshWithTangents(roomMesh->getMesh(0));
+		    createMeshWithTangents(roomMesh->getMesh(0));
 
 		room = smgr->addMeshSceneNode(tangentMesh);
 		room->setMaterialTexture(0,
-		        driver->getTexture(mediaPath + "rockwall.jpg"));
+		    driver->getTexture(mediaPath + "rockwall.jpg"));
 		room->setMaterialTexture(1, normalMap);
 
 		// Stones don't glitter..
-		room->getMaterial(0).SpecularColor.set(0,0,0,0);
+		room->getMaterial(0).SpecularColor.set(0, 0, 0, 0);
 		room->getMaterial(0).Shininess = 0.f;
 
 		room->setMaterialFlag(video::EMF_FOG_ENABLE, true);
@@ -451,12 +454,12 @@ void GLRenderer::_load_example_11()
 
 		// scale the mesh by factor 50
 		core::matrix4 m;
-		m.setScale ( core::vector3df(50,50,50) );
+		m.setScale ( core::vector3df(50, 50, 50) );
 		manipulator->transform( tangentSphereMesh, m );
 
 		earth = smgr->addMeshSceneNode(tangentSphereMesh);
 
-		earth->setPosition(core::vector3df(-70,130,45));
+		earth->setPosition(core::vector3df(-70, 130, 45));
 
 		// load heightmap, create normal map from it and set it
 		video::ITexture* earthNormalMap = driver->getTexture(mediaPath + "earthbump.jpg");
@@ -472,7 +475,7 @@ void GLRenderer::_load_example_11()
 
 		// add rotation animator
 		scene::ISceneNodeAnimator* anim =
-		    smgr->createRotationAnimator(core::vector3df(0,0.1f,0));
+		    smgr->createRotationAnimator(core::vector3df(0, 0.1f, 0));
 		earth->addAnimator(anim);
 		anim->drop();
 
@@ -481,12 +484,12 @@ void GLRenderer::_load_example_11()
 	}
 
 	scene::ILightSceneNode* light1 =
-	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
-	    video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 800.0f);
+	    smgr->addLightSceneNode(0, core::vector3df(0, 0, 0),
+	        video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 800.0f);
 
 	// add fly circle animator to light 1
 	scene::ISceneNodeAnimator* anim =
-	    smgr->createFlyCircleAnimator (core::vector3df(50,300,0),190.0f, -0.003f);
+	    smgr->createFlyCircleAnimator (core::vector3df(50, 300, 0), 190.0f, -0.003f);
 	light1->addAnimator(anim);
 	anim->drop();
 
@@ -501,11 +504,11 @@ void GLRenderer::_load_example_11()
 
 	// add light 2 (red)
 	scene::ISceneNode* light2 =
-	    smgr->addLightSceneNode(0, core::vector3df(0,0,0),
-	    video::SColorf(1.0f, 0.2f, 0.2f, 0.0f), 800.0f);
+	    smgr->addLightSceneNode(0, core::vector3df(0, 0, 0),
+	        video::SColorf(1.0f, 0.2f, 0.2f, 0.0f), 800.0f);
 
 	// add fly circle animator to light 2
-	anim = smgr->createFlyCircleAnimator(core::vector3df(0,150,0), 200.0f,
+	anim = smgr->createFlyCircleAnimator(core::vector3df(0, 150, 0), 200.0f,
 	        0.001f, core::vector3df(0.2f, 0.9f, 0.f));
 	light2->addAnimator(anim);
 	anim->drop();
@@ -523,11 +526,11 @@ void GLRenderer::_load_example_11()
 
 	// create and set emitter
 	scene::IParticleEmitter* em = ps->createBoxEmitter(
-	    core::aabbox3d<f32>(-3,0,-3,3,1,3),
-	    core::vector3df(0.0f,0.03f,0.0f),
-	    80,100,
-	    video::SColor(10,255,255,255), video::SColor(10,255,255,255),
-	    400,1100);
+	        core::aabbox3d<f32>(-3, 0, -3, 3, 1, 3),
+	        core::vector3df(0.0f, 0.03f, 0.0f),
+	        80, 100,
+	        video::SColor(10, 255, 255, 255), video::SColor(10, 255, 255, 255),
+	        400, 1100);
 	em->setMinStartSize(core::dimension2d<f32>(30.0f, 40.0f));
 	em->setMaxStartSize(core::dimension2d<f32>(30.0f, 40.0f));
 
@@ -556,7 +559,7 @@ void GLRenderer::paint()
 //	m_driver->setMaterial(IdentityMaterial);
 //	/*m_window->openglContext()->functions()->*/glUseProgram( 0 );
 	m_device->run();
-	m_device->getVideoDriver()->beginScene(true,true, SColor(255,140,140,200) );
+	m_device->getVideoDriver()->beginScene(true, true, SColor(255, 140, 140, 200) );
 	m_device->getSceneManager()->drawAll();
 	m_device->getGUIEnvironment()->drawAll();
 	m_device->getVideoDriver()->endScene();

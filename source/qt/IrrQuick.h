@@ -24,14 +24,14 @@ class IrrQuickItem : public QQuickItem
 	Q_PROPERTY(qreal t READ t WRITE setT NOTIFY tChanged)
 public:
 	IrrQuickItem(QQuickItem *parent = nullptr);
-	
+
 	qreal t() const { return m_t; }
 	void setT(qreal t);
 
 	Q_INVOKABLE void loadExample(int index);
 signals:
 	void tChanged();
-	
+
 public slots:
 	void sync();
 	void cleanup();
@@ -55,41 +55,41 @@ private:
 class GLRenderer : public QObject, protected QOpenGLFunctions
 {
 	Q_OBJECT
-	
+
 	friend class IrrQuickItem;
 public:
 	explicit GLRenderer(QObject *parent = 0);
-	
+
 	~GLRenderer();
-	
+
 	void setT(qreal t) {m_t = t;}
 	void setViewportSize(const QSize &size);
 	void setWindow(QQuickWindow *window) { m_window = window; }
-	
+
 	typedef void (GLRenderer::*initFunc)();
 	initFunc init;
-	
-	
+
+
 	void createCube();
 	void setCamera();
 
 	Q_INVOKABLE void loadExample(int index);
-	
+
 protected:
 	void _first_init();
 	void _empty_init() {}
 
 	bool clear_scene();
 	const io::path getExampleMediaPath();
-	
+
 	void _load_example_1();
 	void _load_example_2();
 	void _load_example_11();
 signals:
-	
+
 public slots:
 	void paint();
-	
+
 private:
 	qreal                   m_angularSpeed;
 	qreal                   m_t;

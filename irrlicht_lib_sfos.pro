@@ -5,11 +5,11 @@ TARGET = irrlicht
 DESTDIR = $$OUT_PWD/../../lib
 
 CONFIG += warn_off qt
-#staticlib
+#CONFIG += staticlib
 QT += core quick
 CONFIG += wayland-compositor link_pkgconfig
 #QT += compositor widgets core quick
-
+QMAKE_CXXFLAGS += -fPIC
 INCLUDEPATH += /usr/include/qt5/QtWaylandClient/5.4.0
 INCLUDEPATH += third_party/wayland
 
@@ -51,7 +51,7 @@ osx: {
     DEFINES += _IRR_OSX_PLATFORM_
 }
 
-ios | sailfish: {
+ios | sailfish | android: {
     DEFINES += GLES2_PLATFORM=1
 }
 
@@ -88,29 +88,9 @@ include(source/Irrlicht/bzip2/bzip2.pri)
 include(source/Irrlicht/zlib/zlib.pri)
 DEFINES += IRRLICHT_EXPORTS
 
-#SOURCES += main.cpp
-#SOURCES +=  examples/02.Quake3Map/main.cpp \
-#SOURCES =  examples/05.UserInterface/main.cpp
-#SOURCES += examples/16.Quake3MapShader/main.cpp
-
-#HEADERS += examples/Demo/CDemo.h
-
-#SOURCES += examples/Demo/CDemo.cpp \
-#           examples/Demo/main.cpp
-
-#DEFINES += USE_SDL_MIXER
-#DEFINES += _IRR_SAILFISH_USE_RENDER_TARGET
-
-#    waylandtest_main.cpp
-#    examples/07.Collision/main.cpp \
-#    examples/07.Collision/irrapp.cpp
-#SOURCES += examples/13.RenderToTexture/main.cpp
-
 DISTFILES += \
-#    rpm/irrlicht-sailfish.yaml \
-#    irrlicht.png \
-#    irrlicht.desktop \
-#    rpm/irrlicht.spec \
     media/Shaders/DFGLES2Screen.vsh \
     media/Shaders/DFGLES2Screen.fsh
 
+RESOURCES += \
+    resources.qrc
