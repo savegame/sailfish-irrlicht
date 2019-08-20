@@ -94,3 +94,14 @@ DISTFILES += \
 
 RESOURCES += \
     resources.qrc
+    
+ADD_FILES=""
+android|sailfish {
+ADD_FILES = media/Shaders/gles2/DFGLES2Screen.vsh
+ADD_FILES += media/Shaders/gles2/DFGLES2Screen.fsh
+} else {
+ADD_FILES = media/Shaders/desktop/DFGLES2Screen.vsh
+ADD_FILES += media/Shaders/desktop/DFGLES2Screen.fsh
+}
+
+DISTFILES += $$ADD_FILES
