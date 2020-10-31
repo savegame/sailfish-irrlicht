@@ -2626,7 +2626,10 @@ s32 CQGLFunctionsDriver::addHighLevelShaderMaterial(
 QByteArray CQGLFunctionsDriver::createReadFile(const io::path &path)
 {
 	QString qpath = QString::fromUtf8(path.c_str());
-
+	
+	if( qpath.isEmpty() )
+		return QByteArray();
+	
 	QFile file( qpath );
 	bool ok = false;
 	if ( qpath.indexOf(":/") == -1 )

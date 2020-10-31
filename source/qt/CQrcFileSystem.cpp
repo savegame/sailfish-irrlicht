@@ -19,6 +19,11 @@ CQrcReadFile::CQrcReadFile(const io::path &fileName, CQrcFileSystem *fileSystem)
 		return;
 
 	QString qpath = QString::fromUtf8(fileName.c_str());
+	
+	if( qpath.isEmpty() )
+	{
+		return;
+	}
 
 	QFile file( qpath );
 	bool ok = false;
