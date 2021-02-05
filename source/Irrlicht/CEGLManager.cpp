@@ -65,6 +65,11 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 #elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
 	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLLinux.X11Display);
+#elif defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+	EglWindow = (NativeWindowType)Data.OGLES_SDL.nativeWindow;
+	// EglDisplay = (NativeDisplayType)Data.OGLES_SDL.nativeDisplay;
+	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OGLES_SDL.nativeDisplay);
+	// nativeDisplay = (NativeDisplayType)Data.OGLES_SDL.nativeDisplay;
 #elif defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
 	EglWindow =	(ANativeWindow*)Data.OGLESAndroid.Window;
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -162,8 +167,8 @@ bool CEGLManager::generateSurface()
 		EGL_ALPHA_SIZE, Params.WithAlphaChannel ? 1:0,
 		EGL_BUFFER_SIZE, Params.Bits,
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_DEPTH_SIZE, Params.ZBufferBits,
-		EGL_STENCIL_SIZE, Params.Stencilbuffer,
+		EGL_DEPTH_SIZE, 24,//Params.ZBufferBits,
+		EGL_STENCIL_SIZE, 8,//Params.Stencilbuffer,
 		EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
 		EGL_SAMPLES, Params.AntiAlias,
 #ifdef EGL_VERSION_1_3
@@ -175,6 +180,17 @@ bool CEGLManager::generateSurface()
 	EglConfig = 0;
 	EGLint NumConfigs = 0;
 	u32 Steps = 5;
+
+	if (!eglChooseConfig(EglDisplay, Attribs, NULL, 0, &NumConfigs) || NumConfigs<=0) {
+        printf("Cannot find an EGL config.\n");
+		return false;
+    }
+
+    EGLConfig *configs = (EGLConfig *)malloc(sizeof(EGLConfig) * NumConfigs);
+    if (!eglChooseConfig(EglDisplay, Attribs, configs, NumConfigs, &NumConfigs) || NumConfigs<=0) {
+        printf("Cannot find an EGL config.\n");
+        return false;
+    }
 
 	// Choose the best EGL config.
 	while (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 1, &NumConfigs) || !NumConfigs)
@@ -268,8 +284,24 @@ bool CEGLManager::generateSurface()
 	// Now we are able to create EGL surface.
 	EglSurface = eglCreateWindowSurface(EglDisplay, EglConfig, EglWindow, 0);
 
-	if (EGL_NO_SURFACE == EglSurface)
+	if (EGL_NO_SURFACE == EglSurface) {
+		EGLint error = eglGetError();
+		core::stringc error_msg = core::stringc(error);
+		# define case_error(x) case x: error_msg = (#x); break;
+		switch(error) {
+		// case_error(EGL_NO_SURFACE)
+		case_error(EGL_BAD_DISPLAY)
+		case_error(EGL_NOT_INITIALIZED)
+		case_error(EGL_BAD_CONFIG)
+		case_error(EGL_BAD_NATIVE_WINDOW)
+		case_error(EGL_BAD_ATTRIBUTE)
+		case_error(EGL_BAD_ALLOC)
+		case_error(EGL_BAD_MATCH)
+			break;
+		}
+		os::Printer::log( (core::stringc("EGLError: ") + error_msg).c_str(), ELL_ERROR );
 		EglSurface = eglCreateWindowSurface(EglDisplay, EglConfig, 0, 0);
+	}
 
 	if (EGL_NO_SURFACE == EglSurface)
 		os::Printer::log("Could not create EGL surface.");

@@ -20,9 +20,14 @@
 #include <emscripten/html5.h>
 #endif
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
-
+#ifdef SAILFISH
+#include <SDL.h>
+#include <SDL_syswm.h>
+#include <SDL_video.h>
+#else
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
+#endif
 namespace irr
 {
 
@@ -152,7 +157,9 @@ namespace irr
 			//! Sets the new position of the cursor.
 			virtual void setPosition(s32 x, s32 y) _IRR_OVERRIDE_
 			{
-				SDL_WarpMouse( x, y );
+// #ifndef SAILFISH
+// 				SDL_WarpMouse( x, y );
+// #endif
 			}
 
 			//! Returns the current position of the mouse cursor.
@@ -232,8 +239,12 @@ namespace irr
 		bool createWindow();
 
 		void createKeyMap();
-
-		SDL_Surface* Screen;
+// #ifndef SAILFISH
+		// SDL_Surface* Screen;
+// #else
+		SDL_Window * Window;
+		SDL_Surface* Surface;
+// #endif
 		int SDL_Flags;
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 		core::array<SDL_Joystick*> Joysticks;

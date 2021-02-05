@@ -67,7 +67,7 @@ COGLES2Driver::COGLES2Driver(const SIrrlichtCreationParameters& params, io::IFil
 		getProfiler().add(EPID_ES2_DRAW_SHADOW, L"shadows", L"ES2");
 	}
 	)
-	return;
+	// return;
 	if (!ContextManager)
 		return;
 	

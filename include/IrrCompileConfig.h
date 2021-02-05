@@ -170,7 +170,7 @@
 # endif
 # define _IRR_POSIX_API_
 # ifndef NO_IRR_COMPILE_WITH_X11_DEVICE_
-#  define _IRR_COMPILE_WITH_X11_DEVICE_
+// #  define _IRR_COMPILE_WITH_X11_DEVICE_
 # else
 #  undef _IRR_COMPILE_WITH_X11_DEVICE_
 # endif

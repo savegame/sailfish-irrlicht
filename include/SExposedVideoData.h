@@ -110,6 +110,16 @@ struct SExposedVideoData
     };
 #endif
 
+	struct SOGLESSDL 
+	{
+		void* Surface;
+        void* Window;
+        void* Display;
+		void* Context;
+		void* nativeDisplay;
+		void* nativeWindow;
+	};
+
 #ifdef _IRR_COMPILE_WITH_QML_RENDER
 	struct SQML_GLContext 
 	{
@@ -126,6 +136,7 @@ struct SExposedVideoData
 		SOpenGLFB OpenGLFB;
 		SOpenGLiOS OpenGLiOS;
 		SOGLESAndroid OGLESAndroid;
+		SOGLESSDL  OGLES_SDL;
 #ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
 		SOGLESWayland OGLESWayland;
 #endif

@@ -549,6 +549,18 @@ bool CIrrDeviceLinux::createWindow()
 
 	// create an XImage for the software renderer
 	//(thx to Nadav for some clues on how to do that!)
+#if defined(_IRR_COMPILE_WITH_OGLES2_)
+	if(CreationParams.DriverType == video::EDT_OGLES2)
+	{
+		video::SExposedVideoData data;
+		data.OpenGLLinux.X11Display = XDisplay;
+		data.OpenGLLinux.X11Window = XWindow;
+		ContextManager = new video::CEGLManager();
+		// SExposedVideoData vdata;
+		ContextManager->initialize(CreationParams, data);
+		// VisualInfo = ((video::CEGLManager*)ContextManager)->getVisual();
+	}
+#endif
 
 	if (CreationParams.DriverType == video::EDT_SOFTWARE || CreationParams.DriverType == video::EDT_BURNINGSVIDEO)
 	{
