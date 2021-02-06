@@ -276,7 +276,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	if (CreationParams.DriverType != video::EDT_NULL)
 	{
 		// create the window, only if we do not use the null device
-		createWindow();
+		// createWindow();
 	}
 
 	// create cursor control
@@ -327,128 +327,109 @@ bool CIrrDeviceSDL::createWindow()
 	if ( Close )
 		return false;
 	const char *title = "Irrlicht + SDL2";
-// #ifdef SAILFISH
+
 	if (CreationParams.DriverType == video::EDT_OGLES2 || CreationParams.DriverType == video::EDT_OPENGL)
-// #else
-	// if (CreationParams.DriverType == video::EDT_OPENGL)
-// #endif
 	{
-// #ifdef SAILFISH
-		// get resolution
-		Window = SDL_CreateWindow(title,
-		                          SDL_WINDOWPOS_UNDEFINED,
-		                          SDL_WINDOWPOS_UNDEFINED,
-		                          128, 128,
-		                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		SDL_DisplayMode dm;
 		SDL_GetDesktopDisplayMode(0,&dm);
-		SDL_SetWindowSize( Window, dm.w, dm.h );
+
 		WindowHasFocus = true;
 		WindowMinimized = false;
-		Width = dm.w;
-		Height = dm.h;
-		CreationParams.WindowSize.Width = Width;
-		CreationParams.WindowSize.Height = Height;
-		SDL_DestroyWindow(Window);
-		Window = nullptr;
-// #endif
-		if (CreationParams.Bits==16)
-		{
-			SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 4 );
-			SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 4 );
-			SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 4 );
-			SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, CreationParams.WithAlphaChannel?1:0 );
-		}
-		else
-		{
-			SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
-			SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
-			SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
-			SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-			SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
-			SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, CreationParams.WithAlphaChannel?8:0 );
-		}
-		// SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, CreationParams.ZBufferBits);
-		if (CreationParams.Doublebuffer)
-			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-		if (CreationParams.Stereobuffer)
-			SDL_GL_SetAttribute( SDL_GL_STEREO, 1 );
-		if (CreationParams.AntiAlias>1)
-		{
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
-		}
-		if ( !Window )
-// #ifndef SAILFISH
-			// Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
-// #else // SDL2 on Sailfish
-			Window = SDL_CreateWindow(title,
-			                          SDL_WINDOWPOS_UNDEFINED,
-			                          SDL_WINDOWPOS_UNDEFINED,
-			                          Width, Height,
-			                          SDL_Flags | SDL_WINDOW_RESIZABLE);
-// #endif
-		if ( !Window && CreationParams.AntiAlias>1)
-		{
-			while (--CreationParams.AntiAlias>1)
-			{
-				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
-// #ifndef SAILFISH
-// 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
-// #else
-				Window = SDL_CreateWindow(title,
-				                          SDL_WINDOWPOS_UNDEFINED,
-				                          SDL_WINDOWPOS_UNDEFINED,
-				                          Width, Height,
-				                          SDL_Flags| SDL_WINDOW_RESIZABLE);
-// #endif
-				if (Window)
-					break;
-			}
-			if ( !Window )
-			{
-				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
-				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
-// #ifndef SAILFISH
-// 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
-// #else
-				Window = SDL_CreateWindow(title,
-				                          SDL_WINDOWPOS_UNDEFINED,
-				                          SDL_WINDOWPOS_UNDEFINED,
-				                          Width, Height,
-				                          SDL_Flags| SDL_WINDOW_RESIZABLE);
-// #endif
-				if (Window)
-					os::Printer::log("AntiAliasing disabled due to lack of support!" );
-			}
-		}
-	}
-	else if ( !Window )
-// #ifndef SAILFISH
-// 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
-// #else
-		Window = SDL_CreateWindow(title,
-		                          SDL_WINDOWPOS_UNDEFINED,
-		                          SDL_WINDOWPOS_UNDEFINED,
-		                          Width, Height,
-		                          SDL_Flags| SDL_WINDOW_RESIZABLE);
-// #endif
+		CreationParams.WithAlphaChannel = true;
 
-	if ( !Window && CreationParams.Doublebuffer)
-	{
-		// Try single buffer
-		if (CreationParams.DriverType == video::EDT_OPENGL)
-			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-// #ifndef SAILFISH
-// 		SDL_Flags &= ~SDL_DOUBLEBUF;
-// 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
-// #else
+		// if (CreationParams.Bits==16)
+		// {
+		// 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 4 );
+		// 	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 4 );
+		// 	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 4 );
+		// 	SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, CreationParams.WithAlphaChannel?1:0 );
+		// }
+		// else
+		// {
+		// 	// SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
+		// 	// SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
+		// 	// SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
+		// 	// SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+		// 	// SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
+		// 	// SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, CreationParams.WithAlphaChannel?8:0 );
+		// }
+		// SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, CreationParams.ZBufferBits);
+		// if (CreationParams.Doublebuffer)
+			// SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+		// if (CreationParams.Stereobuffer)
+			// SDL_GL_SetAttribute( SDL_GL_STEREO, 1 );
+		// if (CreationParams.AntiAlias>1)
+		// {
+			// SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+			// SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
+		// }
+		
 		Window = SDL_CreateWindow(title,
-		                          SDL_WINDOWPOS_UNDEFINED,
-		                          SDL_WINDOWPOS_UNDEFINED,
+		                          SDL_WINDOWPOS_CENTERED,
+		                          SDL_WINDOWPOS_CENTERED,
 		                          Width, Height,
-		                          SDL_Flags| SDL_WINDOW_RESIZABLE);
-// #endif
+		                          /*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+// 		if ( !Window && CreationParams.AntiAlias>1)
+// 		{
+// 			while (--CreationParams.AntiAlias>1)
+// 			{
+// 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
+// // #ifndef SAILFISH
+// // 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+// // #else
+// 				Window = SDL_CreateWindow(title,
+// 				                          SDL_WINDOWPOS_UNDEFINED,
+// 				                          SDL_WINDOWPOS_UNDEFINED,
+// 				                          Width, Height,
+// 				                          SDL_Flags| SDL_WINDOW_RESIZABLE);
+// // #endif
+// 				if (Window)
+// 					break;
+// 			}
+// 			if ( !Window )
+// 			{
+// 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
+// 				SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
+// // #ifndef SAILFISH
+// // 				Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+// // #else
+// 				Window = SDL_CreateWindow(title,
+// 				                          SDL_WINDOWPOS_UNDEFINED,
+// 				                          SDL_WINDOWPOS_UNDEFINED,
+// 				                          Width, Height,
+// 				                          SDL_Flags| SDL_WINDOW_RESIZABLE);
+// // #endif
+// 				if (Window)
+// 					os::Printer::log("AntiAliasing disabled due to lack of support!" );
+// 			}
+// 		}
+// 	}
+// 	else if ( !Window )
+// // #ifndef SAILFISH
+// // 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+// // #else
+// 		Window = SDL_CreateWindow(title,
+// 		                          SDL_WINDOWPOS_UNDEFINED,
+// 		                          SDL_WINDOWPOS_UNDEFINED,
+// 		                          Width, Height,
+// 		                          SDL_Flags| SDL_WINDOW_RESIZABLE);
+// // #endif
+
+// 	if ( !Window && CreationParams.Doublebuffer)
+// 	{
+// 		// Try single buffer
+// 		if (CreationParams.DriverType == video::EDT_OPENGL)
+// 			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+// // #ifndef SAILFISH
+// // 		SDL_Flags &= ~SDL_DOUBLEBUF;
+// // 		Screen = SDL_SetVideoMode( Width, Height, CreationParams.Bits, SDL_Flags );
+// // #else
+// 		Window = SDL_CreateWindow(title,
+// 		                          SDL_WINDOWPOS_UNDEFINED,
+// 		                          SDL_WINDOWPOS_UNDEFINED,
+// 		                          Width, Height,
+// 		                          SDL_Flags| SDL_WINDOW_RESIZABLE);
+// // #endif
 	}
 	if ( !Window )
 	{
@@ -517,33 +498,73 @@ void CIrrDeviceSDL::createDriver()
 #if defined(_IRR_COMPILE_WITH_OGLES2_)
 		{
 			video::SExposedVideoData data;
-//			SDL_SysWMinfo wmInfo;
-//			data.OGLESWayland.Window = SDL_GetWindowWMInfo(Screen,&wmInfo);
-			data.OGLES_SDL.Window = Window;
-			data.OGLES_SDL.Surface = Surface;
 
-			#if defined(SDL_VIDEO_DRIVER_X11)
-			{
-				struct SDL_SysWMinfo wmInfo;
-				SDL_VERSION(&wmInfo.version);
-				if (!SDL_GetWindowWMInfo(Window, &wmInfo)) {
-					os::Printer::log("Cannot get the window handle.\n", ELL_ERROR);
-				}
-				data.OGLES_SDL.nativeDisplay = wmInfo.info.x11.display;
-				data.OGLES_SDL.nativeWindow = (void*)wmInfo.info.x11.window;
+			struct SDL_SysWMinfo wmInfo;
+			SDL_VERSION(&wmInfo.version);
+			if (!SDL_GetWindowWMInfo(Window, &wmInfo)) {
+				os::Printer::log("Cannot get the window handle.\n", ELL_ERROR);
 			}
-			#elif defined(SDL_VIDEO_DRIVER_WAYLAND)
+			else
 			{
-				struct SDL_SysWMinfo wmInfo;
-				SDL_VERSION(&wmInfo.version);
-				if (!SDL_GetWindowWMInfo(Screen, &wmInfo)) {
-					printf("Cannot get the window handle.\n");
-					goto on_error;
+				if( wmInfo.subsystem == SDL_SYSWM_X11)
+				{
+					data.OGLES_SDL.nativeDisplay = wmInfo.info.x11.display;
+					data.OGLES_SDL.nativeWindow = (void*)wmInfo.info.x11.window;
 				}
-				data.OGLES_SDL.nativeDisplay = wmInfo.info.wl.display;
-				// data.OGLES_SDL.nativeWindow =  wmInfo.info.wl.wl_windopw;
+#if SDL_VERSION_ATLEAST(2,0,15)
+				else if (wmInfo.subsystem == SDL_SYSWM_WAYLAND)
+				{
+					data.OGLES_SDL.nativeDisplay = wmInfo.info.wl.display;
+					data.OGLES_SDL.nativeWindow =  wmInfo.info.wl.wl_window;
+				}
+#endif		
 			}
-			#endif
+			{
+				Width = 800;
+				Height = 480;
+				// int screenbpp    =  16;
+				// int fullscreen   =   0;
+
+				EGLint egl_config_attr[] = {
+					EGL_BUFFER_SIZE,    32,
+					EGL_DEPTH_SIZE,     24,
+					EGL_STENCIL_SIZE,   8,
+					EGL_RED_SIZE,   8,
+					EGL_GREEN_SIZE,   8,
+					EGL_BLUE_SIZE,   8,
+					EGL_ALPHA_SIZE,   8,
+					EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+					EGL_SURFACE_TYPE,
+					EGL_WINDOW_BIT,
+					EGL_NONE
+				};
+
+				EGLint numConfigs, majorVersion, minorVersion;
+				EGLConfig glConfig;
+
+				Window = SDL_CreateWindow("title",
+							SDL_WINDOWPOS_CENTERED,
+							SDL_WINDOWPOS_CENTERED,
+							Width, Height,
+							/*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+				
+				// EGLDisplay glDisplay = eglGetDisplay((NativeDisplayType)data.OGLES_SDL.nativeDisplay); //eglGetDisplay(EGL_DEFAULT_DISPLAY);
+				EGLDisplay glDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+				eglInitialize(glDisplay, &majorVersion, &minorVersion);
+				if( !eglChooseConfig(glDisplay, egl_config_attr, &glConfig, 1, &numConfigs) )
+					os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
+				// SDL_SysWMinfo sysInfo;
+				// SDL_VERSION(&sysInfo.version); // Set SDL version
+				SDL_GetWindowWMInfo(Window, &wmInfo);
+				EGLContext glContext = eglCreateContext(glDisplay, glConfig, EGL_NO_CONTEXT, NULL);
+				EGLSurface glSurface = eglCreateWindowSurface(glDisplay, glConfig,
+												(EGLNativeWindowType)wmInfo.info.x11.window, 0); // X11?
+				if(! eglMakeCurrent(glDisplay, glSurface, glSurface, glContext));
+					os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
+				eglSwapInterval(glDisplay, 1);
+			}
+
 
 			ContextManager = new video::CEGLManager();
 			ContextManager->initialize(CreationParams, data);

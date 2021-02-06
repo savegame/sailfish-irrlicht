@@ -13,10 +13,6 @@
 #include <android/native_activity.h>
 #endif
 
-#ifdef _IRR_COMPILE_WITH_SAILFISH_DEVICE_
-
-#endif
-
 namespace irr
 {
 namespace video
@@ -67,9 +63,8 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLLinux.X11Display);
 #elif defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 	EglWindow = (NativeWindowType)Data.OGLES_SDL.nativeWindow;
-	// EglDisplay = (NativeDisplayType)Data.OGLES_SDL.nativeDisplay;
-	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OGLES_SDL.nativeDisplay);
-	// nativeDisplay = (NativeDisplayType)Data.OGLES_SDL.nativeDisplay;
+	// EglDisplay = eglGetDisplay((NativeDisplayType)Data.OGLES_SDL.nativeDisplay);
+	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #elif defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
 	EglWindow =	(ANativeWindow*)Data.OGLESAndroid.Window;
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -164,100 +159,100 @@ bool CEGLManager::generateSurface()
 		EGL_RED_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_BLUE_SIZE, 8,
-		EGL_ALPHA_SIZE, Params.WithAlphaChannel ? 1:0,
-		EGL_BUFFER_SIZE, Params.Bits,
+		EGL_ALPHA_SIZE, 8,
+		EGL_BUFFER_SIZE, 32,
+		EGL_DEPTH_SIZE, 24,
+		EGL_STENCIL_SIZE, 8,
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_DEPTH_SIZE, 24,//Params.ZBufferBits,
-		EGL_STENCIL_SIZE, 8,//Params.Stencilbuffer,
-		EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
-		EGL_SAMPLES, Params.AntiAlias,
+		// EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
+		// EGL_SAMPLES, Params.AntiAlias,
 #ifdef EGL_VERSION_1_3
-		EGL_RENDERABLE_TYPE, EglOpenGLBIT,
+		// EGL_RENDERABLE_TYPE, EglOpenGLBIT,
 #endif
-		EGL_NONE, 0
+		EGL_NONE
 	};
 
 	EglConfig = 0;
 	EGLint NumConfigs = 0;
 	u32 Steps = 5;
 
-	if (!eglChooseConfig(EglDisplay, Attribs, NULL, 0, &NumConfigs) || NumConfigs<=0) {
+	if (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 0, &NumConfigs) || NumConfigs<=0) {
         printf("Cannot find an EGL config.\n");
 		return false;
     }
 
-    EGLConfig *configs = (EGLConfig *)malloc(sizeof(EGLConfig) * NumConfigs);
-    if (!eglChooseConfig(EglDisplay, Attribs, configs, NumConfigs, &NumConfigs) || NumConfigs<=0) {
-        printf("Cannot find an EGL config.\n");
-        return false;
-    }
+    // EGLConfig *configs = (EGLConfig *)malloc(sizeof(EGLConfig) * NumConfigs);
+    // if (!eglChooseConfig(EglDisplay, Attribs, configs, NumConfigs, &NumConfigs) || NumConfigs<=0) {
+    //     printf("Cannot find an EGL config.\n");
+    //     return false;
+    // }
 
 	// Choose the best EGL config.
-	while (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 1, &NumConfigs) || !NumConfigs)
-	{
-		switch (Steps)
-		{
-		case 5: // samples
-			if (Attribs[19] > 2)
-				--Attribs[19];
-			else
-			{
-				Attribs[17] = 0;
-				Attribs[19] = 0;
-				--Steps;
-			}
-			break;
-		case 4: // alpha
-			if (Attribs[7])
-			{
-				Attribs[7] = 0;
+	// while (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 1, &NumConfigs) || !NumConfigs)
+	// {
+	// 	switch (Steps)
+	// 	{
+	// 	case 5: // samples
+	// 		if (Attribs[19] > 2)
+	// 			--Attribs[19];
+	// 		else
+	// 		{
+	// 			Attribs[17] = 0;
+	// 			Attribs[19] = 0;
+	// 			--Steps;
+	// 		}
+	// 		break;
+	// 	case 4: // alpha
+	// 		if (Attribs[7])
+	// 		{
+	// 			Attribs[7] = 0;
 
-				if (Params.AntiAlias)
-				{
-					Attribs[17] = 1;
-					Attribs[19] = Params.AntiAlias;
-					Steps = 5;
-				}
-			}
-			else
-				--Steps;
-			break;
-		case 3: // stencil
-			if (Attribs[15])
-			{
-				Attribs[15] = 0;
+	// 			if (Params.AntiAlias)
+	// 			{
+	// 				Attribs[17] = 1;
+	// 				Attribs[19] = Params.AntiAlias;
+	// 				Steps = 5;
+	// 			}
+	// 		}
+	// 		else
+	// 			--Steps;
+	// 		break;
+	// 	case 3: // stencil
+	// 		if (Attribs[15])
+	// 		{
+	// 			Attribs[15] = 0;
 
-				if (Params.AntiAlias)
-				{
-					Attribs[17] = 1;
-					Attribs[19] = Params.AntiAlias;
-					Steps = 5;
-				}
-			}
-			else
-				--Steps;
-			break;
-		case 2: // depth size
-			if (Attribs[13] > 16)
-			{
-				Attribs[13] -= 8;
-			}
-			else
-				--Steps;
-			break;
-		case 1: // buffer size
-			if (Attribs[9] > 16)
-			{
-				Attribs[9] -= 8;
-			}
-			else
-				--Steps;
-			break;
-		default:
-			os::Printer::log("Could not get config for EGL display.");
-			return false;
-		}
-	}
+	// 			if (Params.AntiAlias)
+	// 			{
+	// 				Attribs[17] = 1;
+	// 				Attribs[19] = Params.AntiAlias;
+	// 				Steps = 5;
+	// 			}
+	// 		}
+	// 		else
+	// 			--Steps;
+	// 		break;
+	// 	case 2: // depth size
+	// 		if (Attribs[13] > 16)
+	// 		{
+	// 			Attribs[13] -= 8;
+	// 		}
+	// 		else
+	// 			--Steps;
+	// 		break;
+	// 	case 1: // buffer size
+	// 		if (Attribs[9] > 16)
+	// 		{
+	// 			Attribs[9] -= 8;
+	// 		}
+	// 		else
+	// 			--Steps;
+	// 		break;
+	// 	default:
+	// 		os::Printer::log("Could not get config for EGL display.");
+	// 		return false;
+	// 	}
+	// }
 
 	if (Params.AntiAlias && !Attribs[17])
 		os::Printer::log("No multisampling.");
@@ -303,16 +298,24 @@ bool CEGLManager::generateSurface()
 		EglSurface = eglCreateWindowSurface(EglDisplay, EglConfig, 0, 0);
 	}
 
-	if (EGL_NO_SURFACE == EglSurface)
+	if (EGL_NO_SURFACE == EglSurface) {
 		os::Printer::log("Could not create EGL surface.");
+		return false;
+	}
 
 #ifdef EGL_VERSION_1_2
-	if (MinorVersion > 1)
-		eglBindAPI(EGL_OPENGL_ES_API);
+	// if (MinorVersion > 1)
+		// eglBindAPI(EGL_OPENGL_ES_API);
 #endif
 
     if (Params.Vsync)
 		eglSwapInterval(EglDisplay, 1);
+
+	if (testEGLError())
+	{
+		os::Printer::log("Could not make EGL context current.");
+		return false;
+	}
 
     return true;
 }
@@ -372,6 +375,14 @@ bool CEGLManager::generateContext()
 
 	os::Printer::log("EGL context created with OpenGLESVersion: ", core::stringc((int)OpenGLESVersion), ELL_DEBUG);
 
+	eglMakeCurrent(EglDisplay,EglSurface,EglSurface,EglContext);
+
+	if (testEGLError())
+	{
+		os::Printer::log("Could not make EGL context current.");
+		return false;
+	}
+
     return true;
 }
 
@@ -394,7 +405,7 @@ bool CEGLManager::activateContext(const SExposedVideoData& videoData)
 //	{
 //		os::Printer::log("Could not make the current window current !\n");
 //		return false;
-//	}
+//	}SOGLESSDL
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
 
 	if (testEGLError())
@@ -426,46 +437,46 @@ bool CEGLManager::testEGLError()
 		case EGL_SUCCESS:
             return false;
 		case EGL_NOT_INITIALIZED :
-			os::Printer::log("Not Initialized", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Not Initialized", ELL_ERROR);
             break;
 		case EGL_BAD_ACCESS:
-			os::Printer::log("Bad Access", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Access", ELL_ERROR);
             break;
 		case EGL_BAD_ALLOC:
-			os::Printer::log("Bad Alloc", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Alloc", ELL_ERROR);
             break;
 		case EGL_BAD_ATTRIBUTE:
-			os::Printer::log("Bad Attribute", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Attribute", ELL_ERROR);
             break;
 		case EGL_BAD_CONTEXT:
-			os::Printer::log("Bad Context", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Context", ELL_ERROR);
             break;
 		case EGL_BAD_CONFIG:
-			os::Printer::log("Bad Config", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Config", ELL_ERROR);
             break;
 		case EGL_BAD_CURRENT_SURFACE:
-			os::Printer::log("Bad Current Surface", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Current Surface", ELL_ERROR);
             break;
 		case EGL_BAD_DISPLAY:
-			os::Printer::log("Bad Display", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Display", ELL_ERROR);
             break;
 		case EGL_BAD_SURFACE:
-			os::Printer::log("Bad Surface", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Surface", ELL_ERROR);
             break;
 		case EGL_BAD_MATCH:
-			os::Printer::log("Bad Match", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Match", ELL_ERROR);
             break;
 		case EGL_BAD_PARAMETER:
-			os::Printer::log("Bad Parameter", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Parameter", ELL_ERROR);
             break;
 		case EGL_BAD_NATIVE_PIXMAP:
-			os::Printer::log("Bad Native Pixmap", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Native Pixmap", ELL_ERROR);
             break;
 		case EGL_BAD_NATIVE_WINDOW:
-			os::Printer::log("Bad Native Window", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Bad Native Window", ELL_ERROR);
             break;
 		case EGL_CONTEXT_LOST:
-			os::Printer::log("Context Lost", ELL_ERROR);
+			os::Printer::log("EGL_ERROR: Context Lost", ELL_ERROR);
             break;
         default:
             break;

@@ -74,6 +74,7 @@ COGLES2Driver::COGLES2Driver(const SIrrlichtCreationParameters& params, io::IFil
 	ContextManager->grab();
 	ContextManager->generateSurface();
 	ContextManager->generateContext();
+	testEGLError();
 	ExposedData = ContextManager->getContext();
 	ContextManager->activateContext(ExposedData);
 }
