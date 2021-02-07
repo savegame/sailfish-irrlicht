@@ -223,9 +223,9 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	}
 
 #if defined(_IRR_WINDOWS_)
-	SDL_putenv("SDL_VIDEODRIVER=directx");
+	// SDL_putenv("SDL_VIDEODRIVER=directx");
 #elif defined(_IRR_OSX_PLATFORM_)
-	SDL_putenv("SDL_VIDEODRIVER=Quartz");
+	// SDL_putenv("SDL_VIDEODRIVER=Quartz");
 #elif !defined(_IRR_EMSCRIPTEN_PLATFORM_) && !defined(SAILFISH)
 	// SDL_putenv("SDL_VIDEODRIVER=x11");
 #endif
@@ -236,15 +236,15 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 // #endif
 // #if !defined(_IRR_EMSCRIPTEN_PLATFORM_) && !defined(SAILFISH)
 // 	SDL_GetWMInfo(&Info);
-// 	core::stringc sdlversion = "SDL Version ";
-// 	sdlversion += Info.version.major;
-// 	sdlversion += ".";
-// 	sdlversion += Info.version.minor;
-// 	sdlversion += ".";
-// 	sdlversion += Info.version.patch;
+	core::stringc sdlversion = "SDL Version ";
+	sdlversion += Info.version.major;
+	sdlversion += ".";
+	sdlversion += Info.version.minor;
+	sdlversion += ".";
+	sdlversion += Info.version.patch;
 // #else
 	//SDL_GetWindowWMInfo();
-	core::stringc sdlversion = "SDL Version 2.0";
+	// core::stringc sdlversion = "SDL Version 2.0";
 
 // #endif //_IRR_EMSCRIPTEN_PLATFORM_ && SAILFISH
 	Operator = new COSOperator(sdlversion);
@@ -260,7 +260,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	
 	if ( CreationParams.Fullscreen )
 		SDL_Flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	if (CreationParams.DriverType == video::EDT_OPENGL | CreationParams.DriverType == video::EDT_OGLES2)
+	if (CreationParams.DriverType == video::EDT_OPENGL || CreationParams.DriverType == video::EDT_OGLES2)
 		SDL_Flags |= SDL_WINDOW_OPENGL;
 	// else if (CreationParams.Doublebuffer)
 		// SDL_Flags |= SDL_WINDOW_;
@@ -273,7 +273,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	SDL_Flags |= SDL_WINDOW_OPENGL;
 #endif
 	// create window
-	if (CreationParams.DriverType != video::EDT_NULL)
+	if (CreationParams.DriverType != video::EDT_NULL && !Window)
 	{
 		// create the window, only if we do not use the null device
 		// createWindow();
@@ -283,10 +283,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	CursorControl = new CCursorControl(this);
 
 	// create driver
-	createDriver();
-
-	if (VideoDriver)
-		createGUIAndScene();
+	// createDriver();
 }
 
 
@@ -304,6 +301,8 @@ CIrrDeviceSDL::~CIrrDeviceSDL()
 
 bool CIrrDeviceSDL::createWindow()
 {
+	if(Window)
+		return true;
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 	if ( Width != 0 || Height != 0 )
 		emscripten_set_canvas_size( Width, Height);
@@ -448,7 +447,7 @@ bool CIrrDeviceSDL::createWindow()
 
 
 //! create the driver
-void CIrrDeviceSDL::createDriver()
+void CIrrDeviceSDL::createDriver(video::CEGLManager *eglManager)
 {
 	switch(CreationParams.DriverType)
 	{
@@ -508,8 +507,8 @@ void CIrrDeviceSDL::createDriver()
 			{
 				if( wmInfo.subsystem == SDL_SYSWM_X11)
 				{
-					data.OGLES_SDL.nativeDisplay = wmInfo.info.x11.display;
-					data.OGLES_SDL.nativeWindow = (void*)wmInfo.info.x11.window;
+					data.OGLES_SDL.nativeDisplay = (EGLNativeDisplayType)wmInfo.info.x11.display;
+					data.OGLES_SDL.nativeWindow = (EGLNativeWindowType)wmInfo.info.x11.window;
 				}
 #if SDL_VERSION_ATLEAST(2,0,15)
 				else if (wmInfo.subsystem == SDL_SYSWM_WAYLAND)
@@ -519,55 +518,58 @@ void CIrrDeviceSDL::createDriver()
 				}
 #endif		
 			}
-			{
-				Width = 800;
-				Height = 480;
-				// int screenbpp    =  16;
-				// int fullscreen   =   0;
+			// {
+			// 	Width = 800;
+			// 	Height = 480;
+			// 	// int screenbpp    =  16;
+			// 	// int fullscreen   =   0;
 
-				EGLint egl_config_attr[] = {
-					EGL_BUFFER_SIZE,    32,
-					EGL_DEPTH_SIZE,     24,
-					EGL_STENCIL_SIZE,   8,
-					EGL_RED_SIZE,   8,
-					EGL_GREEN_SIZE,   8,
-					EGL_BLUE_SIZE,   8,
-					EGL_ALPHA_SIZE,   8,
-					EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-					EGL_SURFACE_TYPE,
-					EGL_WINDOW_BIT,
-					EGL_NONE
-				};
+			// 	EGLint egl_config_attr[] = {
+			// 		EGL_BUFFER_SIZE,    32,
+			// 		EGL_DEPTH_SIZE,     24,
+			// 		EGL_STENCIL_SIZE,   8,
+			// 		EGL_RED_SIZE,   8,
+			// 		EGL_GREEN_SIZE,   8,
+			// 		EGL_BLUE_SIZE,   8,
+			// 		EGL_ALPHA_SIZE,   8,
+			// 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+			// 		EGL_SURFACE_TYPE,
+			// 		EGL_WINDOW_BIT,
+			// 		EGL_NONE
+			// 	};
 
-				EGLint numConfigs, majorVersion, minorVersion;
-				EGLConfig glConfig;
+			// 	EGLint numConfigs, majorVersion, minorVersion;
+			// 	EGLConfig glConfig;
 
-				Window = SDL_CreateWindow("title",
-							SDL_WINDOWPOS_CENTERED,
-							SDL_WINDOWPOS_CENTERED,
-							Width, Height,
-							/*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+			// 	Window = SDL_CreateWindow("title",
+			// 				SDL_WINDOWPOS_CENTERED,
+			// 				SDL_WINDOWPOS_CENTERED,
+			// 				Width, Height,
+			// 				/*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 				
-				// EGLDisplay glDisplay = eglGetDisplay((NativeDisplayType)data.OGLES_SDL.nativeDisplay); //eglGetDisplay(EGL_DEFAULT_DISPLAY);
-				EGLDisplay glDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+			// 	// EGLDisplay glDisplay = eglGetDisplay((NativeDisplayType)data.OGLES_SDL.nativeDisplay); //eglGetDisplay(EGL_DEFAULT_DISPLAY);
+			// 	// EGLDisplay glDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-				eglInitialize(glDisplay, &majorVersion, &minorVersion);
-				if( !eglChooseConfig(glDisplay, egl_config_attr, &glConfig, 1, &numConfigs) )
-					os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
-				// SDL_SysWMinfo sysInfo;
-				// SDL_VERSION(&sysInfo.version); // Set SDL version
-				SDL_GetWindowWMInfo(Window, &wmInfo);
-				EGLContext glContext = eglCreateContext(glDisplay, glConfig, EGL_NO_CONTEXT, NULL);
-				EGLSurface glSurface = eglCreateWindowSurface(glDisplay, glConfig,
-												(EGLNativeWindowType)wmInfo.info.x11.window, 0); // X11?
-				if(! eglMakeCurrent(glDisplay, glSurface, glSurface, glContext));
-					os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
-				eglSwapInterval(glDisplay, 1);
+			// 	// eglInitialize(glDisplay, &majorVersion, &minorVersion);
+			// 	// if( !eglChooseConfig(glDisplay, egl_config_attr, &glConfig, 1, &numConfigs) )
+			// 	// 	os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
+			// 	// // SDL_SysWMinfo sysInfo;
+			// 	// // SDL_VERSION(&sysInfo.version); // Set SDL version
+			// 	// SDL_GetWindowWMInfo(Window, &wmInfo);
+			// 	// EGLContext glContext = eglCreateContext(glDisplay, glConfig, EGL_NO_CONTEXT, NULL);
+			// 	// EGLSurface glSurface = eglCreateWindowSurface(glDisplay, glConfig,
+			// 	// 								(EGLNativeWindowType)wmInfo.info.x11.window, 0); // X11?
+			// 	// if(! eglMakeCurrent(glDisplay, glSurface, glSurface, glContext));
+			// 	// 	os::Printer::log("FUUUUUUUUUUUUCK!", ELL_ERROR);
+			// 	// eglSwapInterval(glDisplay, 1);
+			// }
+
+			if( eglManager ) {
+				ContextManager = eglManager;
+			} else {
+				ContextManager = new video::CEGLManager();
+				ContextManager->initialize(CreationParams, data);
 			}
-
-
-			ContextManager = new video::CEGLManager();
-			ContextManager->initialize(CreationParams, data);
 
 			VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
 //			VideoDriver->OnResize( core::dimension2du(Width, Height) );
@@ -614,6 +616,9 @@ void CIrrDeviceSDL::createDriver()
 		SDL_SetWindowSize(Window, Width, Height);
 		VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
 	}
+
+	if (VideoDriver)
+		createGUIAndScene();
 }
 
 

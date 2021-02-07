@@ -220,7 +220,9 @@ namespace irr
 		};
 		SMouseMultiClicks MouseMultiClicks;
 		video::CVideoModeList* VideoModeList;
+	public:
 		video::IContextManager* ContextManager;
+	protected:
 		SIrrlichtCreationParameters CreationParams;
 		bool Close;
 	};

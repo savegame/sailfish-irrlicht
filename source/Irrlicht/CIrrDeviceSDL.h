@@ -30,7 +30,9 @@
 #endif
 namespace irr
 {
-
+	namespace video {
+		class CEGLManager;
+	}
 	class CIrrDeviceSDL : public CIrrDeviceStub, video::IImagePresenter
 	{
 	public:
@@ -101,6 +103,9 @@ namespace irr
 
 		//! Get the current Gamma Value for the Display
 		virtual bool getGammaRamp( f32 &red, f32 &green, f32 &blue, f32 &brightness, f32 &contrast ) _IRR_OVERRIDE_;
+
+		//! Create Driver =)
+		void createDriver(video::CEGLManager *eglManager = nullptr);
 
 		//! Get the device type
 		virtual E_DEVICE_TYPE getType() const _IRR_OVERRIDE_
@@ -234,7 +239,6 @@ namespace irr
 #endif
 
 		//! create the driver
-		void createDriver();
 
 		bool createWindow();
 
@@ -242,8 +246,10 @@ namespace irr
 // #ifndef SAILFISH
 		// SDL_Surface* Screen;
 // #else
-		SDL_Window * Window;
-		SDL_Surface* Surface;
+public:
+		SDL_Window * Window  = nullptr;
+		SDL_Surface* Surface = nullptr;
+private:
 // #endif
 		int SDL_Flags;
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)

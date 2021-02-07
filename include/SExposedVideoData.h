@@ -5,6 +5,10 @@
 #ifndef __S_EXPOSED_VIDEO_DATA_H_INCLUDED__
 #define __S_EXPOSED_VIDEO_DATA_H_INCLUDED__
 
+#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_) && defined(_IRR_COMPILE_WITH_OGLES2_)
+#include <EGL/egl.h>
+#endif
+
 // forward declarations for internal pointers
 struct IDirect3D9;
 struct IDirect3DDevice9;
@@ -110,15 +114,17 @@ struct SExposedVideoData
     };
 #endif
 
+#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
 	struct SOGLESSDL 
 	{
 		void* Surface;
         void* Window;
         void* Display;
 		void* Context;
-		void* nativeDisplay;
-		void* nativeWindow;
+		EGLNativeDisplayType nativeDisplay;
+		EGLNativeWindowType  nativeWindow;
 	};
+#endif
 
 #ifdef _IRR_COMPILE_WITH_QML_RENDER
 	struct SQML_GLContext 

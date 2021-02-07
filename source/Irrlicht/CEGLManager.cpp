@@ -62,7 +62,7 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters& params, const SE
 	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
 	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLLinux.X11Display);
 #elif defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
-	EglWindow = (NativeWindowType)Data.OGLES_SDL.nativeWindow;
+	EglWindow = Data.OGLES_SDL.nativeWindow;
 	// EglDisplay = eglGetDisplay((NativeDisplayType)Data.OGLES_SDL.nativeDisplay);
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #elif defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
@@ -164,10 +164,10 @@ bool CEGLManager::generateSurface()
 		EGL_DEPTH_SIZE, 24,
 		EGL_STENCIL_SIZE, 8,
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		// EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
-		// EGL_SAMPLES, Params.AntiAlias,
+		EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
+		EGL_SAMPLES, Params.AntiAlias,
 #ifdef EGL_VERSION_1_3
-		// EGL_RENDERABLE_TYPE, EglOpenGLBIT,
+		EGL_RENDERABLE_TYPE, EglOpenGLBIT,
 #endif
 		EGL_NONE
 	};
@@ -176,7 +176,7 @@ bool CEGLManager::generateSurface()
 	EGLint NumConfigs = 0;
 	u32 Steps = 5;
 
-	if (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 0, &NumConfigs) || NumConfigs<=0) {
+	if (!eglChooseConfig(EglDisplay, Attribs, &EglConfig, 1, &NumConfigs) || NumConfigs<=0) {
         printf("Cannot find an EGL config.\n");
 		return false;
     }
@@ -263,7 +263,7 @@ bool CEGLManager::generateSurface()
 	if (Params.Stencilbuffer && !Attribs[15])
 		os::Printer::log("No stencil buffer.");
 
-	if (Params.ZBufferBits > Attribs[13])
+	if (Params.ZBufferBits > Attribs[11])
 		os::Printer::log("No full depth buffer.");
 
 	if (Params.Bits > Attribs[9])
@@ -365,7 +365,7 @@ bool CEGLManager::generateContext()
 #if !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 
 //#else
-	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
+	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, NULL);
 #endif
 	if (testEGLError())
 	{
