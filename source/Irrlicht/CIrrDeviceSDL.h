@@ -162,9 +162,8 @@ namespace irr
 			//! Sets the new position of the cursor.
 			virtual void setPosition(s32 x, s32 y) _IRR_OVERRIDE_
 			{
-// #ifndef SAILFISH
-// 				SDL_WarpMouse( x, y );
-// #endif
+				if(Device->Window)
+					SDL_WarpMouseInWindow(Device->Window,x,y);
 			}
 
 			//! Returns the current position of the mouse cursor.

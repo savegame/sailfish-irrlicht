@@ -203,24 +203,20 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	Resizable(false), WindowHasFocus(false), WindowMinimized(false)
 {
 	#ifdef _DEBUG
-// #ifdef SAILFISH
 	setDebugName("CIrrDeviceSDL2");
-// #else
-	// setDebugName("CIrrDeviceSDL");
-// #endif
 	#endif
 
 	// Initialize SDL... Timer for sleep, video for the obvious, and
 	// noparachute prevents SDL from catching fatal errors.
-	if (SDL_Init( SDL_INIT_TIMER|SDL_INIT_VIDEO|
-#if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
-				SDL_INIT_JOYSTICK|
-#endif
-				SDL_INIT_NOPARACHUTE ) < 0)
-	{
-		os::Printer::log( "Unable to initialize SDL!", SDL_GetError());
-		Close = true;
-	}
+ 	if (SDL_Init( SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|
+ #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+ 				SDL_INIT_JOYSTICK|
+ #endif
+ 				SDL_INIT_NOPARACHUTE ) < 0)
+ 	{
+ 		os::Printer::log( "Unable to initialize SDL!", SDL_GetError());
+ 		Close = true;
+ 	}
 
 #if defined(_IRR_WINDOWS_)
 	// SDL_putenv("SDL_VIDEODRIVER=directx");
@@ -262,8 +258,6 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 		SDL_Flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	if (CreationParams.DriverType == video::EDT_OPENGL || CreationParams.DriverType == video::EDT_OGLES2)
 		SDL_Flags |= SDL_WINDOW_OPENGL;
-	// else if (CreationParams.Doublebuffer)
-		// SDL_Flags |= SDL_WINDOW_;
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 	else
 		SDL_Flags = SDL_SWSURFACE;
@@ -276,7 +270,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters& param)
 	if (CreationParams.DriverType != video::EDT_NULL && !Window)
 	{
 		// create the window, only if we do not use the null device
-		// createWindow();
+		createWindow();
 	}
 
 	// create cursor control
@@ -362,12 +356,16 @@ bool CIrrDeviceSDL::createWindow()
 			// SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 			// SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, CreationParams.AntiAlias );
 		// }
+#if 1
+		// Window = SDL_CreateWindow("GLES2_TEST", 0, 0, Width, Height,
+									// SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+#endif
 		
-		Window = SDL_CreateWindow(title,
-		                          SDL_WINDOWPOS_CENTERED,
-		                          SDL_WINDOWPOS_CENTERED,
-		                          Width, Height,
-		                          /*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+		// Window = SDL_CreateWindow(title,
+		//                           SDL_WINDOWPOS_CENTERED,
+		//                           SDL_WINDOWPOS_CENTERED,
+		//                           Width, Height,
+		//                           /*SDL_Flags |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 // 		if ( !Window && CreationParams.AntiAlias>1)
 // 		{
 // 			while (--CreationParams.AntiAlias>1)
@@ -435,10 +433,12 @@ bool CIrrDeviceSDL::createWindow()
 		os::Printer::log( "Could not initialize display!" );
 		return false;
 	}
+	// else {
+	// 	Surface = SDL_GetWindowSurface(Window);
+	// }
 
 
 // #ifdef SAILFISH
-	Surface = SDL_GetWindowSurface(Window);
 	// resize widow to right resolution
 // #endif
 	return true;
@@ -834,16 +834,7 @@ bool CIrrDeviceSDL::run()
 		case SDL_QUIT:
 			Close = true;
 			break;
-// #ifndef SAILFISH
-		// case SDL_ACTIVEEVENT:
-		// 	if ((SDL_event.active.state == SDL_APPMOUSEFOCUS) ||
-		// 	        (SDL_event.active.state == SDL_APPINPUTFOCUS))
-		// 		WindowHasFocus = (SDL_event.active.gain==1);
-		// 	else
-		// 	if (SDL_event.active.state == SDL_APPACTIVE)
-		// 		WindowMinimized = (SDL_event.active.gain!=1);
-		// 	break;
-// #else
+
 		case SDL_WINDOWEVENT:
 
 			switch(SDL_event.window.event)
@@ -860,24 +851,6 @@ bool CIrrDeviceSDL::run()
 				break;
 			}
 			break;
-// #endif
-// #ifndef SAILFISH // no need resize window
-// 		case SDL_VIDEORESIZE:
-// 			if ((SDL_event.resize.w != (int)Width) || (SDL_event.resize.h != (int)Height))
-// 			{
-// 				Width = SDL_event.resize.w;
-// 				Height = SDL_event.resize.h;
-// #ifdef _IRR_EMSCRIPTEN_PLATFORM_
-// 				Screen = SDL_SetVideoMode( 0, 0, 32, SDL_OPENGL ); // 0,0 will use the canvas size
-// #else //_IRR_EMSCRIPTEN_PLATFORM_
-//  				Screen = SDL_SetVideoMode( Width, Height, 0, SDL_Flags );
-// #endif //_IRR_EMSCRIPTEN_PLATFOR
-// 				if (VideoDriver)
-// 					VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
-// 			}
-// 			break;
-// #else
-// #endif
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 		case SDL_DOLLARGESTURE:
 			break;
