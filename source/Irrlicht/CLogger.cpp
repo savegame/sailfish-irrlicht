@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CLogger.h"
+#include <stdarg.h>
 
 namespace irr
 {
@@ -44,6 +45,19 @@ namespace irr
 		}
 
 		os::Printer::print(text);
+	}
+
+	void CLogger::logf(const c8* format, ELOG_LEVEL ll, ...) 
+	{
+		if (ll < LogLevel)
+			return;
+
+		core::stringc output;
+		va_list arg;
+		va_start(arg, format);
+		// printf("\r"); // Clear progress text.
+		const int result = vprintf(format, arg);
+		va_end(arg);
 	}
 
 

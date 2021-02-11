@@ -29,6 +29,9 @@ public:
 	//! Prints out a text into the log
 	virtual void log(const c8* text, ELOG_LEVEL ll=ELL_INFORMATION) _IRR_OVERRIDE_;
 
+	//! Prints out a formatted text into log
+	virtual void logf(const c8* format, ELOG_LEVEL ll=ELL_INFORMATION, ...) _IRR_OVERRIDE_;
+
 	//! Prints out a text into the log
 	virtual void log(const wchar_t* text, ELOG_LEVEL ll=ELL_INFORMATION) _IRR_OVERRIDE_;
 
