@@ -167,7 +167,7 @@ bool CEGLManager::generateSurface()
 		EGL_SAMPLE_BUFFERS, Params.AntiAlias ? 1:0,
 		EGL_SAMPLES, Params.AntiAlias,
 #ifdef EGL_VERSION_1_3
-		EGL_RENDERABLE_TYPE, EglOpenGLBIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #endif
 		EGL_NONE
 	};
@@ -365,7 +365,7 @@ bool CEGLManager::generateContext()
 #if !defined(_IRR_COMPILE_WITH_SAILFISH_DEVICE_)
 
 //#else
-	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, NULL);
+	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
 #endif
 	if (testEGLError())
 	{
